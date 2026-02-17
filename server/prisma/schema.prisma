@@ -7,6 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// MERCHANT (Multi-Tenant Core)
+// ============================================
+model merchants {
+  id                Int       @id @default(autoincrement())
+  clerk_user_id     String    @unique @db.VarChar(255)
+  business_name     String?   @db.VarChar(200)
+  email             String?   @db.VarChar(255)
+  shopify_shop_name String?   @db.VarChar(200)
+  shopify_access_token String? @db.Text
+  shopify_api_key   String?   @db.VarChar(200)
+  shopify_api_secret String?  @db.Text
+  webhook_id        String?   @db.VarChar(100)
+  plan              String?   @default("free") @db.VarChar(50)
+  is_active         Boolean   @default(true)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @updatedAt @db.Timestamp(6)
+
+  // Relations
+  products      products[]
+  orders        orders[]
+  users         users[]
+  upsell_events upsell_events[]
+  upsell_rules  upsell_rules[]
+}
+
+// ============================================
+// EXISTING TABLES (with merchant_id added)
+// ============================================
 model order_items {
   id         Int       @id @default(autoincrement())
   order_id   Int?
@@ -18,23 +47,27 @@ model order_items {
 
 model orders {
   id            Int             @id @default(autoincrement())
+  merchant_id   Int?
   shopify_id    BigInt?         @unique
   user_id       Int?
   total_amount  Decimal?        @db.Decimal(10, 2)
   created_at    DateTime?       @default(now()) @db.Timestamp(6)
   order_items   order_items[]
+  merchants     merchants?      @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users         users?          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   upsell_events upsell_events[]
 }
 
 model products {
   id                                                     Int             @id @default(autoincrement())
+  merchant_id                                            Int?
   shopify_id                                             BigInt?         @unique
   name                                                   String?         @db.VarChar(150)
   category                                               String?         @db.VarChar(100)
   price                                                  Decimal?        @db.Decimal(10, 2)
   image_url                                              String?         @db.Text
   created_at                                             DateTime?       @default(now()) @db.Timestamp(6)
+  merchants                                              merchants?      @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   order_items                                            order_items[]
   upsell_events                                          upsell_events[]
   upsell_rules_upsell_rules_trigger_product_idToproducts upsell_rules[]  @relation("upsell_rules_trigger_product_idToproducts")
@@ -43,6 +76,7 @@ model products {
 
 model upsell_events {
   id                Int       @id @default(autoincrement())
+  merchant_id       Int?
   user_id           Int?
   order_id          Int?
   upsell_product_id Int?
@@ -50,6 +84,7 @@ model upsell_events {
   shown_at          DateTime? @default(now()) @db.Timestamp(6)
   expires_at        DateTime? @db.Timestamp(6)
   converted         Boolean?  @default(false)
+  merchants         merchants? @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   orders            orders?   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products          products? @relation(fields: [upsell_product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users             users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -57,19 +92,23 @@ model upsell_events {
 
 model upsell_rules {
   id                                                 Int       @id @default(autoincrement())
+  merchant_id                                        Int?
   trigger_product_id                                 Int?
   upsell_product_id                                  Int?
   discount_percent                                   Int?
   active                                             Boolean?  @default(true)
+  merchants                                          merchants? @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products_upsell_rules_trigger_product_idToproducts products? @relation("upsell_rules_trigger_product_idToproducts", fields: [trigger_product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products_upsell_rules_upsell_product_idToproducts  products? @relation("upsell_rules_upsell_product_idToproducts", fields: [upsell_product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model users {
   id            Int             @id @default(autoincrement())
+  merchant_id   Int?
   email         String?         @unique @db.VarChar(255)
   name          String?         @db.VarChar(100)
   created_at    DateTime?       @default(now()) @db.Timestamp(6)
+  merchants     merchants?      @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   orders        orders[]
   upsell_events upsell_events[]
 }

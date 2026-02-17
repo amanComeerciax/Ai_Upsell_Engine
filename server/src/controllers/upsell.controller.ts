@@ -4,7 +4,11 @@ import prisma from '../lib/prisma';
 export const upsellController = {
     async getAllUpsells(req: Request, res: Response) {
         try {
+            // Tenant isolation
+            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
             const upsells = await prisma.upsell_events.findMany({
+                where: merchantFilter,
                 include: {
                     users: true,
                     products: true,
@@ -33,11 +37,12 @@ export const upsellController = {
 
     async getUpsellByOrderId(req: Request, res: Response) {
         try {
-            const { orderId } = req.params;
+            const orderId = req.params.orderId as string;
 
-            // Find order with this shopify_id
-            const order = await (prisma as any).orders.findFirst({
-                where: { shopify_id: BigInt(orderId as any) },
+            // Find order by ID or shopify_id
+            const isNumeric = /^\d+$/.test(orderId);
+            const order = await prisma.orders.findFirst({
+                where: isNumeric ? { shopify_id: BigInt(orderId) } : undefined,
                 include: {
                     upsell_events: {
                         include: {

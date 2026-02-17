@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Mail, MailOpen, MousePointerClick, TrendingUp, DollarSign, Target, Download, Zap, ArrowUpRight, Activity, Loader2 } from 'lucide-react'
+import {
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip
+} from 'recharts'
+import { Mail, MailOpen, MousePointerClick, TrendingUp, DollarSign, Target, Download, Zap, ArrowUpRight, Activity, Loader2, Sparkles } from 'lucide-react'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { DataTable, Column } from '@/components/dashboard/DataTable'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
@@ -8,8 +17,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { cn } from '@/lib/utils'
 import apiClient from '@/lib/api-client'
+import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function DashboardPage() {
+    const { merchant } = useMerchant()
     const [stats, setStats] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [simulating, setSimulating] = useState(false)
@@ -29,6 +40,11 @@ export default function DashboardPage() {
     const handleSimulateOrder = async () => {
         try {
             setSimulating(true);
+
+            if (!merchant?.shopify_shop_name) {
+                alert("Please connect your Shopify store in Settings first.");
+                return;
+            }
 
             // Get a real product from the list to make the simulation realistic
             const productsRes = await apiClient.get('/products');
@@ -59,7 +75,13 @@ export default function DashboardPage() {
                 ]
             };
 
-            await apiClient.post('/shopify/webhooks/orders/create', mockOrder);
+            // Pass the shop domain so the webhook controller identifies this merchant
+            await apiClient.post('/shopify/webhooks/orders/create', mockOrder, {
+                headers: {
+                    'x-shopify-shop-domain': merchant.shopify_shop_name
+                }
+            });
+
             await fetchDashboardData();
             alert("Order Simulated! AI Recommendation generated in background.");
         } catch (error) {
@@ -110,32 +132,64 @@ export default function DashboardPage() {
         )
     }
 
+    const handleExport = () => {
+        if (!stats?.recentOrders?.length) {
+            alert("No data available to export");
+            return;
+        }
+
+        const headers = ["Order ID", "Customer", "Status", "Amount", "Date"];
+        const rows = stats.recentOrders.map((o: any) => [
+            o.id,
+            o.customerEmail,
+            o.status,
+            o.totalAmount,
+            new Date(o.createdAt).toLocaleDateString()
+        ]);
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map((r: any[]) => r.join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `store_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
-        <div className="space-y-10 animate-fade-in pb-10">
-            {/* Page Header */}
+        <div className="space-y-10 animate-fade-in pb-12">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
                 <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-6 w-[2px] bg-blue-600" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">System Live</span>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="h-4 w-4 text-blue-600 fill-current" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Live Intelligence</span>
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight text-foreground uppercase italic">Command Center</h1>
-                    <p className="text-muted-foreground mt-1 font-medium italic">
-                        Real-time intelligence pipeline for your store's upsell ecosystem.
+                    <h1 className="text-4xl font-black tracking-tight text-foreground uppercase italic">Neural Command</h1>
+                    <p className="text-muted-foreground mt-1 font-medium underline decoration-blue-500/30 underline-offset-4 tracking-tight">
+                        Welcome back, {merchant?.business_name || 'Merchant'}. Monitoring {merchant?.shopify_shop_name || 'autonomous'} node.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={handleSimulateOrder}
-                        disabled={simulating}
-                        variant="outline"
-                        className="border-blue-500/20 bg-blue-500/[0.02] text-blue-500 hover:bg-blue-500/10 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                        disabled={simulating || !merchant?.shopify_connected}
+                        className="h-12 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.1em] text-[11px] px-8 shadow-xl shadow-blue-500/20"
                     >
-                        {simulating ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Zap className="h-3 w-3 mr-2 fill-current" />}
-                        Simulate Shopify Order
+                        {simulating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+                        Simulate Order
                     </Button>
-                    <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px] px-6">
-                        <Download className="h-3.5 w-3.5 mr-2" />
+                    <Button
+                        onClick={handleExport}
+                        className="h-12 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-[0.1em] text-[11px] px-8"
+                    >
+                        <Download className="h-4 w-4 mr-2" />
                         Export Data
                     </Button>
                 </div>
@@ -239,7 +293,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Performance Chart - Keep mock for now as it needs complex date grouping */}
+                {/* Performance Chart */}
                 <Card className="lg:col-span-2 border-foreground/[0.04] bg-foreground/[0.01]">
                     <CardHeader className="flex flex-row items-center justify-between px-8 py-6 border-b border-foreground/[0.04]">
                         <div>
@@ -252,8 +306,50 @@ export default function DashboardPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-8">
-                        <div className="h-[300px] w-full flex items-center justify-center bg-foreground/[0.01] border border-dashed border-foreground/5 rounded-2xl">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Historical Trajectory Mapping...</p>
+                        <div className="h-[300px] w-full">
+                            {stats?.trajectory ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={stats.trajectory}>
+                                        <defs>
+                                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                        <XAxis
+                                            dataKey="day"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#666', fontSize: 10, fontWeight: 900 }}
+                                            dy={10}
+                                        />
+                                        <YAxis hide />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#111',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px',
+                                                fontSize: '10px',
+                                                fontWeight: '900'
+                                            }}
+                                            itemStyle={{ color: '#3b82f6' }}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="revenue"
+                                            stroke="#3b82f6"
+                                            strokeWidth={3}
+                                            fillOpacity={1}
+                                            fill="url(#colorRevenue)"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-foreground/[0.01] border border-dashed border-foreground/5 rounded-2xl">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Calibrating Data Matrix...</p>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

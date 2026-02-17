@@ -10,6 +10,7 @@ import analyticsRoutes from './routes/analytics.routes';
 import shopifyRoutes from './routes/shopify.routes';
 import orderRoutes from './routes/order.routes';
 import upsellRoutes from './routes/upsell.routes';
+import merchantRoutes from './routes/merchant.routes';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/shopify', shopifyRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/upsells', upsellRoutes);
+app.use('/api/v1/merchant', merchantRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {

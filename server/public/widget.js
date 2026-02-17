@@ -148,43 +148,111 @@
 
     function init() {
         let orderId = window.VELOCITY_DEBUG_ID || null;
+        console.log('[Velocity AI] Widget initializing...');
 
+        // 1. Shopify Checkout Thank-You page (most common)
         if (!orderId && window.Shopify && window.Shopify.checkout) {
             orderId = window.Shopify.checkout.order_id;
-            const checkoutToken = window.Shopify.checkout.token;
-            console.log('[Velocity AI] Detected Token:', checkoutToken);
+            console.log('[Velocity AI] Detected from Shopify.checkout:', orderId);
         }
 
+        // 2. Shopify Order Status page (Shopify.order object)
+        if (!orderId && window.Shopify && window.Shopify.order) {
+            orderId = window.Shopify.order.id;
+            console.log('[Velocity AI] Detected from Shopify.order:', orderId);
+        }
+
+        // 3. URL query parameters
         if (!orderId) {
             const urlParams = new URLSearchParams(window.location.search);
-            orderId = urlParams.get('order_id') || urlParams.get('id');
+            orderId = urlParams.get('order_id') || urlParams.get('id') || urlParams.get('order');
         }
 
-        // Final Fallback: Extract from URL path (e.g., /orders/12345678)
+        // 4. Extract from URL path patterns
         if (!orderId) {
-            const pathMatches = window.location.pathname.match(/\/orders\/(\d+)/);
-            if (pathMatches && pathMatches[1]) {
-                orderId = pathMatches[1];
+            const patterns = [
+                /\/(?:orders|confirmed)\/(order_|)(\d+)/,            // /orders/12345 or /confirmed/order_12345
+                /\/checkouts\/[^/]+\/thank_you.*order_id[=:](\d+)/i, // checkout thank_you with order_id
+                /\/(\d{10,})/,                                        // Any long numeric ID in URL (Shopify IDs are 13+ digits)
+            ];
+            for (const pattern of patterns) {
+                const match = window.location.href.match(pattern);
+                if (match) {
+                    orderId = match[2] || match[1];
+                    console.log('[Velocity AI] Detected from URL pattern:', orderId);
+                    break;
+                }
             }
         }
 
+        // 5. Check page content for order number (e.g., Shopify confirmation pages have it in a meta tag or script)
         if (!orderId) {
-            console.log('[Velocity AI] Order ID detection pending...');
-            return;
+            const scripts = document.querySelectorAll('script');
+            scripts.forEach(function (s) {
+                if (!orderId && s.textContent) {
+                    const match = s.textContent.match(/"order_id"\s*:\s*(\d+)/);
+                    if (match) {
+                        orderId = match[1];
+                        console.log('[Velocity AI] Detected from page script:', orderId);
+                    }
+                }
+            });
         }
 
-        fetchWithRetry(orderId, 1);
+        // 6. Pre-purchase: Product Page (URL Pattern fallback)
+        let productId = null;
+        if (!orderId && window.meta && window.meta.product) {
+            productId = window.meta.product.id;
+        }
+
+        if (!orderId && !productId && (window.location.pathname.includes('/products/') || window.location.pathname.includes('/items/'))) {
+            // Try to find any 10-15 digit number in page source for product ID
+            const scripts = document.querySelectorAll('script[type="application/json"]');
+            scripts.forEach(s => {
+                if (!productId && s.textContent.includes('product')) {
+                    const match = s.textContent.match(/"id"\s*:\s*(\d{10,})/);
+                    if (match) productId = match[1];
+                }
+            });
+        }
+
+        // 7. Pre-purchase: Cart items (AJAX Fallback)
+        if (!orderId && !productId && (window.location.pathname.includes('/cart') || window.Shopify?.cart)) {
+            console.log('[Velocity AI] On Cart page, fetching live context...');
+            fetch('/cart.js')
+                .then(res => res.json())
+                .then(cart => {
+                    if (cart.items && cart.items.length > 0) {
+                        const pId = cart.items[0].product_id;
+                        console.log('[Velocity AI] Detected Cart Context via AJAX:', pId);
+                        fetchWithRetry(`${API_BASE}/ai/recommend?product_id=${pId}`, 1);
+                    } else {
+                        throw new Error('Empty Cart');
+                    }
+                })
+                .catch(() => {
+                    console.log('[Velocity AI] Cart empty or undetected. Retrying...');
+                    setTimeout(init, 5000);
+                });
+            return; // Exit init as we handled it in the promise
+        }
+
+        if (orderId) {
+            console.log('[Velocity AI] Processing Post-purchase for Order:', orderId);
+            fetchWithRetry(`${API_BASE}/upsells/order/${orderId}`, 1);
+        } else if (productId) {
+            console.log('[Velocity AI] Processing Pre-purchase for Product:', productId);
+            fetchWithRetry(`${API_BASE}/ai/recommend?product_id=${productId}`, 1);
+        } else {
+            console.log('[Velocity AI] No context found yet. Retrying in 5s...');
+            setTimeout(init, 5000);
+        }
     }
 
-    function fetchWithRetry(orderId, attempt) {
-        if (attempt > 5) {
-            console.log('[Velocity AI] Max retries reached. No recommendation found.');
-            return;
-        }
+    function fetchWithRetry(url, attempt) {
+        if (attempt > 3) return;
 
-        console.log(`[Velocity AI] Fetching recommendation (Attempt ${attempt}/5)...`);
-
-        fetch(`${API_BASE}/upsells/order/${orderId}`, {
+        fetch(url, {
             headers: {
                 'ngrok-skip-browser-warning': 'true',
                 'Content-Type': 'application/json'

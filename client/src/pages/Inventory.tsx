@@ -14,7 +14,10 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
+import { useMerchant } from '@/contexts/MerchantContext'
+
 export default function InventoryPage() {
+    const { syncProducts } = useMerchant()
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
@@ -50,12 +53,14 @@ export default function InventoryPage() {
     const handleSync = async () => {
         try {
             setSyncing(true);
-            await apiClient.get('/shopify/sync-products');
-            await fetchData();
-            alert("Shopify Sync Complete!");
-        } catch (error) {
+            const result = await syncProducts();
+            if (result) {
+                await fetchData();
+                alert(`Shopify Sync Complete! Synced ${result.count} products.`);
+            }
+        } catch (error: any) {
             console.error("Sync failed:", error);
-            alert("Failed to sync with Shopify. Check console/logs.");
+            alert(`Sync failed: ${error.message}`);
         } finally {
             setSyncing(false);
         }

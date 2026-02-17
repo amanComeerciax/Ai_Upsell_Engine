@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-react'
+import { MerchantProvider } from '@/contexts/MerchantContext'
 import { LandingLayout } from '@/layouts/LandingLayout'
 import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { LandingPage } from '@/pages/LandingPage'
@@ -37,7 +38,9 @@ function App() {
                         element={
                             <>
                                 <SignedIn>
-                                    <DashboardLayout />
+                                    <MerchantProvider>
+                                        <DashboardLayout />
+                                    </MerchantProvider>
                                 </SignedIn>
                                 <SignedOut>
                                     <Navigate to="/login" replace />
@@ -60,3 +63,4 @@ function App() {
 }
 
 export default App
+

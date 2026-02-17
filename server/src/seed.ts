@@ -36,6 +36,8 @@ async function main() {
         { name: 'Urban Explorer Backpack', category: 'Travel', price: 5999.00 },
         { name: 'Polarized Wayfarer', category: 'Accessories', price: 8900.00 },
         { name: 'Stainless Steel Water Bottle', category: 'Home', price: 1299.00 },
+        { name: 'Premium Athletic Socks', category: 'Apparel', price: 499.00 },
+        { name: 'Shoe Cleaning Kit', category: 'Accessories', price: 799.00 },
 
         // Premium Home
         { name: 'Smart Ambient Lamp', category: 'Home Decor', price: 4500.00 },

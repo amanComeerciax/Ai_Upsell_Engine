@@ -28,48 +28,73 @@ export const aiController = {
      */
     async getRecommendation(req: Request, res: Response) {
         try {
-            // 1. Fetch available products from DB (Potential candidates)
+            const { product_id } = req.query;
+
+            // 1. Identify Merchant via Referer (for SaaS widget)
+            const referer = req.headers.referer || '';
+            const shopNameMatch = referer.match(/([^/]+)\.myshopify\.com/);
+            const shopName = shopNameMatch ? shopNameMatch[1] : null;
+
+            console.log(`[AI Controller] Request. Referer: ${referer}, Shop: ${shopName}`);
+
+            let merchantFilter: any = {};
+            if (shopName) {
+                const merchant = await prisma.merchants.findFirst({
+                    where: {
+                        OR: [
+                            { shopify_shop_name: { contains: shopName } },
+                            { shopify_shop_name: shopName }
+                        ]
+                    },
+                    orderBy: { created_at: 'desc' }
+                });
+                if (merchant) {
+                    merchantFilter = { merchant_id: merchant.id };
+                    console.log(`[AI Controller] Identified Merchant ID: ${merchant.id}`);
+                }
+            }
+
+            // 2. Fetch available products from DB (Potential candidates)
             const allProducts = await prisma.products.findMany({
+                where: merchantFilter,
                 orderBy: { created_at: 'desc' }
             });
+
+            console.log(`[AI Controller] Found ${allProducts.length} products for merchant filter`);
 
             if (allProducts.length < 2) {
                 return res.status(400).json({
                     error: 'Insufficient Inventory',
-                    message: 'At least 2 products are required for cross-sells.'
+                    message: 'At least 2 products are required for cross-sells. Count: ' + allProducts.length
                 });
             }
 
-            // 2. Logic: Assume first product is what user just bought (Trigger)
-            // In production, this triggerId would come from the Request body
-            const triggerProduct = allProducts[0];
-            const candidates = allProducts.slice(1);
+            // 3. Logic: Find Trigger Product
+            let triggerProduct = allProducts[0];
+            if (product_id) {
+                const found = allProducts.find(p => p.shopify_id === BigInt(product_id as string));
+                if (found) triggerProduct = found;
+            }
 
-            // 3. Delegation: Ask AI Service for a smart recommendation
-            const recommendation = await aiService.getSmartRecommendation(triggerProduct, candidates);
+            const candidates = allProducts.filter(p => p.id !== triggerProduct.id);
 
-            // 4. Persistence: Log the upsell event for analytics tracking
-            const event = await prisma.upsell_events.create({
-                data: {
-                    user_id: 1, // Global Admin/Default User for now
-                    order_id: null, // Before order completion
-                    upsell_product_id: recommendation.recommended_product_id,
-                    discount_percent: recommendation.discount_percent,
-                    expires_at: new Date(Date.now() + 1 * 60 * 60 * 1000), // Valid for 1 hour
-                    converted: false
-                }
-            });
+            // 4. Delegation: Ask AI Service for a smart recommendation
+            const aiRecommendation = await aiService.getSmartRecommendation(triggerProduct, candidates);
 
-            // 5. Response: Return structured data for the frontend/SDK
+            // Fetch the actual product details for the recommendation
+            const recProduct = allProducts.find(p => p.id === aiRecommendation.recommended_product_id);
+
+            // 5. Response: Return structured data for the widget
             res.status(200).json({
                 success: true,
-                trigger_context: {
-                    id: triggerProduct.id,
-                    name: triggerProduct.name,
-                },
-                recommendation: {
-                    ...recommendation,
-                    event_id: event.id
+                order_id: null,
+                recommended_product: {
+                    id: aiRecommendation.recommended_product_id,
+                    name: aiRecommendation.recommended_product_name,
+                    price: Number(recProduct?.price) || 0,
+                    discount_percent: aiRecommendation.discount_percent,
+                    image: recProduct?.image_url,
+                    reason: aiRecommendation.reason
                 }
             });
 

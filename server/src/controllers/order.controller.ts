@@ -4,7 +4,11 @@ import prisma from '../lib/prisma';
 export const orderController = {
     async getAllOrders(req: Request, res: Response) {
         try {
+            // Tenant isolation
+            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
             const orders = await prisma.orders.findMany({
+                where: merchantFilter,
                 include: {
                     users: true,
                     order_items: {

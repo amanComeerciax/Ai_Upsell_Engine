@@ -7,29 +7,20 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const API_VERSION = '2024-04';
 
 export class ShopifyService {
-    private baseUrl: string;
-
-    constructor() {
-        const shopName = process.env.SHOPIFY_SHOP_NAME;
-        const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
-
-        console.log('[Shopify Service] Initializing with Shop:', shopName);
-        if (!shopName || !accessToken) {
-            console.error('[Shopify Service] CRITICAL: Shopify credentials missing in .env');
-        }
-
-        this.baseUrl = `https://${shopName}/admin/api/${API_VERSION}`;
+    private getApiUrl(shopName: string) {
+        // Normalize shop name for API calls
+        const cleanShop = shopName.includes('.myshopify.com') ? shopName : `${shopName}.myshopify.com`;
+        return `https://${cleanShop}/admin/api/${API_VERSION}`;
     }
 
-    async getProducts() {
+    async getProducts(shopName: string, accessToken: string) {
         try {
-            const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
-            const response = await axios.get(`${this.baseUrl}/products.json`, {
+            const response = await axios.get(`${this.getApiUrl(shopName)}/products.json`, {
                 headers: {
                     'X-Shopify-Access-Token': accessToken,
                     'Content-Type': 'application/json',
                 },
-                timeout: 10000 // 10s timeout
+                timeout: 15000
             });
             return response.data.products;
         } catch (error: any) {
@@ -38,26 +29,41 @@ export class ShopifyService {
         }
     }
 
-    async getWebhooks() {
+    async createScriptTag(shopName: string, accessToken: string, scriptUrl: string) {
         try {
-            const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
-            const response = await axios.get(`${this.baseUrl}/webhooks.json`, {
+            // First, check if already exists to prevent duplicates
+            const existing = await axios.get(`${this.getApiUrl(shopName)}/script_tags.json`, {
+                headers: { 'X-Shopify-Access-Token': accessToken }
+            });
+
+            const alreadyRegistered = existing.data.script_tags.find((s: any) => s.src === scriptUrl);
+            if (alreadyRegistered) {
+                console.log('[Shopify Service] ScriptTag already registered for', shopName);
+                return alreadyRegistered;
+            }
+
+            console.log('[Shopify Service] Registering ScriptTag for', shopName, 'URL:', scriptUrl);
+            const response = await axios.post(`${this.getApiUrl(shopName)}/script_tags.json`, {
+                script_tag: {
+                    event: 'onload',
+                    src: scriptUrl
+                }
+            }, {
                 headers: {
                     'X-Shopify-Access-Token': accessToken,
-                },
-                timeout: 7000
+                    'Content-Type': 'application/json',
+                }
             });
-            return response.data.webhooks;
+            return response.data.script_tag;
         } catch (error: any) {
-            console.error('[Shopify Service] Error fetching webhooks:', error.response?.data || error.message);
-            throw new Error('Failed to fetch webhooks from Shopify');
+            console.error('[Shopify Service] Error creating ScriptTag:', error.response?.data || error.message);
+            throw new Error('Failed to create Shopify ScriptTag');
         }
     }
 
-    async createOrderWebhook(address: string) {
+    async createOrderWebhook(shopName: string, accessToken: string, address: string) {
         try {
-            const accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
-            const response = await axios.post(`${this.baseUrl}/webhooks.json`, {
+            const response = await axios.post(`${this.getApiUrl(shopName)}/webhooks.json`, {
                 webhook: {
                     topic: 'orders/create',
                     address: address,
@@ -67,13 +73,27 @@ export class ShopifyService {
                 headers: {
                     'X-Shopify-Access-Token': accessToken,
                     'Content-Type': 'application/json',
-                },
-                timeout: 7000
+                }
             });
             return response.data.webhook;
         } catch (error: any) {
             console.error('[Shopify Service] Error creating webhook:', error.response?.data || error.message);
             throw new Error('Failed to create Shopify webhook');
+        }
+    }
+
+    async getProductById(shopName: string, accessToken: string, productId: string) {
+        try {
+            const response = await axios.get(`${this.getApiUrl(shopName)}/products/${productId}.json`, {
+                headers: {
+                    'X-Shopify-Access-Token': accessToken,
+                    'Content-Type': 'application/json',
+                }
+            });
+            return response.data.product;
+        } catch (error: any) {
+            console.error(`[Shopify Service] Error fetching product ${productId}:`, error.response?.data || error.message);
+            return null;
         }
     }
 }

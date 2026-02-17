@@ -4,7 +4,11 @@ import prisma from '../lib/prisma';
 export const productController = {
     async getAllProducts(req: Request, res: Response) {
         try {
+            // Tenant isolation: filter by merchant_id if available
+            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
             const products = await prisma.products.findMany({
+                where: merchantFilter,
                 include: {
                     upsell_events: true,
                     _count: {
@@ -50,12 +54,16 @@ export const productController = {
 
     async getProductStats(req: Request, res: Response) {
         try {
-            const totalProducts = await prisma.products.count();
-            const totalOrders = await prisma.orders.count();
-            const upsellEvents = await prisma.upsell_events.count();
-            const convertedUpsells = await prisma.upsell_events.count({ where: { converted: true } });
+            // Tenant isolation
+            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
+            const totalProducts = await prisma.products.count({ where: merchantFilter });
+            const totalOrders = await prisma.orders.count({ where: merchantFilter });
+            const upsellEvents = await prisma.upsell_events.count({ where: merchantFilter });
+            const convertedUpsells = await prisma.upsell_events.count({ where: { ...merchantFilter, converted: true } });
 
             const revenueResult = await prisma.orders.aggregate({
+                where: merchantFilter,
                 _sum: {
                     total_amount: true
                 }

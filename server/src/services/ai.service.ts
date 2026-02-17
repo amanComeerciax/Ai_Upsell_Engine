@@ -1,13 +1,13 @@
 import axios from 'axios';
 import { RecommendationResponse, Product } from '../types/ai.types';
+import { scoringService } from './scoring.service';
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 const DEFAULT_MODEL = 'dolphin-llama3:latest';
 
 export class AIService {
-    /**
-     * Lists all models available in the local Ollama instance
-     */
+    private recommendationCache = new Map<string, RecommendationResponse>();
+
     /**
      * Lists all models available in the local Ollama instance and calculates server telemetry
      */
@@ -41,32 +41,38 @@ export class AIService {
     }
 
     /**
-     * Core logic to determine the best upsell product using LLM reasoning
+     * Hybrid logic: Scoring Engine selects, AI Engine persuades.
      */
     async getSmartRecommendation(triggerProduct: Product, candidates: Product[]): Promise<RecommendationResponse> {
+        // 1. Scoring Engine selects the BEST candidate based on business logic
+        const ranked = scoringService.rankCandidates(triggerProduct, candidates);
+        const winner = ranked[0];
+
+        if (!winner) throw new Error('No candidates found');
+
+        // 2. CHECK CACHE: If we already have a pitch for this pair, return it INSTANTLY
+        const cacheKey = `rec_${triggerProduct.id}_${winner.id}`;
+        if (this.recommendationCache.has(cacheKey)) {
+            console.log(`[AI Service] ⚡ Cache HIT for ${cacheKey}`);
+            return this.recommendationCache.get(cacheKey)!;
+        }
+
+        console.log(`[AI Service] 🤖 Cache MISS. Generating AI pitch for ${triggerProduct.name} -> ${winner.name}...`);
+
         try {
-            const candidatesList = candidates
-                .map(p => `- ${p.name} (Category: ${p.category}, Price: ₹${p.price})`)
-                .join('\n');
-
+            // 3. AI acts as a Copywriter to create a persuasive pitch for the winner
             const prompt = `
-You are the High-Velocity AI Upsell Engine. 
-Context: A customer just placed an order for: "${triggerProduct.name}" (Category: ${triggerProduct.category}).
-
-Available Inventory for Upsell:
-${candidatesList}
+You are a High-Conversion Marketing Copywriter for an E-commerce store.
+A customer just bought: "${triggerProduct.name}".
+We have decided to offer them: "${winner.name}" as an upsell.
 
 Task:
-1. Analyze the relationship between the trigger product and the candidates.
-2. Select the most logical accessory or related product that increases the Total Order Value.
-3. Provide a brief, persuasive reason for the merchant to understand the logic.
-4. Suggest a discount (0, 5, 10, or 15 percent) to ensure high conversion.
+Write a brief, catchy one-sentence "Reason" why these products go perfect together. Use a friendly, persuasive tone. 
+Also suggest a discount (5, 10, or 15) as a percentage.
 
-Output Format:
-Return ONLY a valid JSON object. No extra text.
+Output Format (STRICT JSON):
 {
-    "recommended_product_name": "exact name from list",
-    "reason": "short persuasive reason",
+    "marketing_pitch": "Your one sentence pitch here",
     "discount_percent": number
 }
             `;
@@ -80,24 +86,26 @@ Return ONLY a valid JSON object. No extra text.
 
             const result = JSON.parse(response.data.response);
 
-            // Refined Matching Logic: Case-insensitive and trimmed to handle AI hallucination in naming
-            const recommendedName = (result.recommended_product_name || '').trim().toLowerCase();
-
-            const selectedProduct = candidates.find(c => {
-                const candidateName = (c.name || '').trim().toLowerCase();
-                return candidateName === recommendedName || recommendedName.includes(candidateName) || candidateName.includes(recommendedName);
-            }) || candidates[0];
-
-            return {
-                recommended_product_id: selectedProduct.id,
-                recommended_product_name: selectedProduct.name || 'Unknown',
-                reason: result.reason,
+            const finalResponse: RecommendationResponse = {
+                recommended_product_id: winner.id,
+                recommended_product_name: winner.name || 'Unknown',
+                reason: result.marketing_pitch || 'Goes perfectly with your purchase!',
                 discount_percent: result.discount_percent || 10
             };
 
+            // 4. SAVE TO CACHE
+            this.recommendationCache.set(cacheKey, finalResponse);
+            return finalResponse;
+
         } catch (error) {
-            console.error('[AI Service] Recommendation Logic Error:', error);
-            throw new Error('AI failed to process recommendation');
+            console.error('[AI Service] Hybrid Recommendation Error:', error);
+            // Fallback to scoring engine winner (already calculated) if AI fails
+            return {
+                recommended_product_id: winner?.id || 0,
+                recommended_product_name: winner?.name || 'Top Pick',
+                reason: 'A perfect addition to your order!',
+                discount_percent: 10
+            };
         }
     }
 }

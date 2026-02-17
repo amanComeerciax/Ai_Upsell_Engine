@@ -9,10 +9,12 @@ import {
     ChevronLeft,
     Package,
     Cpu,
-    Activity
+    Store
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+import { useMerchant } from '@/contexts/MerchantContext'
+import { useClerk } from '@clerk/clerk-react'
 
 const navigationItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -27,6 +29,8 @@ const navigationItems = [
 export function Sidebar() {
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const { merchant, isShopifyConnected } = useMerchant()
+    const { signOut } = useClerk()
 
     return (
         <aside
@@ -43,7 +47,7 @@ export function Sidebar() {
                             <Zap className="h-5 w-5 text-white fill-current" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-black tracking-tight text-foreground uppercase">Velocity</h2>
+                            <h2 className="text-sm font-black tracking-tight text-foreground uppercase">{merchant?.business_name || 'Velocity'}</h2>
                             <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">AI Engine</p>
                         </div>
                     </div>
@@ -100,22 +104,31 @@ export function Sidebar() {
             {/* System Status - Bottom Area */}
             <div className="absolute bottom-4 left-0 right-0 px-4 space-y-3">
                 {!isCollapsed && (
-                    <div className="p-4 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.04]">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Inference Core</span>
-                        </div>
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <p className="text-xs font-bold text-foreground">Ollama Active</p>
-                                <p className="text-[10px] text-muted-foreground mt-0.5">Llama3 8B • 4.2ms</p>
+                    <>
+                        <div className="p-4 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className={cn('h-2 w-2 rounded-full', isShopifyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500')} />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
+                                    {isShopifyConnected ? 'Shopify Live' : 'Not Connected'}
+                                </span>
                             </div>
-                            <Activity className="h-4 w-4 text-emerald-500/50" />
+                            <div className="flex items-end justify-between">
+                                <div>
+                                    <p className="text-xs font-bold text-foreground">
+                                        {isShopifyConnected ? merchant?.shopify_shop_name : 'Go to Settings'}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        {isShopifyConnected ? `${merchant?.stats.products || 0} products synced` : 'Connect your store'}
+                                    </p>
+                                </div>
+                                <Store className={cn('h-4 w-4', isShopifyConnected ? 'text-emerald-500/50' : 'text-amber-500/50')} />
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
 
                 <button
+                    onClick={() => signOut({ redirectUrl: '/' })}
                     className={cn(
                         'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-red-500/70 hover:bg-red-500/5 hover:text-red-500 transition-all duration-200'
                     )}

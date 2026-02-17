@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Save, Copy, TestTube, Sparkles } from 'lucide-react'
+import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,31 +15,305 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function SettingsPage() {
+    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant } = useMerchant()
+
     const [timingStrategy, setTimingStrategy] = useState('purchase')
     const [delayHours, setDelayHours] = useState(48)
     const [enabled, setEnabled] = useState(true)
     const [temperature, setTemperature] = useState([0.7])
 
+    // Shopify connection state
+    const [shopName, setShopName] = useState('')
+    const [accessToken, setAccessToken] = useState('')
+    const [connecting, setConnecting] = useState(false)
+    const [syncing, setSyncing] = useState(false)
+    const [connectError, setConnectError] = useState<string | null>(null)
+    const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
+    const [syncResult, setSyncResult] = useState<string | null>(null)
+
+    const handleConnectShopify = async () => {
+        if (!shopName || !accessToken) {
+            setConnectError('Please enter both shop name and access token.')
+            return
+        }
+        try {
+            setConnecting(true)
+            setConnectError(null)
+            setConnectSuccess(null)
+            await connectShopify(shopName, accessToken)
+            setConnectSuccess(`✅ Connected to ${shopName}.myshopify.com!`)
+            setShopName('')
+            setAccessToken('')
+        } catch (err: any) {
+            setConnectError(err.message)
+        } finally {
+            setConnecting(false)
+        }
+    }
+
+    const handleSyncProducts = async () => {
+        try {
+            setSyncing(true)
+            setSyncResult(null)
+            const result = await syncProducts()
+            if (result) {
+                setSyncResult(`✅ Synced ${result.count} products from Shopify!`)
+            }
+        } catch (err: any) {
+            setSyncResult(`❌ ${err.message}`)
+        } finally {
+            setSyncing(false)
+        }
+    }
+
+    const handleDisconnect = async () => {
+        if (confirm('Are you sure you want to disconnect your Shopify store?')) {
+            await disconnectShopify()
+            setConnectSuccess(null)
+            setSyncResult(null)
+        }
+    }
+
+    const scriptSnippet = `<script src="https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js" async></script>`;
+
     return (
         <div className="space-y-6">
             {/* Page Header */}
             <div>
-                <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Configure your AI upsell engine
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="h-6 w-[2px] bg-blue-600" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">
+                        {merchant?.business_name || 'My Store'}
+                    </span>
+                </div>
+                <h1 className="text-3xl font-black tracking-tight text-foreground uppercase italic">Settings</h1>
+                <p className="text-sm text-muted-foreground mt-1 font-medium italic">
+                    Configure your AI upsell engine & Shopify integration
                 </p>
             </div>
 
+            {/* Merchant Info Strip */}
+            {merchant && (
+                <div className="flex items-center gap-6 p-4 rounded-2xl border border-foreground/[0.04] bg-foreground/[0.01]">
+                    <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Merchant ID</span>
+                        <span className="text-xs font-bold text-foreground">{merchant.id}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Plan</span>
+                        <span className="text-xs font-bold text-blue-500 uppercase">{merchant.plan}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Products</span>
+                        <span className="text-xs font-bold text-foreground">{merchant.stats.products}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Orders</span>
+                        <span className="text-xs font-bold text-foreground">{merchant.stats.orders}</span>
+                    </div>
+                </div>
+            )}
+
             {/* Settings Tabs */}
-            <Tabs defaultValue="general" className="space-y-6">
+            <Tabs defaultValue="integration" className="space-y-6">
                 <TabsList>
+                    <TabsTrigger value="integration">
+                        <Store className="h-3.5 w-3.5 mr-2" />
+                        Shopify
+                    </TabsTrigger>
                     <TabsTrigger value="general">General</TabsTrigger>
-                    <TabsTrigger value="integration">Integration</TabsTrigger>
                     <TabsTrigger value="templates">Email Templates</TabsTrigger>
                     <TabsTrigger value="ai">AI Configuration</TabsTrigger>
                 </TabsList>
+
+                {/* Integration Tab — NOW WITH REAL FUNCTIONALITY */}
+                <TabsContent value="integration" className="space-y-6">
+                    {isShopifyConnected ? (
+                        /* Connected State */
+                        <div className="space-y-6">
+                            <div className="rounded-[2rem] border border-emerald-500/20 bg-emerald-500/[0.02] p-8 space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                                            <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-black text-foreground uppercase tracking-tight">Shopify Connected</h3>
+                                            <p className="text-sm text-emerald-500 font-bold">{merchant?.shopify_shop_name}</p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase tracking-widest"
+                                        onClick={handleDisconnect}
+                                    >
+                                        <Unplug className="h-3 w-3 mr-2" />
+                                        Disconnect
+                                    </Button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-foreground/[0.04]">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h4 className="text-sm font-black text-foreground uppercase tracking-tight italic">Manual Installation</h4>
+                                            <p className="text-[11px] text-muted-foreground font-medium italic mt-1 leading-relaxed">
+                                                Copy the snippet below and paste it before the closing <code>&lt;/body&gt;</code> tag in your theme's <code>theme.liquid</code> file.
+                                            </p>
+                                        </div>
+                                        <div className="relative group">
+                                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                                            <div className="relative p-4 rounded-xl bg-[#0c0e14] border border-foreground/[0.06] font-mono text-[10px] text-blue-400 break-all select-all">
+                                                {scriptSnippet}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(scriptSnippet);
+                                                alert('Snippet copied to clipboard!');
+                                            }}
+                                            className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px] h-11"
+                                        >
+                                            Copy Snippet
+                                        </Button>
+                                    </div>
+
+                                    <div className="p-6 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.04] flex flex-col justify-center space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Instructions</span>
+                                        </div>
+                                        <ul className="text-[11px] text-muted-foreground font-medium leading-relaxed italic space-y-2">
+                                            <li>1. Go to Shopify Admin &rarr; Online Store &rarr; Themes.</li>
+                                            <li>2. Click **Actions** &rarr; **Edit Code**.</li>
+                                            <li>3. Find `theme.liquid` and paste the code at the very bottom.</li>
+                                            <li>4. Save and refresh your store.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Products Synced</p>
+                                        <p className="text-2xl font-black">{merchant?.stats.products || 0}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Orders Tracked</p>
+                                        <p className="text-2xl font-black">{merchant?.stats.orders || 0}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Upsell Events</p>
+                                        <p className="text-2xl font-black">{merchant?.stats.upsells || 0}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <Button
+                                        onClick={handleSyncProducts}
+                                        disabled={syncing}
+                                        className="bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                    >
+                                        {syncing ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-2" />}
+                                        Re-Sync Products
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => refreshMerchant()}
+                                        className="rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                    >
+                                        <RefreshCw className="h-3 w-3 mr-2" />
+                                        Refresh Stats
+                                    </Button>
+                                </div>
+
+                                {syncResult && (
+                                    <p className="text-sm font-bold text-emerald-500">{syncResult}</p>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        /* Not Connected State */
+                        <div className="rounded-[2rem] border border-foreground/[0.04] bg-foreground/[0.01] p-8 space-y-8">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                    <Store className="h-6 w-6 text-blue-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight italic">Connect Your Shopify Store</h3>
+                                    <p className="text-sm text-muted-foreground font-medium italic">
+                                        Enter your store name and access token to get started
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Shop Name</Label>
+                                        <div className="flex items-center">
+                                            <Input
+                                                value={shopName}
+                                                onChange={(e) => setShopName(e.target.value)}
+                                                placeholder="my-store"
+                                                className="h-12 rounded-l-xl rounded-r-none bg-foreground/[0.02] border-foreground/[0.06] font-bold"
+                                            />
+                                            <span className="h-12 px-3 flex items-center bg-foreground/[0.04] border border-l-0 border-foreground/[0.06] rounded-r-xl text-xs text-muted-foreground font-mono">
+                                                .myshopify.com
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Access Token</Label>
+                                        <Input
+                                            type="password"
+                                            value={accessToken}
+                                            onChange={(e) => setAccessToken(e.target.value)}
+                                            placeholder="shpat_xxxxxxxxxxxx"
+                                            className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-mono font-bold"
+                                        />
+                                    </div>
+                                </div>
+
+                                {connectError && (
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                                        <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+                                        <p className="text-sm text-red-500 font-bold">{connectError}</p>
+                                    </div>
+                                )}
+
+                                {connectSuccess && (
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                        <p className="text-sm text-emerald-500 font-bold">{connectSuccess}</p>
+                                    </div>
+                                )}
+
+                                <Button
+                                    onClick={handleConnectShopify}
+                                    disabled={connecting}
+                                    className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-foreground/10 group"
+                                >
+                                    {connecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Store className="h-4 w-4 mr-2" />}
+                                    Connect Shopify Store
+                                </Button>
+
+                                <div className="p-6 rounded-2xl border border-blue-500/10 bg-blue-500/[0.02] space-y-3">
+                                    <h4 className="text-sm font-black uppercase tracking-widest text-blue-500">How to get your Access Token</h4>
+                                    <ol className="text-xs text-muted-foreground font-medium leading-relaxed space-y-2 list-decimal pl-4">
+                                        <li>Go to your Shopify Admin → <strong>Settings → Apps → Develop apps</strong></li>
+                                        <li>Create a new app or open an existing one</li>
+                                        <li>Configure <strong>Admin API scopes</strong>: read_products, read_orders, write_orders, <strong>write_script_tags, read_script_tags</strong></li>
+                                        <li>Install the app and copy the <strong>Admin API access token</strong></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </TabsContent>
 
                 {/* General Tab */}
                 <TabsContent value="general" className="space-y-6">
@@ -89,40 +363,6 @@ export default function SettingsPage() {
                             <Save className="h-4 w-4 mr-2" />
                             Save Changes
                         </Button>
-                    </div>
-                </TabsContent>
-
-                {/* Integration Tab */}
-                <TabsContent value="integration" className="space-y-6">
-                    <div className="rounded-2xl border border-border/50 bg-secondary/50 p-6 space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold text-foreground">Shopify Integration</h3>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Connect your Shopify store
-                            </p>
-                        </div>
-
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                            <span className="text-sm text-green-400 font-medium">Connected</span>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <Label>Webhook URL</Label>
-                                <div className="flex gap-2 mt-2">
-                                    <Input value="https://api.aiupsell.com/webhook/shopify/abc123" readOnly />
-                                    <Button variant="outline" size="icon">
-                                        <Copy className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <Button variant="outline">
-                                <TestTube className="h-4 w-4 mr-2" />
-                                Test Webhook
-                            </Button>
-                        </div>
                     </div>
                 </TabsContent>
 
