@@ -1,16 +1,19 @@
 export interface Campaign {
-    id: string
-    orderId: string
+    id: number
+    campaignId: string
     customerEmail: string
     customerName: string
-    productsRecommended: string[]
-    messagePreview: string
-    status: 'sent' | 'opened' | 'clicked' | 'converted'
-    sentAt: Date
-    openedAt?: Date
-    clickedAt?: Date
-    converted: boolean
-    revenue?: number
+    productName: string
+    productImage: string | null
+    productCategory: string
+    discountPercent: number
+    originalPrice: number
+    discountedPrice: number
+    status: 'active' | 'expired' | 'converted'
+    timeRemaining: string | null
+    shownAt: string | null
+    expiresAt: string | null
+    revenue: number
 }
 
 export interface Order {

@@ -14,15 +14,38 @@ export class ShopifyService {
     }
 
     async getProducts(shopName: string, accessToken: string) {
+        const allProducts: any[] = [];
+        // Shopify max per page is 250. Use cursor-based pagination via Link header.
+        let url: string | null = `${this.getApiUrl(shopName)}/products.json?limit=250&status=active`;
+
         try {
-            const response = await axios.get(`${this.getApiUrl(shopName)}/products.json`, {
-                headers: {
-                    'X-Shopify-Access-Token': accessToken,
-                    'Content-Type': 'application/json',
-                },
-                timeout: 15000
-            });
-            return response.data.products;
+            while (url) {
+                const response = await axios.get(url, {
+                    headers: {
+                        'X-Shopify-Access-Token': accessToken,
+                        'Content-Type': 'application/json',
+                    },
+                    timeout: 30000
+                });
+
+                const products = response.data.products || [];
+                allProducts.push(...products);
+                console.log(`[Shopify Service] Fetched ${products.length} products (total so far: ${allProducts.length})`);
+
+                // Parse the Link header for the next page cursor
+                const linkHeader = response.headers['link'] as string | undefined;
+                url = null;
+                if (linkHeader) {
+                    // Link: <https://...page_info=xxx>; rel="next"
+                    const nextMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+                    if (nextMatch) {
+                        url = nextMatch[1];
+                    }
+                }
+            }
+
+            console.log(`[Shopify Service] ✅ Total products fetched: ${allProducts.length}`);
+            return allProducts;
         } catch (error: any) {
             console.error('[Shopify Service] Error fetching products:', error.response?.data || error.message);
             throw new Error('Failed to fetch products from Shopify');

@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Plus, Search, Filter, Zap, LayoutGrid, Smartphone, Sparkles, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react'
+import { Plus, Search, Filter, Zap, Smartphone, Sparkles, ArrowRight, Loader2 } from 'lucide-react'
 import apiClient from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTable, Column } from '@/components/dashboard/DataTable'
-import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Campaign } from '@/types/dashboard'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
     Select,
     SelectContent,
@@ -14,7 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
 
 export default function CampaignsPage() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -37,44 +35,81 @@ export default function CampaignsPage() {
     }, []);
 
     const filteredCampaigns = campaigns.filter((campaign) => {
-        const matchesSearch = campaign.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            campaign.id.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesSearch =
+            campaign.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            campaign.campaignId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            campaign.productName.toLowerCase().includes(searchQuery.toLowerCase())
         const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter
         return matchesSearch && matchesStatus
     })
 
     const columns: Column<Campaign>[] = [
         {
-            key: 'id',
+            key: 'campaignId',
             header: 'ID',
             sortable: true,
-            render: (row) => <span className="font-mono text-[10px] font-black uppercase text-blue-500">{row.id}</span>
+            render: (row) => <span className="font-mono text-[10px] font-black uppercase text-blue-500">{row.campaignId}</span>
         },
-        { key: 'customerEmail', header: 'Recipient', sortable: true, render: (row) => <span className="font-bold text-xs">{row.customerEmail}</span> },
         {
-            key: 'productsRecommended',
-            header: 'Logic Matches',
+            key: 'customerEmail',
+            header: 'Recipient',
+            sortable: true,
+            render: (row) => (
+                <div>
+                    <div className="font-bold text-xs">{row.customerEmail}</div>
+                    <div className="text-[10px] text-muted-foreground">{row.customerName}</div>
+                </div>
+            )
+        },
+        {
+            key: 'productName',
+            header: 'Recommended',
             render: (row) => (
                 <div className="flex gap-1.5 flex-wrap">
-                    {row.productsRecommended.slice(0, 1).map((product, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 text-[9px] font-black uppercase tracking-tight">
-                            {product}
-                        </span>
-                    ))}
+                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 text-[9px] font-black uppercase tracking-tight">
+                        {row.productName}
+                    </span>
                 </div>
+            ),
+        },
+        {
+            key: 'discountPercent',
+            header: 'Discount',
+            render: (row) => (
+                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 text-[10px] font-black">
+                    -{row.discountPercent}%
+                </span>
             ),
         },
         {
             key: 'status',
             header: 'State',
             sortable: true,
-            render: (row) => <StatusBadge status={row.status} />,
+            render: (row) => {
+                const colors = {
+                    active: 'bg-blue-500/10 text-blue-600',
+                    converted: 'bg-emerald-500/10 text-emerald-600',
+                    expired: 'bg-red-500/10 text-red-500',
+                }
+                return (
+                    <div>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${colors[row.status] || 'bg-muted text-muted-foreground'}`}>
+                            {row.status}
+                        </span>
+                        {row.timeRemaining && (
+                            <div className="text-[9px] text-red-400 font-bold mt-0.5">⏰ {row.timeRemaining}</div>
+                        )}
+                    </div>
+                )
+            },
         },
         {
             key: 'revenue',
             header: 'Yield',
             sortable: true,
-            render: (row) => row.revenue ? <span className="font-black text-emerald-500 text-xs">₹{row.revenue.toLocaleString()}</span> : <span className="text-muted-foreground text-[10px]">-</span>,
+            render: (row) => row.revenue
+                ? <span className="font-black text-emerald-500 text-xs">₹{row.revenue.toLocaleString()}</span>
+                : <span className="text-muted-foreground text-[10px]">-</span>,
         },
     ]
 
@@ -121,10 +156,9 @@ export default function CampaignsPage() {
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl border-foreground/[0.08] bg-background/95 backdrop-blur-xl">
                                         <SelectItem value="all">All States</SelectItem>
-                                        <SelectItem value="sent">Dispatched</SelectItem>
-                                        <SelectItem value="opened">Detected</SelectItem>
-                                        <SelectItem value="clicked">Engaged</SelectItem>
-                                        <SelectItem value="converted">Finalized</SelectItem>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="converted">Converted</SelectItem>
+                                        <SelectItem value="expired">Expired</SelectItem>
                                     </SelectContent>
                                 </Select>
 
@@ -139,16 +173,23 @@ export default function CampaignsPage() {
 
                     {/* Content Body */}
                     <div className="border border-foreground/[0.04] rounded-3xl overflow-hidden bg-foreground/[0.01] shadow-2xl shadow-foreground/[0.02]">
-                        <DataTable
-                            data={filteredCampaigns}
-                            columns={columns}
-                            rowActions={[
-                                { label: 'In-depth Analytics', value: 'view' },
-                                { label: 'Retrigger', value: 'resend' },
-                            ]}
-                            onRowAction={(action, row) => console.log(action, row)}
-                            pageSize={8}
-                        />
+                        {loading ? (
+                            <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <span className="text-sm font-medium">Loading campaigns...</span>
+                            </div>
+                        ) : (
+                            <DataTable
+                                data={filteredCampaigns}
+                                columns={columns}
+                                rowActions={[
+                                    { label: 'In-depth Analytics', value: 'view' },
+                                    { label: 'Retrigger', value: 'resend' },
+                                ]}
+                                onRowAction={(action, row) => console.log(action, row)}
+                                pageSize={8}
+                            />
+                        )}
                     </div>
                 </div>
 

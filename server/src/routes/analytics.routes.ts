@@ -5,5 +5,8 @@ import { optionalMerchant } from '../middleware/auth.middleware';
 const router = Router();
 
 router.get('/stats', optionalMerchant, analyticsController.getDashboardStats);
+router.get('/detailed', optionalMerchant, analyticsController.getDetailedAnalytics);
+router.get('/insights', optionalMerchant, analyticsController.getInsights);
+
 
 export default router;

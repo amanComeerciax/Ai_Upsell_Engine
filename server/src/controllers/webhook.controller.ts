@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { aiService } from '../services/ai.service';
 import { shopifyService } from '../services/shopify.service';
+import { emailService } from '../services/email.service';
 import { inferCategory } from '../lib/categorizer';
 
 export const webhookController = {
@@ -111,7 +112,7 @@ export const webhookController = {
                 console.log(`[AI Engine] Analyzing order for: ${triggerProduct.name}`);
                 const candidates = await (prisma as any).products.findMany({
                     where: { merchant_id: merchantId, NOT: { id: triggerProduct.id } },
-                    take: 10
+                    orderBy: { created_at: 'desc' }
                 });
 
                 const formattedCandidates = candidates.map((c: any) => ({
@@ -137,7 +138,11 @@ export const webhookController = {
                     });
 
                     if (!existingUpsell) {
-                        await (prisma as any).upsell_events.create({
+                        // 48-hour post-purchase window
+                        const expiresAt = new Date();
+                        expiresAt.setHours(expiresAt.getHours() + 48);
+
+                        const newUpsellEvent = await (prisma as any).upsell_events.create({
                             data: {
                                 user_id: user.id,
                                 order_id: order.id,
@@ -145,9 +150,26 @@ export const webhookController = {
                                 discount_percent: recommendation.discount_percent,
                                 converted: false,
                                 merchant_id: merchantId,
-                            }
+                                expires_at: expiresAt,
+                            },
+                            include: { products: true }
                         });
                         console.log(`[AI Engine] Upsell created for order ${order.id}`);
+
+                        // Send post-purchase upsell email
+                        const shopDomain = req.headers['x-shopify-shop-domain'] as string || 'your-store.myshopify.com';
+                        emailService.sendUpsellEmail({
+                            to: userEmail,
+                            customerName: userName,
+                            triggerProductName: triggerProduct.name || 'your recent purchase',
+                            upsellProductName: newUpsellEvent.products?.name || recommendation.recommended_product_name,
+                            upsellProductImage: newUpsellEvent.products?.image_url || null,
+                            originalPrice: Number(newUpsellEvent.products?.price || 0),
+                            discountPercent: recommendation.discount_percent,
+                            eventId: newUpsellEvent.id,
+                            expiresAt,
+                            shopDomain,
+                        }).catch(err => console.error('[Webhook] Email send failed:', err));
                     }
                 }
             }

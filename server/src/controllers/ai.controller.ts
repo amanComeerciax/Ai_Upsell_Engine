@@ -94,7 +94,11 @@ export const aiController = {
                     price: Number(recProduct?.price) || 0,
                     discount_percent: aiRecommendation.discount_percent,
                     image: recProduct?.image_url,
-                    reason: aiRecommendation.reason
+                    reason: aiRecommendation.reason,
+                    shopify_id: recProduct?.shopify_id?.toString() || null,
+                    shopify_url: recProduct?.shopify_id
+                        ? `https://${shopName || process.env.SHOPIFY_SHOP_NAME}/products/${aiRecommendation.recommended_product_name.toLowerCase().replace(/\s+/g, '-')}`
+                        : null,
                 }
             });
 
