@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { emitEvent } from '../lib/socket';
 
 export const upsellController = {
     async getAllUpsells(req: Request, res: Response) {
@@ -68,6 +69,55 @@ export const upsellController = {
         }
     },
 
+    async getUpsellById(req: Request, res: Response) {
+        try {
+            const eventId = parseInt(req.params.eventId as string);
+            if (isNaN(eventId)) return res.status(400).json({ error: 'Invalid event ID' });
+
+            const upsell = await prisma.upsell_events.findUnique({
+                where: { id: eventId },
+                include: { products: true, orders: true }
+            });
+
+            if (!upsell) {
+                return res.status(404).json({ error: 'Upsell event not found' });
+            }
+
+            // Check if expired
+            const now = new Date();
+            if (upsell.expires_at && upsell.expires_at < now) {
+                return res.status(410).json({ error: 'Upsell offer has expired' });
+            }
+
+            const shopDomain = req.headers['x-shopify-shop-domain'] as string ||
+                req.headers.referer?.match(/https?:\/\/([^/]+)/)?.[1] ||
+                'navjivan-kirana-store.myshopify.com';
+
+            res.status(200).json({
+                event_id: upsell.id,
+                order_id: upsell.order_id,
+                shopify_order_id: (upsell as any).orders?.shopify_id?.toString(),
+                recommended_product: {
+                    id: upsell.products?.id,
+                    name: upsell.products?.name,
+                    price: Number(upsell.products?.price),
+                    image: (upsell.products as any).image_url,
+                    discount_percent: upsell.discount_percent,
+                    shopify_id: upsell.products?.shopify_id?.toString(),
+                    shopify_variant_id: (upsell.products as any).shopify_variant_id?.toString(),
+                    shopify_url: upsell.products?.shopify_id
+                        ? `https://${shopDomain}/products/${(upsell.products as any).handle || upsell.products.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
+                        : null
+                },
+                expires_at: upsell.expires_at,
+                already_converted: upsell.converted
+            });
+        } catch (error) {
+            console.error('[Upsell Controller] Error fetching by event ID:', error);
+            res.status(500).json({ error: 'Logic error retrieving recommendation' });
+        }
+    },
+
     async getUpsellByOrderId(req: Request, res: Response) {
         try {
             const orderId = req.params.orderId as string;
@@ -97,16 +147,25 @@ export const upsellController = {
                 return res.status(410).json({ error: 'Upsell offer has expired' });
             }
 
+            const shopDomain = req.headers['x-shopify-shop-domain'] as string ||
+                req.headers.referer?.match(/https?:\/\/([^/]+)/)?.[1] ||
+                'navjivan-kirana-store.myshopify.com';
+
             res.status(200).json({
                 event_id: upsell.id,
-                order_id: order.id,
-                shopify_order_id: orderId,
+                order_id: upsell.order_id,
+                shopify_order_id: (order as any).shopify_id?.toString(),
                 recommended_product: {
                     id: upsell.products?.id,
                     name: upsell.products?.name,
                     price: Number(upsell.products?.price),
                     image: (upsell.products as any).image_url,
-                    discount_percent: upsell.discount_percent
+                    discount_percent: upsell.discount_percent,
+                    shopify_id: upsell.products?.shopify_id?.toString(),
+                    shopify_variant_id: (upsell.products as any).shopify_variant_id?.toString(),
+                    shopify_url: upsell.products?.shopify_id
+                        ? `https://${shopDomain}/products/${(upsell.products as any).handle || upsell.products.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
+                        : null
                 },
                 expires_at: upsell.expires_at,
                 already_converted: upsell.converted
@@ -134,6 +193,12 @@ export const upsellController = {
             });
 
             res.status(200).json({ success: true, message: 'Impression recorded' });
+
+            // Notify via Socket
+            emitEvent('upsell:shown', {
+                eventId,
+                timestamp: new Date()
+            });
         } catch (error) {
             console.error('[Upsell Controller] markShown Error:', error);
             res.status(500).json({ error: 'Failed to record impression' });
@@ -186,6 +251,14 @@ export const upsellController = {
                 product_name: updated.products?.name,
                 revenue_generated: revenue,
                 discount_applied: updated.discount_percent
+            });
+
+            // Notify via Socket
+            emitEvent('upsell:converted', {
+                eventId,
+                productName: updated.products?.name,
+                revenue,
+                timestamp: new Date()
             });
 
         } catch (error) {

@@ -54,6 +54,7 @@ export const aiController = {
                 }
             }
 
+
             // 2. Fetch available products from DB (Potential candidates)
             const allProducts = await prisma.products.findMany({
                 where: merchantFilter,
@@ -97,7 +98,7 @@ export const aiController = {
                     reason: aiRecommendation.reason,
                     shopify_id: recProduct?.shopify_id?.toString() || null,
                     shopify_url: recProduct?.shopify_id
-                        ? `https://${shopName || process.env.SHOPIFY_SHOP_NAME}/products/${aiRecommendation.recommended_product_name.toLowerCase().replace(/\s+/g, '-')}`
+                        ? `https://${shopName ? (shopName.includes('.') ? shopName : `${shopName}.myshopify.com`) : (process.env.SHOPIFY_SHOP_NAME || 'store.myshopify.com')}/products/${(recProduct as any).handle || recProduct.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
                         : null,
                 }
             });

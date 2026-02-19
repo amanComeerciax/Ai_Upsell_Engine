@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +18,7 @@ import {
 import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function SettingsPage() {
-    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant } = useMerchant()
+    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant, updateSettings } = useMerchant()
 
     const [timingStrategy, setTimingStrategy] = useState('purchase')
     const [delayHours, setDelayHours] = useState(48)
@@ -33,6 +33,19 @@ export default function SettingsPage() {
     const [connectError, setConnectError] = useState<string | null>(null)
     const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<string | null>(null)
+
+    // Email Template state
+    const [emailSubject, setEmailSubject] = useState('')
+    const [emailBody, setEmailBody] = useState('')
+    const [savingTemplate, setSavingTemplate] = useState(false)
+
+    // Sync state when merchant loaded
+    useEffect(() => {
+        if (merchant) {
+            setEmailSubject(merchant.email_subject || '')
+            setEmailBody(merchant.email_body || '')
+        }
+    }, [merchant])
 
     const handleConnectShopify = async () => {
         if (!shopName || !accessToken) {
@@ -75,6 +88,28 @@ export default function SettingsPage() {
             setConnectSuccess(null)
             setSyncResult(null)
         }
+    }
+
+    const handleSaveTemplate = async () => {
+        try {
+            setSavingTemplate(true)
+            await updateSettings({
+                email_subject: emailSubject,
+                email_body: emailBody
+            })
+            alert('Template saved successfully!')
+        } catch (err: any) {
+            alert(`Failed to save template: ${err.message}`)
+        } finally {
+            setSavingTemplate(false)
+        }
+    }
+
+    const parsePreview = (text: string) => {
+        return text
+            .replace(/{name}/g, 'John')
+            .replace(/{product}/g, 'Premium Headphones')
+            .replace(/{recommendation}/g, 'Wireless Mouse')
     }
 
     const scriptSnippet = `<script src="https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js" async></script>`;
@@ -375,6 +410,8 @@ export default function SettingsPage() {
                                 <div>
                                     <Label>Subject Line</Label>
                                     <Input
+                                        value={emailSubject}
+                                        onChange={(e) => setEmailSubject(e.target.value)}
                                         placeholder="Complete your purchase with {product}"
                                         className="mt-2"
                                     />
@@ -382,17 +419,22 @@ export default function SettingsPage() {
                                 <div>
                                     <Label>Email Body</Label>
                                     <Textarea
+                                        value={emailBody}
+                                        onChange={(e) => setEmailBody(e.target.value)}
                                         placeholder="Hi {name}, we noticed you purchased {product}. Based on your order, we think you'll love {recommendation}..."
                                         rows={10}
                                         className="mt-2"
                                     />
                                 </div>
                                 <div className="flex gap-2 flex-wrap">
-                                    <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{name}'}</span>
-                                    <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{product}'}</span>
-                                    <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{recommendation}'}</span>
+                                    <button onClick={() => setEmailBody(prev => prev + '{name}')} className="text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors">{'{name}'}</button>
+                                    <button onClick={() => setEmailBody(prev => prev + '{product}')} className="text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors">{'{product}'}</button>
+                                    <button onClick={() => setEmailBody(prev => prev + '{recommendation}')} className="text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors">{'{recommendation}'}</button>
                                 </div>
-                                <Button>Save Template</Button>
+                                <Button onClick={handleSaveTemplate} disabled={savingTemplate}>
+                                    {savingTemplate ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                                    Save Template
+                                </Button>
                             </div>
                         </div>
 
@@ -400,14 +442,18 @@ export default function SettingsPage() {
                             <h3 className="text-lg font-semibold text-foreground mb-4">Preview</h3>
                             <div className="bg-background rounded-lg p-6 border border-border/40">
                                 <p className="text-sm text-foreground mb-4">
-                                    <strong>Subject:</strong> Complete your purchase with Premium Headphones
+                                    <strong>Subject:</strong> {emailSubject ? parsePreview(emailSubject) : 'Complete your purchase with Premium Headphones'}
                                 </p>
-                                <div className="text-sm text-muted-foreground space-y-3">
-                                    <p>Hi John,</p>
-                                    <p>
-                                        We noticed you purchased Premium Headphones. Based on your order, we think you'll love our Wireless Mouse!
-                                    </p>
-                                    <p>Get 20% off with code UPSELL20</p>
+                                <div className="text-sm text-muted-foreground space-y-3 whitespace-pre-wrap">
+                                    {emailBody ? parsePreview(emailBody) : (
+                                        <>
+                                            <p>Hi John,</p>
+                                            <p>
+                                                We noticed you purchased Premium Headphones. Based on your order, we think you'll love our Wireless Mouse!
+                                            </p>
+                                            <p>Get 20% off with code UPSELL20</p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

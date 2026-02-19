@@ -34,11 +34,13 @@ class EmailService {
         eventId: number;
         expiresAt: Date;
         shopDomain: string;
+        customSubject?: string | null;
+        customBody?: string | null;
     }): Promise<boolean> {
         const {
             to, customerName, triggerProductName, upsellProductName,
             upsellProductImage, originalPrice, discountPercent,
-            eventId, expiresAt, shopDomain
+            eventId, expiresAt, shopDomain, customSubject, customBody
         } = params;
 
         const discountedPrice = originalPrice * (1 - discountPercent / 100);
@@ -50,9 +52,24 @@ class EmailService {
             hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata'
         });
 
-        // The CTA link — points to the Shopify thank-you page (widget will auto-load)
-        // In production, this would be the actual order status URL
-        const ctaLink = `https://${shopDomain}/pages/upsell?event_id=${eventId}`;
+        // The CTA link — points to the store home (widget will auto-load)
+        const ctaLink = `https://${shopDomain}/?event_id=${eventId}`;
+
+        // ── Template Parsing ──────────────────────────────────────────────────
+        let finalSubject = customSubject || `🎁 ${discountPercent}% off ${upsellProductName} — Exclusive Offer`;
+        let finalBody = customBody || `Our AI noticed that customers who buy <strong>${triggerProductName}</strong> love pairing it with this product. We're offering you an exclusive <strong style="color:#3b82f6;">${discountPercent}% discount</strong> — but only for a limited time!`;
+
+        // Replace Placeholders
+        const placeholders: Record<string, string> = {
+            '{name}': customerName,
+            '{product}': triggerProductName,
+            '{recommendation}': upsellProductName
+        };
+
+        Object.entries(placeholders).forEach(([key, val]) => {
+            finalSubject = finalSubject.split(key).join(val);
+            finalBody = finalBody.split(key).join(val);
+        });
 
         const productImageHtml = upsellProductImage
             ? `<img src="${upsellProductImage}" alt="${upsellProductName}" style="width:120px;height:120px;object-fit:contain;border-radius:12px;background:#f8fafc;padding:8px;" />`
@@ -64,7 +81,7 @@ class EmailService {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Special Offer Just For You</title>
+    <title>${finalSubject}</title>
 </head>
 <body style="margin:0;padding:0;background:#f8fafc;font-family:'Inter',system-ui,-apple-system,sans-serif;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 20px;">
@@ -79,9 +96,6 @@ class EmailService {
                             <h1 style="color:white;font-size:28px;font-weight:900;margin:0;line-height:1.2;font-style:italic;">
                                 A Perfect Match<br/>Just For You
                             </h1>
-                            <p style="color:rgba(255,255,255,0.6);font-size:14px;margin:12px 0 0;">
-                                Based on your recent purchase of <strong style="color:white;">${triggerProductName}</strong>
-                            </p>
                         </td>
                     </tr>
 
@@ -94,10 +108,7 @@ class EmailService {
                                 Hi <strong>${customerName}</strong> 👋
                             </p>
                             <p style="color:#6b7280;font-size:15px;line-height:1.6;margin:0 0 32px;">
-                                Our AI noticed that customers who buy <strong>${triggerProductName}</strong> 
-                                love pairing it with this product. We're offering you an exclusive 
-                                <strong style="color:#3b82f6;">${discountPercent}% discount</strong> — 
-                                but only for the next 48 hours!
+                                ${finalBody}
                             </p>
 
                             <!-- Product Card -->
@@ -169,7 +180,7 @@ class EmailService {
             await this.transporter.sendMail({
                 from: fromAddress,
                 to,
-                subject: `🎁 ${discountPercent}% off ${upsellProductName} — Exclusive 48hr Offer`,
+                subject: finalSubject,
                 html,
             });
 

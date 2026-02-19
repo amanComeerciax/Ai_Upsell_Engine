@@ -23,10 +23,12 @@ export const shopifyController = {
                 // Smart category: use Shopify's product_type, or infer from name
                 const category = sp.product_type || inferCategory(sp.title);
 
-                await prisma.products.upsert({
+                await (prisma.products as any).upsert({
                     where: { shopify_id: BigInt(sp.id) },
                     update: {
                         name: sp.title,
+                        handle: sp.handle,
+                        description: sp.body_html,
                         category: category,
                         price: price,
                         image_url: imageUrl,
@@ -34,6 +36,8 @@ export const shopifyController = {
                     create: {
                         shopify_id: BigInt(sp.id),
                         name: sp.title,
+                        handle: sp.handle,
+                        description: sp.body_html,
                         category: category,
                         price: price,
                         image_url: imageUrl,

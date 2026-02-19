@@ -285,5 +285,33 @@ export const merchantController = {
             console.error('[Merchant Controller] Disconnect Error:', error);
             res.status(500).json({ error: 'Failed to disconnect' });
         }
+    },
+
+    /**
+     * Update merchant settings (Email templates, etc.)
+     */
+    async updateSettings(req: Request, res: Response) {
+        try {
+            const merchant = req.merchant!;
+            const { email_subject, email_body } = req.body;
+
+            const updated = await prisma.merchants.update({
+                where: { id: merchant.id },
+                data: {
+                    email_subject: email_subject !== undefined ? email_subject : merchant.email_subject,
+                    email_body: email_body !== undefined ? email_body : merchant.email_body,
+                }
+            });
+
+            console.log(`[Merchant] Settings updated for merchant ${merchant.id}`);
+
+            res.status(200).json({
+                message: 'Settings updated successfully!',
+                merchant: updated
+            });
+        } catch (error) {
+            console.error('[Merchant Controller] Update Settings Error:', error);
+            res.status(500).json({ error: 'Failed to update settings' });
+        }
     }
 };

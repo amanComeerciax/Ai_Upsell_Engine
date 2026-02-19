@@ -1,7 +1,10 @@
 (function () {
     // Velocity AI Upsell Widget - Production v2.0
     // Now with: Click tracking, Conversion recording, 48hr expiry enforcement
-    const API_BASE = 'https://keila-arousable-bimolecularly.ngrok-free.dev/api/v1';
+    // Detect origin dynamically (so you don't have to update ngrok URL manually)
+    const scriptSrc = document.currentScript ? document.currentScript.src : 'https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js';
+    const scriptOrigin = new URL(scriptSrc).origin;
+    const API_BASE = `${scriptOrigin}/api/v1`;
 
     const styles = `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -251,8 +254,11 @@
         }
 
         // 3. URL query parameters
+        let eventId = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        eventId = urlParams.get('event_id');
+
         if (!orderId) {
-            const urlParams = new URLSearchParams(window.location.search);
             orderId = urlParams.get('order_id') || urlParams.get('id') || urlParams.get('order');
         }
 
@@ -324,7 +330,10 @@
             return;
         }
 
-        if (orderId) {
+        if (eventId) {
+            console.log('[Velocity AI] Processing direct Event Link:', eventId);
+            fetchRecommendation(`${API_BASE}/upsells/${eventId}`, 1);
+        } else if (orderId) {
             console.log('[Velocity AI] Processing Post-purchase for Order:', orderId);
             fetchRecommendation(`${API_BASE}/upsells/order/${orderId}`, 1);
         } else if (productId) {
@@ -404,27 +413,45 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    console.log('[Velocity AI] ✅ Conversion recorded!', data);
-                    btn.className = 'velocity-btn success';
+                    console.log('[Velocity AI] ✅ Conversion recorded! Adding to cart...');
+
+                    const variantId = data.recommended_product?.shopify_variant_id || data.shopify_variant_id;
+
+                    if (!variantId) {
+                        console.error('[Velocity AI] No Variant ID found, falling back to product page');
+                        window.location.href = currentProductUrl;
+                        return;
+                    }
+
+                    // Show "Redirecting..." status
                     btn.innerHTML = `
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                         </svg>
-                        Added to Order!
+                        Going to Checkout...
                     `;
 
-                    // Show success message
-                    const successMsg = document.createElement('div');
-                    successMsg.className = 'velocity-success-msg';
-                    successMsg.textContent = '🎉 Discount applied! Check your cart.';
-                    btn.parentNode.insertBefore(successMsg, btn.nextSibling);
-
-                    // Redirect to product page after 1.5s if we have the URL
-                    if (currentProductUrl) {
-                        setTimeout(() => {
-                            window.location.href = currentProductUrl;
-                        }, 1500);
-                    }
+                    // Real Shopify AJAX Add to Cart (Direct format)
+                    fetch('/cart/add.js', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: variantId,
+                            quantity: 1
+                        })
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Add to cart failed');
+                            return response.json();
+                        })
+                        .then(() => {
+                            console.log('[Velocity AI] Product added! Redirecting to checkout...');
+                            window.location.href = '/checkout';
+                        })
+                        .catch(err => {
+                            console.warn('[Velocity AI] Cart add failed, trying direct cart page:', err);
+                            window.location.href = '/cart';
+                        });
                 } else {
                     btn.disabled = false;
                     btn.className = 'velocity-btn';
@@ -472,10 +499,24 @@
         const container = document.createElement('div');
         container.id = 'velocity-upsell-root';
 
+        // Critical: Set styles on the host element so it positions correctly in the main page
+        Object.assign(container.style, {
+            position: 'fixed',
+            bottom: '30px',
+            right: '30px',
+            width: '380px',
+            zIndex: '2147483647', // Maximum possible z-index
+            pointerEvents: 'none' // Allow clicking through if needed, but inner card will enable it
+        });
+
         const shadow = container.attachShadow({ mode: 'open' });
 
         shadow.innerHTML = `
-            <style>${styles}
+            <style>
+                ${styles}
+                .velocity-card {
+                    pointer-events: auto; /* Enable clicks on the card itself */
+                }
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             </style>
             <div class="velocity-card">

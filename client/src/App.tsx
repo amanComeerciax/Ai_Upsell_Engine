@@ -13,6 +13,7 @@ import AIModelsPage from '@/pages/AIModels'
 import InventoryPage from '@/pages/Inventory'
 import LoginPage from '@/pages/LoginPage'
 import SignUpPage from '@/pages/SignUpPage'
+import { Toaster } from 'sonner'
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -23,6 +24,7 @@ if (!PUBLISHABLE_KEY) {
 function App() {
     return (
         <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+            <Toaster position="top-right" expand={true} richColors={true} />
             <BrowserRouter>
                 <Routes>
                     {/* Landing Page Route */}

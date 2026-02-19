@@ -12,6 +12,8 @@ declare global {
                 shopify_shop_name: string | null;
                 shopify_access_token: string | null;
                 plan: string | null;
+                email_subject: string | null;
+                email_body: string | null;
             };
         }
     }
@@ -38,6 +40,8 @@ export async function identifyMerchant(req: Request, res: Response, next: NextFu
                     shopify_shop_name: merchant.shopify_shop_name,
                     shopify_access_token: merchant.shopify_access_token,
                     plan: merchant.plan,
+                    email_subject: merchant.email_subject,
+                    email_body: merchant.email_body,
                 };
                 return next();
             }
@@ -57,6 +61,8 @@ export async function identifyMerchant(req: Request, res: Response, next: NextFu
                     shopify_shop_name: merchant.shopify_shop_name,
                     shopify_access_token: merchant.shopify_access_token,
                     plan: merchant.plan,
+                    email_subject: merchant.email_subject,
+                    email_body: merchant.email_body,
                 };
                 return next();
             }
@@ -94,6 +100,8 @@ export async function optionalMerchant(req: Request, res: Response, next: NextFu
                     shopify_shop_name: merchant.shopify_shop_name,
                     shopify_access_token: merchant.shopify_access_token,
                     plan: merchant.plan,
+                    email_subject: merchant.email_subject,
+                    email_body: merchant.email_body,
                 };
             }
         } else if (clerkUserId) {
@@ -108,6 +116,8 @@ export async function optionalMerchant(req: Request, res: Response, next: NextFu
                     shopify_shop_name: merchant.shopify_shop_name,
                     shopify_access_token: merchant.shopify_access_token,
                     plan: merchant.plan,
+                    email_subject: merchant.email_subject,
+                    email_body: merchant.email_body,
                 };
             }
         }

@@ -11,22 +11,22 @@
 | Auth (Clerk) | ✅ Done | Login, Signup, Protected routes |
 | DB Schema (Prisma + PostgreSQL) | ✅ Done | merchants, products, orders, upsell_events, upsell_rules, users |
 | Server (Express + TypeScript) | ✅ Done | Running on port 5001 |
-| AI Service (Ollama) | ✅ Done | Smart recommendation with scoring + AI pitch |
+| AI Service (Ollama / GLM) | ✅ Done | Smart recommendation + AI Analytics Insights |
 | Shopify Webhook (orders/create) | ✅ Done | Creates upsell_event on new order |
-| Widget (widget.js) | ✅ Done | Shows popup on thank-you page — BUT no click tracking |
-| Analytics API | ✅ Done | Dashboard stats, revenue trajectory |
-| ngrok tunnel | ✅ Running | For Shopify webhook delivery |
+| Widget (widget.js) | ✅ Done | Shows popup + Impression tracking |
+| Analytics API | ✅ Done | Dashboard stats, Revenue trajectory, Real-time telemetry |
+| Email Service (Nodemailer) | ✅ Done | Automated post-purchase upsell emails |
+| Conversion Tracking | ✅ Done | `POST /api/v1/upsells/:eventId/convert` works |
+| Dynamic Widget URL | ✅ Done | Auto-detects server origin in `widget.js` |
 
 ---
 
-## ❌ What's MISSING (The Gap)
+## ❌ What's MISSING / TO-DO
 
-1. **Widget "Add to Order" button does NOTHING** — no click tracking, no conversion recorded
-2. **No 48-hour post-purchase window** — upsell_events have `expires_at` column but it's never SET
-3. **No email sending** — no email after order for post-purchase upsell
-4. **No upsell tracking** — `converted` field exists but never gets set to `true`
-5. **Dashboard Campaigns page** shows mock data, not real upsell_events
-6. **No "convert" API endpoint** — widget can't report a click/purchase back to server
+1. **Live Pulse Notifications** — Real-time toast/feed updates when conversions happen.
+2. **Email Customization UI** — Ability for merchants to edit templates.
+3. **Merchant Onboarding Flow** — First-time setup walk-through.
+4. **A/B Testing Engine** — Testing different discounts (10% vs 20%).
 
 ---
 

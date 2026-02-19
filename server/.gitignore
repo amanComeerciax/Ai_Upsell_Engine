@@ -4,3 +4,8 @@ node_modules
 *.log
 
 /src/generated/prisma
+check_handles.js
+check_variants.js
+debug_shopify.js
+manual_sync.js
+products_sample.json

@@ -13,5 +13,6 @@ router.post('/connect-shopify', identifyMerchant, merchantController.connectShop
 router.post('/disconnect-shopify', identifyMerchant, merchantController.disconnectShopify);
 router.post('/sync-products', identifyMerchant, merchantController.syncProducts);
 router.post('/register-webhook', identifyMerchant, merchantController.registerWebhook);
+router.put('/settings', identifyMerchant, merchantController.updateSettings);
 
 export default router;

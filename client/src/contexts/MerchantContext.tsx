@@ -11,6 +11,8 @@ interface MerchantProfile {
     shopify_access_token: string | null;
     webhook_id: string | null;
     plan: string | null;
+    email_subject: string | null;
+    email_body: string | null;
     stats: {
         products: number;
         orders: number;
@@ -29,6 +31,7 @@ interface MerchantContextType {
     connectShopify: (shopName: string, accessToken: string) => Promise<boolean>;
     syncProducts: () => Promise<{ count: number } | null>;
     disconnectShopify: () => Promise<boolean>;
+    updateSettings: (settings: { email_subject?: string; email_body?: string }) => Promise<boolean>;
 }
 
 const MerchantContext = createContext<MerchantContextType>({
@@ -41,6 +44,7 @@ const MerchantContext = createContext<MerchantContextType>({
     connectShopify: async () => false,
     syncProducts: async () => null,
     disconnectShopify: async () => false,
+    updateSettings: async () => false,
 });
 
 export function MerchantProvider({ children }: { children: React.ReactNode }) {
@@ -138,6 +142,17 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const updateSettings = async (settings: { email_subject?: string; email_body?: string }): Promise<boolean> => {
+        try {
+            await apiClient.put('/merchant/settings', settings);
+            await refreshMerchant();
+            return true;
+        } catch (err: any) {
+            console.error('[Merchant] Update settings failed:', err);
+            throw new Error(err.response?.data?.error || 'Failed to update settings');
+        }
+    };
+
     return (
         <MerchantContext.Provider
             value={{
@@ -150,6 +165,7 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
                 connectShopify,
                 syncProducts,
                 disconnectShopify,
+                updateSettings,
             }}
         >
             {children}

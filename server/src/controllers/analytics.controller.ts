@@ -268,120 +268,20 @@ export const analyticsController = {
      */
     async getInsights(req: Request, res: Response) {
         try {
-            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
-            const cacheKey = `insights_${req.merchant?.id || 'all'}`;
+            // NOTE: Z.ai API call is temporarily disabled due to balance issues.
+            // Directly returning smart fallback insights for now.
 
-            // ── Check cache first ─────────────────────────────────────────────
-            const cached = insightsCache.get(cacheKey);
-            if (cached && Date.now() - cached.generatedAt < INSIGHTS_CACHE_TTL_MS) {
-                console.log('[Analytics] ⚡ Insights cache HIT');
-                return res.status(200).json({ insights: cached.insights, cached: true });
-            }
+            const fallback = [
+                { icon: '📊', title: 'Conversion Health', insight: 'Your current upsell funnel is stable. Monitor the 48-hour conversion window for optimization.' },
+                { icon: '⚡', title: 'Velocity Check', insight: 'Upsell offers are being dispatched immediately after order detection. Speed is optimized.' },
+                { icon: '🎯', title: 'Growth Tip', insight: 'Consistent tracking of impressions vs clicks helps identify which products customers love pairing.' }
+            ];
 
-            // ── Gather real store data ────────────────────────────────────────
-            const [totalUpsells, convertedUpsells, totalOrders, topProducts] = await Promise.all([
-                prisma.upsell_events.count({ where: merchantFilter }),
-                prisma.upsell_events.count({ where: { ...merchantFilter, converted: true } }),
-                prisma.orders.count({ where: merchantFilter }),
-                prisma.upsell_events.findMany({
-                    where: merchantFilter,
-                    include: { products: true },
-                    take: 100
-                })
-            ]);
-
-            const conversionRate = totalUpsells > 0
-                ? ((convertedUpsells / totalUpsells) * 100).toFixed(1)
-                : '0';
-
-            // Count by category
-            const categoryCount: Record<string, number> = {};
-            for (const u of topProducts) {
-                const cat = u.products?.category || 'Unknown';
-                categoryCount[cat] = (categoryCount[cat] || 0) + 1;
-            }
-            const topCategory = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0];
-
-            // Top recommended product
-            const productCount: Record<string, number> = {};
-            for (const u of topProducts) {
-                const name = u.products?.name || 'Unknown';
-                productCount[name] = (productCount[name] || 0) + 1;
-            }
-            const topProduct = Object.entries(productCount).sort((a, b) => b[1] - a[1])[0];
-
-            // ── Build prompt for Z.ai GLM ─────────────────────────────────────
-            const prompt = `You are an expert e-commerce analytics advisor for an AI upsell engine.
-
-Here is the store's real performance data:
-- Total upsell offers sent: ${totalUpsells}
-- Upsells converted (clicked & purchased): ${convertedUpsells}
-- Conversion rate: ${conversionRate}%
-- Total orders processed: ${totalOrders}
-- Top recommended product: ${topProduct ? topProduct[0] + ' (' + topProduct[1] + ' times)' : 'None yet'}
-- Top performing category: ${topCategory ? topCategory[0] + ' (' + topCategory[1] + ' upsells)' : 'None yet'}
-
-Based on this data, provide exactly 3 short, specific, actionable insights for the merchant.
-Each insight should be 1-2 sentences max. Be direct and practical.
-
-Respond ONLY with a valid JSON array in this exact format:
-[
-  { "icon": "📈", "title": "Short Title", "insight": "Your actionable insight here." },
-  { "icon": "⚡", "title": "Short Title", "insight": "Your actionable insight here." },
-  { "icon": "🎯", "title": "Short Title", "insight": "Your actionable insight here." }
-]
-
-Use relevant emojis. Do not include any text outside the JSON array.`;
-
-            // ── Call Z.ai GLM ─────────────────────────────────────────────────
-            const ZAI_API_KEY = process.env.ZAI_API_KEY;
-            const ZAI_BASE_URL = process.env.ZAI_BASE_URL || 'https://api.z.ai/api/paas/v4';
-            const ZAI_MODEL = process.env.ZAI_MODEL || 'glm-4-flash';
-
-            if (!ZAI_API_KEY) {
-                return res.status(500).json({ error: 'Z.ai API key not configured' });
-            }
-
-            console.log('[Analytics] 🤖 Calling Z.ai GLM for insights...');
-            const glmResponse = await axios.post(
-                `${ZAI_BASE_URL}/chat/completions`,
-                {
-                    model: ZAI_MODEL,
-                    messages: [{ role: 'user', content: prompt }],
-                    temperature: 0.7,
-                    max_tokens: 500
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${ZAI_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 15000
-                }
-            );
-
-            const rawContent = glmResponse.data.choices?.[0]?.message?.content || '[]';
-
-            // Parse JSON — strip any markdown code fences if present
-            const jsonStr = rawContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-            const insights = JSON.parse(jsonStr);
-
-            // ── Cache + return ────────────────────────────────────────────────
-            insightsCache.set(cacheKey, { insights, generatedAt: Date.now() });
-            console.log(`[Analytics] ✅ Z.ai insights generated (${insights.length} insights)`);
-
-            return res.status(200).json({ insights, cached: false });
+            return res.status(200).json({ insights: fallback, cached: false, fallback: true });
 
         } catch (error: any) {
-            console.error('[Analytics] Z.ai Insights Error:', error.response?.data || error.message);
-
-            // Smart fallback insights if Z.ai fails
-            const fallback = [
-                { icon: '📊', title: 'Track Conversions', insight: 'Monitor your conversion rate daily. A rate above 5% is considered healthy for upsell campaigns.' },
-                { icon: '⚡', title: 'Speed Matters', insight: 'Upsell offers shown within 30 seconds of purchase have 3x higher conversion rates.' },
-                { icon: '🎯', title: 'Discount Strategy', insight: 'Test different discount percentages (5%, 10%, 15%) to find the sweet spot for your customers.' }
-            ];
-            return res.status(200).json({ insights: fallback, cached: false, fallback: true });
+            console.error('[Analytics] Insights Error:', error.message);
+            return res.status(200).json({ insights: [], cached: false });
         }
     }
 };

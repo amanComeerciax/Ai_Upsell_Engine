@@ -4,6 +4,7 @@ import { aiService } from '../services/ai.service';
 import { shopifyService } from '../services/shopify.service';
 import { emailService } from '../services/email.service';
 import { inferCategory } from '../lib/categorizer';
+import { emitEvent } from '../lib/socket';
 
 export const webhookController = {
     async handleOrderCreate(req: Request, res: Response) {
@@ -14,6 +15,13 @@ export const webhookController = {
         try {
             const orderData = req.body;
             console.log(`[Shopify Webhook] Processing new order: ${orderData.id}`);
+
+            // Notify via Socket
+            emitEvent('order:created', {
+                shopifyId: orderData.id,
+                total: orderData.total_price,
+                customer: orderData.email
+            });
 
             // 0. Identify Merchant
             const merchantIdHeader = req.headers['x-merchant-id'] as string;
@@ -156,6 +164,16 @@ export const webhookController = {
                         });
                         console.log(`[AI Engine] Upsell created for order ${order.id}`);
 
+                        // Notify via Socket
+                        emitEvent('upsell:created', {
+                            eventId: newUpsellEvent.id,
+                            productName: newUpsellEvent.products?.name,
+                            customer: userEmail
+                        });
+
+                        // Fetch merchant for custom settings
+                        const merchant = merchantId ? await (prisma as any).merchants.findUnique({ where: { id: merchantId } }) : null;
+
                         // Send post-purchase upsell email
                         const shopDomain = req.headers['x-shopify-shop-domain'] as string || 'your-store.myshopify.com';
                         emailService.sendUpsellEmail({
@@ -169,6 +187,8 @@ export const webhookController = {
                             eventId: newUpsellEvent.id,
                             expiresAt,
                             shopDomain,
+                            customSubject: merchant?.email_subject,
+                            customBody: merchant?.email_body
                         }).catch(err => console.error('[Webhook] Email send failed:', err));
                     }
                 }
