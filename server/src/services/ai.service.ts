@@ -45,16 +45,24 @@ export class AIService {
 
     /**
      * Hybrid logic: Scoring Engine selects, AI Engine persuades.
-     * Cache hierarchy: L1 (in-memory) → L2 (DB) → Ollama → Smart fallback
+     * Cache hierarchy: L1 (in-memory) -> L2 (DB) -> Ollama -> Smart fallback
      */
-    async getSmartRecommendation(triggerProduct: Product, candidates: Product[]): Promise<RecommendationResponse> {
-        // 1. Scoring Engine selects the BEST candidate based on business logic
-        const ranked = scoringService.rankCandidates(triggerProduct, candidates);
+    async getSmartRecommendation(
+        triggerProduct: Product,
+        candidates: Product[],
+        context?: { location?: string; interests?: string[] },
+        testGroup: 'A' | 'B' = 'A'
+    ): Promise<RecommendationResponse> {
+        // 1. Scoring Engine selects the BEST candidate based on context & business logic
+        const ranked = scoringService.rankCandidates(triggerProduct, candidates, context?.interests);
         const winner = ranked[0];
 
         if (!winner) throw new Error('No candidates found');
 
-        const cacheKey = `rec_${triggerProduct.id}_${winner.id}`;
+        // Include context in cache key to ensure personalization is cached correctly
+        const contextKey = context ? `_${context.location || ''}_${context.interests?.join(',') || ''}` : '';
+        const groupKey = `_group_${testGroup}`;
+        const cacheKey = `rec_${triggerProduct.id}_${winner.id}${contextKey}${groupKey}`;
 
         // ── L1: In-memory cache (instant, same process) ──────────────────────
         if (this.recommendationCache.has(cacheKey)) {
@@ -63,43 +71,46 @@ export class AIService {
         }
 
         // ── L2: DB cache (persistent across restarts) ─────────────────────────
-        try {
-            const dbCache = await (prisma as any).ai_pitch_cache.findUnique({
-                where: { cache_key: cacheKey }
-            });
-            if (dbCache) {
-                console.log(`[AI Service] 💾 L2 DB Cache HIT for ${cacheKey}`);
-                const cached: RecommendationResponse = {
-                    recommended_product_id: winner.id,
-                    recommended_product_name: winner.name || 'Unknown',
-                    reason: dbCache.pitch,
-                    discount_percent: dbCache.discount_percent
-                };
-                this.recommendationCache.set(cacheKey, cached);
-                return cached;
-            }
-        } catch (_) {
-            // ai_pitch_cache table may not exist yet — fall through to Ollama
+        const cached = await this.getFromDbCache(cacheKey, winner.id, winner.name || 'Unknown');
+        if (cached) {
+            this.recommendationCache.set(cacheKey, cached); // Populate L1 from L2
+            return cached;
         }
 
-        console.log(`[AI Service] 🤖 Cache MISS. Generating AI pitch for ${triggerProduct.name} -> ${winner.name}...`);
+        // If Group B, skip AI and return generic fallback immediately
+        if (testGroup === 'B') {
+            console.log(`[AI Service] 🧪 Group B (Control). Returning generic pitch.`);
+            const genericFallback = this.buildSmartFallback(triggerProduct, winner, undefined, 'B');
+            this.recommendationCache.set(cacheKey, genericFallback);
+            this.saveToDbCache(cacheKey, genericFallback.reason, genericFallback.discount_percent).catch(() => { });
+            return genericFallback;
+        }
+
+        console.log(`[AI Service] 🤖 Cache MISS. Generating personalized AI pitch...`);
 
         // ── Smart fallback pitches (instant, no AI needed) ────────────────────
-        const smartFallback = this.buildSmartFallback(triggerProduct, winner);
+        const smartFallback = this.buildSmartFallback(triggerProduct, winner, context, testGroup);
 
         try {
-            // ── Ollama with strict timeout ────────────────────────────────────
+            // ── Building Context-Aware Prompt ─────────────────────────────────
+            const locationStr = context?.location ? ` The customer is located in ${context.location}.` : '';
+            const interestStr = context?.interests?.length
+                ? ` Their interests based on past purchases include: ${context.interests.join(', ')}.`
+                : '';
+
             const prompt = `You are a High-Conversion Marketing Copywriter for an E-commerce store.
-A customer just bought: "${triggerProduct.name}".
+A customer just bought: "${triggerProduct.name}".${locationStr}${interestStr}
 We have decided to offer them: "${winner.name}" as an upsell.
 
 Task:
-Write a brief, catchy one-sentence "Reason" why these products go perfect together. Use a friendly, persuasive tone. 
-Also suggest a discount (5, 10, or 15) as a percentage.
+Write a brief, catchy one-sentence "Reason" why these products go perfect together. 
+Make it PERSONALIZED using the customer's location or interests if provided. 
+Use a friendly, persuasive tone. 
+Also suggest a discount (10, 15, or 20) as a percentage.
 
 Output Format (STRICT JSON):
 {
-    "marketing_pitch": "Your one sentence pitch here",
+    "marketing_pitch": "Your personalized one sentence pitch here",
     "discount_percent": number
 }`;
 
@@ -116,7 +127,7 @@ Output Format (STRICT JSON):
                 recommended_product_id: winner.id,
                 recommended_product_name: winner.name || 'Unknown',
                 reason: result.marketing_pitch || smartFallback.reason,
-                discount_percent: result.discount_percent || 10
+                discount_percent: result.discount_percent || 15
             };
 
             // Save to L1 + L2 cache
@@ -140,18 +151,27 @@ Output Format (STRICT JSON):
     /**
      * Builds a smart, category-aware fallback pitch without calling Ollama
      */
-    private buildSmartFallback(trigger: Product, winner: Product): RecommendationResponse {
+    private buildSmartFallback(
+        trigger: Product,
+        winner: Product,
+        context?: { location?: string; interests?: string[] },
+        testGroup: 'A' | 'B' = 'A'
+    ): RecommendationResponse {
+        // If Group B, we keep it purely generic
+        const locationPrefix = (testGroup === 'A' && context?.location) ? `Since you're in ${context.location.split(',')[0]}, ` : '';
+        const interestSuffix = (testGroup === 'A' && context?.interests?.length) ? ` especially given your interest in ${context.interests[0]}` : '';
+
         const pitches: Record<string, string[]> = {
             Apparel: [
-                `Complete your look — ${winner.name} pairs perfectly with your new ${trigger.name}!`,
-                `Style upgrade: ${winner.name} is the ideal match for your ${trigger.name}.`,
+                `${locationPrefix}Complete your look — ${winner.name} pairs perfectly with your new ${trigger.name}${interestSuffix}!`,
+                `Style upgrade: ${winner.name} is the ideal match for your ${trigger.name}${interestSuffix}.`,
             ],
             Accessories: [
-                `Customers who bought ${trigger.name} love adding ${winner.name} to their order.`,
-                `The perfect finishing touch — ${winner.name} complements your ${trigger.name} beautifully.`,
+                `${locationPrefix}Customers who bought ${trigger.name} love adding ${winner.name} to their order${interestSuffix}.`,
+                `${locationPrefix}The perfect finishing touch — ${winner.name} complements your ${trigger.name} beautifully.`,
             ],
             Footwear: [
-                `Step it up! ${winner.name} is the perfect pair for your ${trigger.name}.`,
+                `${locationPrefix}Step it up! ${winner.name} is the perfect pair for your ${trigger.name}${interestSuffix}.`,
                 `Complete your outfit from head to toe with ${winner.name}.`,
             ],
         };
@@ -164,7 +184,7 @@ Output Format (STRICT JSON):
             recommended_product_id: winner.id,
             recommended_product_name: winner.name || 'Top Pick',
             reason,
-            discount_percent: 10
+            discount_percent: 15
         };
     }
 
@@ -181,6 +201,29 @@ Output Format (STRICT JSON):
         } catch (_) {
             // Table doesn't exist yet — silently skip
         }
+    }
+
+    /**
+     * Retrieves a pitch from the DB cache
+     */
+    private async getFromDbCache(cacheKey: string, winnerId: number, winnerName: string): Promise<RecommendationResponse | null> {
+        try {
+            const dbCache = await (prisma as any).ai_pitch_cache.findUnique({
+                where: { cache_key: cacheKey }
+            });
+            if (dbCache) {
+                console.log(`[AI Service] 💾 L2 DB Cache HIT for ${cacheKey}`);
+                return {
+                    recommended_product_id: winnerId,
+                    recommended_product_name: winnerName,
+                    reason: dbCache.pitch,
+                    discount_percent: dbCache.discount_percent
+                };
+            }
+        } catch (_) {
+            // Table doesn't exist yet
+        }
+        return null;
     }
 }
 

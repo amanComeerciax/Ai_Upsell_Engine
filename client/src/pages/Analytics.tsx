@@ -4,6 +4,7 @@ import apiClient from '@/lib/api-client'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ROIStats } from '@/components/ROIStats'
 import {
     AreaChart,
     Area,
@@ -133,6 +134,15 @@ export default function AnalyticsPage() {
                 </div>
             ) : (
                 <>
+                    {/* A/B Testing ROI Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-6 w-[2px] bg-blue-600" />
+                            <h2 className="text-xl font-black uppercase tracking-tight text-foreground">ROI Performance (A/B Test)</h2>
+                        </div>
+                        <ROIStats />
+                    </div>
+
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <StatCard

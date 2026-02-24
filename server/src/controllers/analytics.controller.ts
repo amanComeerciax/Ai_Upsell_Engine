@@ -283,6 +283,68 @@ export const analyticsController = {
             console.error('[Analytics] Insights Error:', error.message);
             return res.status(200).json({ insights: [], cached: false });
         }
+    },
+
+    /**
+     * A/B Test Metrics: Compare Group A (AI) vs Group B (Control)
+     */
+    async getABTestMetrics(req: Request, res: Response) {
+        try {
+            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
+            // 1. Get totals and conversions for Group A (AI)
+            const [totalA, convertedA] = await Promise.all([
+                prisma.upsell_events.count({
+                    where: { ...merchantFilter, test_group: 'A' } as any
+                }),
+                prisma.upsell_events.count({
+                    where: { ...merchantFilter, test_group: 'A', converted: true } as any
+                })
+            ]);
+
+            // 2. Get totals and conversions for Group B (Control)
+            const [totalB, convertedB] = await Promise.all([
+                prisma.upsell_events.count({
+                    where: { ...merchantFilter, test_group: 'B' } as any
+                }),
+                prisma.upsell_events.count({
+                    where: { ...merchantFilter, test_group: 'B', converted: true } as any
+                })
+            ]);
+
+            // 3. Calculate Rates
+            const rateA = totalA > 0 ? (convertedA / totalA) : 0;
+            const rateB = totalB > 0 ? (convertedB / totalB) : 0;
+
+            // 4. Calculate Lift (A vs B)
+            let lift = 0;
+            if (rateB > 0) {
+                lift = ((rateA - rateB) / rateB) * 100;
+            } else if (rateA > 0) {
+                lift = 100; // 100% lift if B is zero but A has results
+            }
+
+            res.status(200).json({
+                groupA: {
+                    total: totalA,
+                    conversions: convertedA,
+                    rate: parseFloat((rateA * 100).toFixed(2))
+                },
+                groupB: {
+                    total: totalB,
+                    conversions: convertedB,
+                    rate: parseFloat((rateB * 100).toFixed(2))
+                },
+                lift: parseFloat(lift.toFixed(1)),
+                summary: lift > 0
+                    ? `AI Personalization is driving a ${lift.toFixed(1)}% lift in conversions!`
+                    : "Wait for more data to see the lift from AI personalization."
+            });
+
+        } catch (error: any) {
+            console.error('[Analytics Controller] A/B Metrics Error:', error);
+            res.status(500).json({ error: 'Failed to fetch A/B test metrics' });
+        }
     }
 };
 

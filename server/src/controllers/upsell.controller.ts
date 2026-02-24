@@ -107,7 +107,8 @@ export const upsellController = {
                     shopify_variant_id: (upsell.products as any).shopify_variant_id?.toString(),
                     shopify_url: upsell.products?.shopify_id
                         ? `https://${shopDomain}/products/${(upsell.products as any).handle || upsell.products.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
-                        : null
+                        : null,
+                    reason: (upsell as any).pitch || `Customers who bought ${upsell.products?.name} also loved this!`
                 },
                 expires_at: upsell.expires_at,
                 already_converted: upsell.converted
@@ -165,7 +166,8 @@ export const upsellController = {
                     shopify_variant_id: (upsell.products as any).shopify_variant_id?.toString(),
                     shopify_url: upsell.products?.shopify_id
                         ? `https://${shopDomain}/products/${(upsell.products as any).handle || upsell.products.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
-                        : null
+                        : null,
+                    reason: (upsell as any).pitch || `Recommended specifically for your order!`
                 },
                 expires_at: upsell.expires_at,
                 already_converted: upsell.converted

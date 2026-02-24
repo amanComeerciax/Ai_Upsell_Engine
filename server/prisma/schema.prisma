@@ -58,6 +58,9 @@ model orders {
   merchants     merchants?      @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users         users?          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   upsell_events upsell_events[]
+
+  @@index([merchant_id])
+  @@index([user_id])
 }
 
 model products {
@@ -77,22 +80,30 @@ model products {
   upsell_events                                          upsell_events[]
   upsell_rules_upsell_rules_trigger_product_idToproducts upsell_rules[]  @relation("upsell_rules_trigger_product_idToproducts")
   upsell_rules_upsell_rules_upsell_product_idToproducts  upsell_rules[]  @relation("upsell_rules_upsell_product_idToproducts")
+
+  @@index([merchant_id])
 }
 
 model upsell_events {
   id                Int       @id @default(autoincrement())
   merchant_id       Int?
   user_id           Int?
-  order_id          Int?
+  order_id          Int?      @unique
   upsell_product_id Int?
   discount_percent  Int?
+  pitch             String?   @db.Text
   shown_at          DateTime? @default(now()) @db.Timestamp(6)
   expires_at        DateTime? @db.Timestamp(6)
   converted         Boolean?  @default(false)
+  test_group        String?   @db.VarChar(10) // 'A' (AI/Personalized) vs 'B' (Control/Generic)
   merchants         merchants? @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   orders            orders?   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products          products? @relation(fields: [upsell_product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users             users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([merchant_id])
+  @@index([user_id])
+  @@index([order_id])
 }
 
 model upsell_rules {
@@ -116,4 +127,6 @@ model users {
   merchants     merchants?      @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   orders        orders[]
   upsell_events upsell_events[]
+
+  @@index([merchant_id])
 }

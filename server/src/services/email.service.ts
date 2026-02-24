@@ -31,6 +31,7 @@ class EmailService {
         upsellProductImage: string | null;
         originalPrice: number;
         discountPercent: number;
+        personalizedPitch?: string | null; // Added this
         eventId: number;
         expiresAt: Date;
         shopDomain: string;
@@ -40,7 +41,7 @@ class EmailService {
         const {
             to, customerName, triggerProductName, upsellProductName,
             upsellProductImage, originalPrice, discountPercent,
-            eventId, expiresAt, shopDomain, customSubject, customBody
+            personalizedPitch, eventId, expiresAt, shopDomain, customSubject, customBody
         } = params;
 
         const discountedPrice = originalPrice * (1 - discountPercent / 100);
@@ -57,7 +58,10 @@ class EmailService {
 
         // ── Template Parsing ──────────────────────────────────────────────────
         let finalSubject = customSubject || `🎁 ${discountPercent}% off ${upsellProductName} — Exclusive Offer`;
-        let finalBody = customBody || `Our AI noticed that customers who buy <strong>${triggerProductName}</strong> love pairing it with this product. We're offering you an exclusive <strong style="color:#3b82f6;">${discountPercent}% discount</strong> — but only for a limited time!`;
+
+        // Use the personalized pitch if available, otherwise fall back to generic
+        const defaultBody = personalizedPitch || `Our AI noticed that customers who buy <strong>${triggerProductName}</strong> love pairing it with this product. We're offering you an exclusive <strong style="color:#3b82f6;">${discountPercent}% discount</strong> — but only for a limited time!`;
+        let finalBody = customBody || defaultBody;
 
         // Replace Placeholders
         const placeholders: Record<string, string> = {

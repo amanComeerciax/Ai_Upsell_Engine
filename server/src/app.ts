@@ -11,6 +11,7 @@ import shopifyRoutes from './routes/shopify.routes';
 import orderRoutes from './routes/order.routes';
 import upsellRoutes from './routes/upsell.routes';
 import merchantRoutes from './routes/merchant.routes';
+import './workers/upsell.worker'; // Initialize the background worker
 
 dotenv.config();
 

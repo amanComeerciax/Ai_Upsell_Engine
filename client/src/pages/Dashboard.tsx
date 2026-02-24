@@ -22,14 +22,19 @@ import { useMerchant } from '@/contexts/MerchantContext'
 export default function DashboardPage() {
     const { merchant } = useMerchant()
     const [stats, setStats] = useState<any>(null)
+    const [abMetrics, setAbMetrics] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [simulating, setSimulating] = useState(false)
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const res = await apiClient.get('/analytics/stats');
-            setStats(res.data);
+            const [statsRes, abRes] = await Promise.all([
+                apiClient.get('/analytics/stats'),
+                apiClient.get('/analytics/ab-test')
+            ]);
+            setStats(statsRes.data);
+            setAbMetrics(abRes.data);
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
         } finally {
@@ -291,6 +296,44 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* AI ROI Lift Summary */}
+            {abMetrics && (
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2rem] p-[1px] shadow-2xl shadow-blue-500/20">
+                    <div className="bg-[#0a0a0a] rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden relative border border-white/5">
+                        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                            <Sparkles className="h-48 w-48 text-white" />
+                        </div>
+
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="h-5 w-5 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                    <Sparkles className="h-3 w-3 text-blue-400" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Intelligence Performance</span>
+                            </div>
+                            <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
+                                AI PERSONALIZATION IS DRIVING <span className="text-blue-400">+{abMetrics.lift}% LIFT</span>
+                            </h2>
+                            <p className="text-white/40 mt-4 font-bold text-sm max-w-lg leading-relaxed">
+                                {abMetrics.summary} Comparing AI-personalized pitches against generic marketing control group.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-8 shrink-0">
+                            <div className="text-center">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">AI Conversion</p>
+                                <p className="text-4xl font-black text-blue-400 tracking-tighter italic">{abMetrics.groupA.rate}%</p>
+                            </div>
+                            <div className="h-10 w-[1px] bg-white/10" />
+                            <div className="text-center">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Control Group</p>
+                                <p className="text-4xl font-black text-white/40 tracking-tighter italic">{abMetrics.groupB.rate}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Performance Chart */}

@@ -58,7 +58,7 @@ export class ScoringService {
     /**
      * Scores a candidate product based on how well it fits as an upsell for the trigger product.
      */
-    calculateScore(triggerProduct: Product, candidate: Product): number {
+    calculateScore(triggerProduct: Product, candidate: Product, interests?: string[]): number {
         let score = 0;
         const triggerCat = this.normalizeCategory(triggerProduct.category);
         const candidateCat = this.normalizeCategory(candidate.category);
@@ -76,7 +76,16 @@ export class ScoringService {
             }
         }
 
-        // ── 2. Price Strategy ─────────────────────────────────────────────────
+        // ── 2. User Interests Bonus ───────────────────────────────────────────
+        if (interests && interests.length > 0) {
+            const normalizedInterests = interests.map(i => i.toLowerCase().trim());
+            if (normalizedInterests.includes(candidateCat)) {
+                console.log(`[Scoring] Interest Bonus! Candidate ${candidate.name} matches user interest.`);
+                score += 50; // Big boost for products user has shown interest in before
+            }
+        }
+
+        // ── 3. Price Strategy ─────────────────────────────────────────────────
         const triggerPrice = Number(triggerProduct.price) || 1;
         const candidatePrice = Number(candidate.price) || 1;
         const priceRatio = candidatePrice / triggerPrice;
@@ -99,17 +108,17 @@ export class ScoringService {
     /**
      * Ranks all candidates and returns the top scoring products.
      */
-    rankCandidates(triggerProduct: Product, candidates: Product[]): ScoredProduct[] {
+    rankCandidates(triggerProduct: Product, candidates: Product[], interests?: string[]): ScoredProduct[] {
         const ranked = candidates
             .map(candidate => ({
                 ...candidate,
-                score: this.calculateScore(triggerProduct, candidate),
+                score: this.calculateScore(triggerProduct, candidate, interests),
                 reason: 'Algorithmic match'
             }))
             .sort((a, b) => b.score - a.score);
 
         // Logging the top 3 for debugging
-        console.log(`[Scoring] Top picks for ${triggerProduct.name} (category: ${triggerProduct.category}):`);
+        console.log(`[Scoring] Top picks for ${triggerProduct.name} (customer interests: ${interests?.join(', ') || 'none'}):`);
         ranked.slice(0, 3).forEach(r =>
             console.log(`  - ${r.name}: Score ${r.score} (${r.category})`)
         );
