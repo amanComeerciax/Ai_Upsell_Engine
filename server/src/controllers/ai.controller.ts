@@ -28,30 +28,49 @@ export const aiController = {
      */
     async getRecommendation(req: Request, res: Response) {
         try {
-            const { product_id } = req.query;
+            const { product_id, shop: shopQuery } = req.query;
 
-            // 1. Identify Merchant via Referer (for SaaS widget)
+            // 1. Identify Merchant via query param (priority) or Referer header
             const referer = req.headers.referer || '';
-            const shopNameMatch = referer.match(/([^/]+)\.myshopify\.com/);
-            const shopName = shopNameMatch ? shopNameMatch[1] : null;
+            let shopName: string | null = (shopQuery as string) || null;
 
-            console.log(`[AI Controller] Request. Referer: ${referer}, Shop: ${shopName}`);
+            // Normalize query param: strip protocol, port, .myshopify.com suffix
+            if (shopName) {
+                shopName = shopName.replace(/^https?:\/\//, '').split(':')[0].split('/')[0].trim();
+                shopName = shopName.replace(/\.myshopify\.com$/, ''); // keep just subdomain
+            }
 
-            let merchantFilter: any = {};
+            // Fallback: extract from Referer header
+            if (!shopName && referer) {
+                const shopNameMatch = referer.match(/([^/:]+)\.myshopify\.com/);
+                shopName = shopNameMatch ? shopNameMatch[1] : null;
+            }
+
+            console.log(`[AI Controller] Request. Shop: "${shopName || 'unknown'}", PID: ${product_id}, Referer: ${referer}`);
+
+            let merchantFilter: any = null;
             if (shopName) {
                 const merchant = await prisma.merchants.findFirst({
                     where: {
                         OR: [
-                            { shopify_shop_name: { contains: shopName } },
-                            { shopify_shop_name: shopName }
+                            { shopify_shop_name: shopName },
+                            { shopify_shop_name: `${shopName}.myshopify.com` },
+                            { shopify_shop_name: { contains: shopName } }
                         ]
                     },
                     orderBy: { created_at: 'desc' }
                 });
                 if (merchant) {
                     merchantFilter = { merchant_id: merchant.id };
-                    console.log(`[AI Controller] Identified Merchant ID: ${merchant.id}`);
+                    shopName = (merchant.shopify_shop_name ?? '').replace(/\.myshopify\.com$/, '');
+                    console.log(`[AI Controller] ✅ Identified Merchant: ${merchant.shopify_shop_name} (ID: ${merchant.id})`);
+                } else {
+                    console.warn(`[AI Controller] ❌ Merchant not found for shop: "${shopName}"`);
+                    return res.status(401).json({ error: 'Unidentified Merchant', message: 'Could not match store credentials.' });
                 }
+            } else {
+                console.warn(`[AI Controller] ❌ No shop identifier in request. Referer: ${referer}`);
+                return res.status(401).json({ error: 'Unidentified Merchant', message: 'No shop identifier found in request.' });
             }
 
 

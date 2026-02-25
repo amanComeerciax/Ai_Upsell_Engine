@@ -1,14 +1,20 @@
 (function () {
-    // Velocity AI Upsell Widget - Production v2.0
-    // Now with: Click tracking, Conversion recording, 48hr expiry enforcement
-    // Detect origin dynamically (so you don't have to update ngrok URL manually)
-    const scriptSrc = document.currentScript ? document.currentScript.src : 'https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js';
+    // ─── Velocity AI Upsell Widget v2.5.0 ────────────────────────────────────
+    // Fixes: event_id priority, cart page detection, double-init guard,
+    //        ngrok interstitial bypass, AbortController for stale requests
+    const VERSION = '2.5.0';
+
+    // Detect origin dynamically from the script tag src
+    const scriptSrc = document.currentScript
+        ? document.currentScript.src
+        : 'https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js';
     const scriptOrigin = new URL(scriptSrc).origin;
     const API_BASE = `${scriptOrigin}/api/v1`;
 
+    // ─── Styles ───────────────────────────────────────────────────────────────
     const styles = `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        
+
         #velocity-upsell-root {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             position: fixed;
@@ -21,19 +27,20 @@
 
         @keyframes velocity-slide-up {
             from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            to   { transform: translateY(0);     opacity: 1; }
         }
 
         .velocity-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 32px;
             padding: 32px;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.15);
             overflow: hidden;
             position: relative;
+            pointer-events: auto;
         }
 
         .velocity-badge {
@@ -73,8 +80,7 @@
         }
 
         .velocity-timer-dot {
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             border-radius: 50%;
             background: #ef4444;
             animation: velocity-pulse 1s infinite;
@@ -82,23 +88,22 @@
 
         @keyframes velocity-pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50%       { opacity: 0.3; }
         }
 
         .velocity-product-box {
             display: flex;
             gap: 20px;
-            background: rgba(0, 0, 0, 0.04);
+            background: rgba(0,0,0,0.04);
             border-radius: 20px;
             padding: 16px;
             margin-bottom: 24px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0,0,0,0.06);
             align-items: center;
         }
 
         .velocity-img {
-            width: 80px;
-            height: 80px;
+            width: 80px; height: 80px;
             border-radius: 16px;
             object-fit: contain;
             background: white;
@@ -107,11 +112,7 @@
             flex-shrink: 0;
         }
 
-        .velocity-info {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
+        .velocity-info { display: flex; flex-direction: column; flex: 1; }
 
         .velocity-pname {
             font-weight: 800;
@@ -129,33 +130,11 @@
             line-height: 1.4;
         }
 
-        .velocity-price-tag {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
+        .velocity-price-tag { display: flex; align-items: baseline; gap: 8px; }
 
-        .velocity-price {
-            font-size: 18px;
-            font-weight: 900;
-            color: #3b82f6;
-        }
-
-        .velocity-old-price {
-            font-size: 13px;
-            text-decoration: line-through;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        .velocity-discount-badge {
-            background: #dcfce7;
-            color: #16a34a;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 6px;
-        }
+        .velocity-price    { font-size: 18px; font-weight: 900; color: #3b82f6; }
+        .velocity-old-price { font-size: 13px; text-decoration: line-through; color: #94a3b8; font-weight: 600; }
+        .velocity-discount-badge { background: #dcfce7; color: #16a34a; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; }
 
         .velocity-btn {
             width: 100%;
@@ -168,38 +147,21 @@
             font-size: 15px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             letter-spacing: 0.02em;
         }
-
-        .velocity-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-            background: linear-gradient(135deg, #000, #222);
-        }
-
-        .velocity-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .velocity-btn.success {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-        }
-
-        .velocity-btn.loading {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-        }
+        .velocity-btn:hover    { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); background: linear-gradient(135deg, #000, #222); }
+        .velocity-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .velocity-btn.success  { background: linear-gradient(135deg, #16a34a, #15803d); }
+        .velocity-btn.loading  { background: linear-gradient(135deg, #6366f1, #4f46e5); }
 
         .velocity-close {
             position: absolute;
-            top: 14px;
-            right: 14px;
+            top: 14px; right: 14px;
             cursor: pointer;
             opacity: 0.25;
             transition: opacity 0.2s;
@@ -210,7 +172,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .velocity-close:hover { opacity: 1; }
 
         .velocity-footer {
@@ -230,166 +191,178 @@
             font-weight: 700;
             color: #16a34a;
         }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     `;
 
     // ─── State ────────────────────────────────────────────────────────────────
     let currentEventId = null;
     let currentProductUrl = null;
+    let isLoading = false;   // Guard: prevents double-init race condition
+    let activeController = null;    // AbortController: cancels stale requests
+
+    // ─── Shared fetch options (bypasses ngrok interstitial on API calls) ──────
+    const FETCH_OPTS = {
+        headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Content-Type': 'application/json'
+        }
+    };
 
     // ─── Init ─────────────────────────────────────────────────────────────────
     function init() {
-        let orderId = window.VELOCITY_DEBUG_ID || null;
-        console.log('[Velocity AI] Widget v2.0 initializing...');
+        if (isLoading) {
+            console.log(`[Velocity AI] ⏳ v${VERSION} already loading — skipping duplicate init.`);
+            return;
+        }
 
-        // 1. Shopify Checkout Thank-You page
-        if (!orderId && window.Shopify && window.Shopify.checkout) {
+        console.log(`[Velocity AI] 🚀 Version ${VERSION} initializing... URL: ${window.location.pathname}`);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopParam = window.Shopify?.shop
+            ? `&shop=${window.Shopify.shop}`
+            : (window.location.hostname.includes('.myshopify.com')
+                ? `&shop=${window.location.hostname}`
+                : '');
+
+        // ── PRIORITY 1: Direct email/event link (?event_id=XX) ───────────────
+        // Must check BEFORE cart detection so upsell emails work even on /cart
+        const eventId = urlParams.get('event_id');
+        if (eventId) {
+            console.log('[Velocity AI] 📧 Direct Event Link detected:', eventId);
+            fetchRecommendation(`${API_BASE}/upsells/${eventId}?debug=1${shopParam}`, 1);
+            return;
+        }
+
+        // ── PRIORITY 2: Post-purchase order ID ───────────────────────────────
+        let orderId = window.VELOCITY_DEBUG_ID || null;
+
+        if (!orderId && window.Shopify?.checkout) {
             orderId = window.Shopify.checkout.order_id;
             console.log('[Velocity AI] Detected from Shopify.checkout:', orderId);
         }
-
-        // 2. Shopify Order Status page
-        if (!orderId && window.Shopify && window.Shopify.order) {
+        if (!orderId && window.Shopify?.order) {
             orderId = window.Shopify.order.id;
             console.log('[Velocity AI] Detected from Shopify.order:', orderId);
         }
-
-        // 3. URL query parameters
-        let eventId = null;
-        const urlParams = new URLSearchParams(window.location.search);
-        eventId = urlParams.get('event_id');
-
         if (!orderId) {
             orderId = urlParams.get('order_id') || urlParams.get('id') || urlParams.get('order');
         }
-
-        // 4. Extract from URL path patterns
         if (!orderId) {
             const patterns = [
                 /\/(?:orders|confirmed)\/(order_|)(\d+)/,
                 /\/checkouts\/[^/]+\/thank_you.*order_id[=:](\d+)/i,
-                /\/(\d{10,})/,
             ];
-            for (const pattern of patterns) {
-                const match = window.location.href.match(pattern);
-                if (match) {
-                    orderId = match[2] || match[1];
-                    console.log('[Velocity AI] Detected from URL pattern:', orderId);
-                    break;
-                }
+            for (const p of patterns) {
+                const m = window.location.href.match(p);
+                if (m) { orderId = m[2] || m[1]; console.log('[Velocity AI] Detected order from URL:', orderId); break; }
             }
         }
-
-        // 5. Check page scripts
         if (!orderId) {
-            const scripts = document.querySelectorAll('script');
-            scripts.forEach(function (s) {
+            document.querySelectorAll('script').forEach(s => {
                 if (!orderId && s.textContent) {
-                    const match = s.textContent.match(/"order_id"\s*:\s*(\d+)/);
-                    if (match) {
-                        orderId = match[1];
-                        console.log('[Velocity AI] Detected from page script:', orderId);
-                    }
+                    const m = s.textContent.match(/"order_id"\s*:\s*(\d+)/);
+                    if (m) { orderId = m[1]; console.log('[Velocity AI] Detected order from script:', orderId); }
                 }
             });
         }
 
-        // 6. Pre-purchase: Product Page
-        let productId = null;
-        if (!orderId && window.meta && window.meta.product) {
-            productId = window.meta.product.id;
+        if (orderId) {
+            console.log('[Velocity AI] 📦 Post-purchase flow for Order:', orderId);
+            fetchRecommendation(`${API_BASE}/upsells/order/${orderId}?debug=1${shopParam}`, 1);
+            return;
         }
 
-        if (!orderId && !productId && (window.location.pathname.includes('/products/') || window.location.pathname.includes('/items/'))) {
-            const scripts = document.querySelectorAll('script[type="application/json"]');
-            scripts.forEach(s => {
-                if (!productId && s.textContent.includes('product')) {
-                    const match = s.textContent.match(/"id"\s*:\s*(\d{10,})/);
-                    if (match) productId = match[1];
-                }
-            });
-        }
-
-        // 7. Cart page
-        if (!orderId && !productId && (window.location.pathname.includes('/cart') || window.Shopify?.cart)) {
-            console.log('[Velocity AI] On Cart page, fetching live context...');
-            fetch('/cart.js')
-                .then(res => res.json())
+        // ── PRIORITY 3: Cart page ─────────────────────────────────────────────
+        if (window.location.pathname === '/cart' || window.location.pathname.startsWith('/cart/')) {
+            console.log('[Velocity AI] 🛒 Cart page detected. Fetching items...');
+            fetch('/cart.js', FETCH_OPTS)
+                .then(r => r.json())
                 .then(cart => {
                     if (cart.items && cart.items.length > 0) {
                         const pId = cart.items[0].product_id;
-                        console.log('[Velocity AI] Detected Cart Context via AJAX:', pId);
-                        fetchRecommendation(`${API_BASE}/ai/recommend?product_id=${pId}`, 1);
+                        console.log('[Velocity AI] ✅ Cart has items. Fetching recommendation for product:', pId);
+                        fetchRecommendation(`${API_BASE}/ai/recommend?product_id=${pId}${shopParam}`, 1);
                     } else {
-                        throw new Error('Empty Cart');
+                        console.log('[Velocity AI] ℹ️ Cart is empty. Widget will wait for items.');
                     }
                 })
-                .catch(() => {
-                    console.log('[Velocity AI] Cart empty or undetected. Retrying...');
+                .catch(err => {
+                    console.warn('[Velocity AI] ❌ Cart fetch failed:', err);
                     setTimeout(init, 5000);
                 });
             return;
         }
 
-        if (eventId) {
-            console.log('[Velocity AI] Processing direct Event Link:', eventId);
-            fetchRecommendation(`${API_BASE}/upsells/${eventId}`, 1);
-        } else if (orderId) {
-            console.log('[Velocity AI] Processing Post-purchase for Order:', orderId);
-            fetchRecommendation(`${API_BASE}/upsells/order/${orderId}`, 1);
-        } else if (productId) {
-            console.log('[Velocity AI] Processing Pre-purchase for Product:', productId);
-            fetchRecommendation(`${API_BASE}/ai/recommend?product_id=${productId}`, 1);
-        } else {
-            console.log('[Velocity AI] No context found yet. Retrying in 5s...');
-            setTimeout(init, 5000);
+        // ── PRIORITY 4: Product page ──────────────────────────────────────────
+        let productId = null;
+        if (window.meta?.product) productId = window.meta.product.id;
+
+        if (!productId && (window.location.pathname.includes('/products/') || window.location.pathname.includes('/items/'))) {
+            document.querySelectorAll('script[type="application/json"]').forEach(s => {
+                if (!productId && s.textContent && s.textContent.includes('product')) {
+                    const m = s.textContent.match(/"id"\s*:\s*(\d{10,})/);
+                    if (m) productId = m[1];
+                }
+            });
         }
+
+        if (productId) {
+            console.log('[Velocity AI] 🏷️ Pre-purchase flow for Product:', productId);
+            fetchRecommendation(`${API_BASE}/ai/recommend?product_id=${productId}${shopParam}`, 1);
+            return;
+        }
+
+        console.log('[Velocity AI] ℹ️ No context detected on this page. Watching for cart actions...');
     }
 
     // ─── Fetch Recommendation ─────────────────────────────────────────────────
     function fetchRecommendation(url, attempt) {
-        if (attempt > 3) return;
+        if (attempt > 3) {
+            console.warn('[Velocity AI] ⚠️ Max retry attempts reached.');
+            isLoading = false;
+            return;
+        }
 
-        fetch(url, {
-            headers: {
-                'ngrok-skip-browser-warning': 'true',
-                'Content-Type': 'application/json'
-            }
-        })
+        // Cancel any previous in-flight request
+        if (activeController) activeController.abort();
+        activeController = new AbortController();
+        isLoading = true;
+
+        console.log(`[Velocity AI] 📡 Calling API (attempt ${attempt}):`, url);
+
+        fetch(url, { signal: activeController.signal, ...FETCH_OPTS })
             .then(res => {
                 if (res.status === 410) throw new Error('EXPIRED');
-                if (!res.ok) throw new Error('Pending AI logic...');
+                if (res.status === 401) throw new Error('UNAUTHORIZED');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
             .then(data => {
-                console.log('[Velocity AI] Match Found! Rendering widget.');
-                // Store event_id for tracking
+                isLoading = false;
+                if (!data.success && !data.recommended_product) throw new Error('No recommendation');
+                console.log('[Velocity AI] ✨ Recommendation Found! Rendering widget...');
                 currentEventId = data.event_id || null;
                 renderWidget(data);
-
-                // Track impression (shown)
-                if (currentEventId) {
-                    trackShown(currentEventId);
-                }
+                if (currentEventId) trackShown(currentEventId);
             })
             .catch(err => {
-                if (err.message === 'EXPIRED') {
-                    console.log('[Velocity AI] Offer expired. Widget will not show.');
+                if (err.name === 'AbortError') {
+                    console.log('[Velocity AI] 🔄 Request aborted (stale). New fetch will take over.');
                     return;
                 }
-                console.log(`[Velocity AI] AI is still thinking... Retrying in 2s. (attempt ${attempt})`);
-                setTimeout(() => fetchRecommendation(url, attempt + 1), 2000);
+                isLoading = false;
+                if (err.message === 'EXPIRED') { console.log('[Velocity AI] ⏹️ Offer expired.'); return; }
+                if (err.message === 'UNAUTHORIZED') { console.warn('[Velocity AI] ❌ Unauthorized! Check shop param.'); return; }
+                console.log(`[Velocity AI] ⏳ ${err.message}. Retrying in 1s... (attempt ${attempt})`);
+                setTimeout(() => fetchRecommendation(url, attempt + 1), 1000);
             });
     }
 
     // ─── Track Impression ─────────────────────────────────────────────────────
     function trackShown(eventId) {
-        fetch(`${API_BASE}/upsells/${eventId}/shown`, {
-            method: 'POST',
-            headers: {
-                'ngrok-skip-browser-warning': 'true',
-                'Content-Type': 'application/json'
-            }
-        }).catch(err => console.warn('[Velocity AI] Could not track impression:', err));
+        fetch(`${API_BASE}/upsells/${eventId}/shown`, { method: 'POST', ...FETCH_OPTS })
+            .catch(e => console.warn('[Velocity AI] Track shown error:', e));
     }
 
     // ─── Track Conversion ─────────────────────────────────────────────────────
@@ -403,55 +376,25 @@
             Processing...
         `;
 
-        fetch(`${API_BASE}/upsells/${eventId}/convert`, {
-            method: 'POST',
-            headers: {
-                'ngrok-skip-browser-warning': 'true',
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => res.json())
+        fetch(`${API_BASE}/upsells/${eventId}/convert`, { method: 'POST', ...FETCH_OPTS })
+            .then(res => {
+                if (!res.ok) throw new Error('Convert failed');
+                return res.json();
+            })
             .then(data => {
-                if (data.success) {
-                    console.log('[Velocity AI] ✅ Conversion recorded! Adding to cart...');
+                btn.className = 'velocity-btn success';
+                btn.innerHTML = `✓ Added to Cart! Redirecting...`;
 
-                    const variantId = data.recommended_product?.shopify_variant_id || data.shopify_variant_id;
-
-                    if (!variantId) {
-                        console.error('[Velocity AI] No Variant ID found, falling back to product page');
-                        window.location.href = currentProductUrl;
-                        return;
-                    }
-
-                    // Show "Redirecting..." status
-                    btn.innerHTML = `
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite">
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                        </svg>
-                        Going to Checkout...
-                    `;
-
-                    // Real Shopify AJAX Add to Cart (Direct format)
+                const variantId = data.shopify_variant_id || data.recommended_product?.shopify_variant_id;
+                if (variantId) {
                     fetch('/cart/add.js', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            id: variantId,
-                            quantity: 1
-                        })
+                        body: JSON.stringify({ id: variantId, quantity: 1 })
                     })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Add to cart failed');
-                            return response.json();
-                        })
-                        .then(() => {
-                            console.log('[Velocity AI] Product added! Redirecting to checkout...');
-                            window.location.href = '/checkout';
-                        })
-                        .catch(err => {
-                            console.warn('[Velocity AI] Cart add failed, trying direct cart page:', err);
-                            window.location.href = '/cart';
-                        });
+                        .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                        .then(() => { window.location.href = '/checkout'; })
+                        .catch(() => { window.location.href = '/cart'; });
                 } else {
                     btn.disabled = false;
                     btn.className = 'velocity-btn';
@@ -471,54 +414,35 @@
         const prod = data.recommended_product;
         if (!prod) return;
 
+        // Remove existing widget if any
+        const existing = document.getElementById('velocity-upsell-root');
+        if (existing) existing.remove();
+
         const discountPrice = prod.price * (1 - (prod.discount_percent || 0) / 100);
 
-        // ── Set redirect URL (priority: shopify_url > cart add > fallback) ──
-        if (prod.shopify_url) {
-            currentProductUrl = prod.shopify_url;
-        } else if (prod.shopify_id) {
-            currentProductUrl = `/cart/add?id=${prod.shopify_id}&quantity=1`;
-        }
+        if (prod.shopify_url) currentProductUrl = prod.shopify_url;
+        else if (prod.shopify_id) currentProductUrl = `/cart/add?id=${prod.shopify_id}&quantity=1`;
 
-        // Calculate time remaining display
         let timerHtml = '';
         if (data.expires_at) {
             const msLeft = new Date(data.expires_at).getTime() - Date.now();
             if (msLeft > 0) {
-                const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
-                const minutesLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-                timerHtml = `
-                    <div class="velocity-timer">
-                        <div class="velocity-timer-dot"></div>
-                        Offer expires in ${hoursLeft}h ${minutesLeft}m
-                    </div>
-                `;
+                const h = Math.floor(msLeft / 3600000);
+                const m = Math.floor((msLeft % 3600000) / 60000);
+                timerHtml = `<div class="velocity-timer"><div class="velocity-timer-dot"></div>Offer expires in ${h}h ${m}m</div>`;
             }
         }
 
         const container = document.createElement('div');
         container.id = 'velocity-upsell-root';
-
-        // Critical: Set styles on the host element so it positions correctly in the main page
         Object.assign(container.style, {
-            position: 'fixed',
-            bottom: '30px',
-            right: '30px',
-            width: '380px',
-            zIndex: '2147483647', // Maximum possible z-index
-            pointerEvents: 'none' // Allow clicking through if needed, but inner card will enable it
+            position: 'fixed', bottom: '30px', right: '30px',
+            width: '380px', zIndex: '2147483647', pointerEvents: 'none'
         });
 
         const shadow = container.attachShadow({ mode: 'open' });
-
         shadow.innerHTML = `
-            <style>
-                ${styles}
-                .velocity-card {
-                    pointer-events: auto; /* Enable clicks on the card itself */
-                }
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            </style>
+            <style>${styles}</style>
             <div class="velocity-card">
                 <button class="velocity-close" id="vel-close-btn" aria-label="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -526,24 +450,22 @@
 
                 <div class="velocity-badge">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    AI Recommendation
+                     
                 </div>
 
                 <div class="velocity-title">Perfect Match Found</div>
-
                 ${timerHtml}
 
                 <div class="velocity-product-box">
-                    <img 
-                        src="${prod.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop'}" 
-                        class="velocity-img" 
-                        onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop'"
-                        alt="${prod.name}"
-                    />
+                    <img src="${prod.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop'}"
+                         class="velocity-img"
+                         onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop'"
+                         alt="${prod.name}" />
                     <div class="velocity-info">
                         <div class="velocity-pname">${prod.name}</div>
+                        ${prod.reason ? `<div class="velocity-reason">${prod.reason}</div>` : ''}
                         <div class="velocity-price-tag">
-                            <span class="velocity-old-price">₹${prod.price.toLocaleString('en-IN')}</span>
+                            <span class="velocity-old-price">₹${Number(prod.price).toLocaleString('en-IN')}</span>
                             <span class="velocity-price">₹${discountPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                             <span class="velocity-discount-badge">-${prod.discount_percent}%</span>
                         </div>
@@ -561,27 +483,66 @@
 
         document.body.appendChild(container);
 
-        // ── Event Listeners ──
-        shadow.getElementById('vel-close-btn').addEventListener('click', () => {
-            container.remove();
-        });
-
+        shadow.getElementById('vel-close-btn').addEventListener('click', () => container.remove());
         shadow.getElementById('vel-claim-btn').addEventListener('click', () => {
-            if (currentEventId) {
-                trackConversion(currentEventId, shadow.getElementById('vel-claim-btn'));
-            } else {
-                // No event ID (pre-purchase flow) — just redirect to product
-                if (currentProductUrl) {
-                    window.location.href = currentProductUrl;
-                }
+            if (currentEventId) trackConversion(currentEventId, shadow.getElementById('vel-claim-btn'));
+            else if (currentProductUrl) window.location.href = currentProductUrl;
+        });
+    }
+
+    // ─── Navigation Monitor ───────────────────────────────────────────────────
+    function watchNavigation() {
+        console.log('[Velocity AI] 📡 Monitoring navigation and cart events...');
+
+        // AJAX Cart events (fetch hijack)
+        const origFetch = window.fetch;
+        window.fetch = function () {
+            const arg = arguments[0];
+            const url = typeof arg === 'string' ? arg : (arg && arg.url) ? arg.url : '';
+            if (url && (url.includes('/cart/add.js') || url.includes('/cart/change.js') || url.includes('/cart/update.js'))) {
+                console.log('[Velocity AI] ⚡ Cart change detected (fetch). Re-initializing after delay...');
+                isLoading = false; // Allow fresh init
+                setTimeout(init, 1000);
             }
+            return origFetch.apply(this, arguments);
+        };
+
+        // AJAX Cart events (XHR hijack)
+        const origSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.send = function () {
+            this.addEventListener('load', function () {
+                if (this.responseURL && (this.responseURL.includes('/cart/add.js') || this.responseURL.includes('/cart/change.js'))) {
+                    console.log('[Velocity AI] ⚡ Cart change detected (XHR). Re-initializing...');
+                    isLoading = false;
+                    setTimeout(init, 1000);
+                }
+            });
+            return origSend.apply(this, arguments);
+        };
+
+        // SPA navigation (History API)
+        const origPush = history.pushState;
+        history.pushState = function () {
+            origPush.apply(this, arguments);
+            isLoading = false;
+            console.log('[Velocity AI] 🧭 SPA navigation detected (pushState)');
+            setTimeout(init, 500);
+        };
+
+        window.addEventListener('popstate', () => {
+            isLoading = false;
+            console.log('[Velocity AI] 🧭 SPA navigation detected (popstate)');
+            setTimeout(init, 500);
         });
     }
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
+    watchNavigation();
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
+
 })();

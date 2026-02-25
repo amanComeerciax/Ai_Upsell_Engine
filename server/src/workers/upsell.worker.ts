@@ -105,7 +105,14 @@ export const upsellWorker = new Worker(
                     id: c.id,
                     name: c.name || 'Unknown',
                     category: c.category || 'General',
-                    price: Number(c.price)
+                    price: Number(c.price),
+                    // Enriched fields for Feature DNA scoring
+                    tags: c.tags || null,
+                    description: c.description || null,
+                    handle: c.handle || null,
+                    image_url: c.image_url || null,
+                    shopify_id: c.shopify_id?.toString() || null,
+                    shopify_variant_id: c.shopify_variant_id?.toString() || null,
                 }));
 
                 // ── PERSONALIZATION ENGINE ─────────────────────────────────
@@ -135,7 +142,11 @@ export const upsellWorker = new Worker(
                         id: triggerProduct.id,
                         name: triggerProduct.name || 'Unknown',
                         category: triggerProduct.category || 'General',
-                        price: Number(triggerProduct.price)
+                        price: Number(triggerProduct.price),
+                        // Enriched fields for Feature DNA scoring
+                        tags: (triggerProduct as any).tags || null,
+                        description: (triggerProduct as any).description || null,
+                        handle: (triggerProduct as any).handle || null,
                     },
                     formattedCandidates,
                     { location, interests },

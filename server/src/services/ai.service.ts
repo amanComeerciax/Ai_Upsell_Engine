@@ -86,21 +86,45 @@ export class AIService {
             return genericFallback;
         }
 
-        console.log(`[AI Service] 🤖 Cache MISS. Generating personalized AI pitch...`);
+        console.log(`[AI Service] ⚡ Cache MISS. Returning smart fallback immediately, warming AI cache in background...`);
 
-        // ── Smart fallback pitches (instant, no AI needed) ────────────────────
+        // ── Return smart fallback IMMEDIATELY (< 50ms, no Ollama wait) ──────────
         const smartFallback = this.buildSmartFallback(triggerProduct, winner, context, testGroup);
+        this.recommendationCache.set(cacheKey, smartFallback);
+        this.saveToDbCache(cacheKey, smartFallback.reason, smartFallback.discount_percent).catch(() => { });
 
+        // ── Warm the cache with AI pitch in the background (fire-and-forget) ───
+        this.warmCacheWithAI(triggerProduct, winner, context, cacheKey, smartFallback.discount_percent);
+
+        return smartFallback;
+    }
+
+    /**
+     * Calls Ollama asynchronously to upgrade the cached pitch.
+     * Never blocks the main request — runs entirely in the background.
+     */
+    private async warmCacheWithAI(
+        triggerProduct: Product,
+        winner: Product,
+        context: { location?: string; interests?: string[] } | undefined,
+        cacheKey: string,
+        fallbackDiscount: number
+    ): Promise<void> {
         try {
-            // ── Building Context-Aware Prompt ─────────────────────────────────
             const locationStr = context?.location ? ` The customer is located in ${context.location}.` : '';
             const interestStr = context?.interests?.length
                 ? ` Their interests based on past purchases include: ${context.interests.join(', ')}.`
                 : '';
 
             const prompt = `You are a High-Conversion Marketing Copywriter for an E-commerce store.
-A customer just bought: "${triggerProduct.name}".${locationStr}${interestStr}
+A customer just bought: "${triggerProduct.name}".
+Product Details: ${triggerProduct.description || 'No description available'}
+Tags: ${triggerProduct.tags || 'none'}
+${locationStr}${interestStr}
+
 We have decided to offer them: "${winner.name}" as an upsell.
+Upsell Details: ${winner.description || 'No description available'}
+Upsell Tags: ${winner.tags || 'none'}
 
 Task:
 Write a brief, catchy one-sentence "Reason" why these products go perfect together. 
@@ -123,28 +147,20 @@ Output Format (STRICT JSON):
 
             const result = JSON.parse(response.data.response);
 
-            const finalResponse: RecommendationResponse = {
+            const aiResponse: RecommendationResponse = {
                 recommended_product_id: winner.id,
                 recommended_product_name: winner.name || 'Unknown',
-                reason: result.marketing_pitch || smartFallback.reason,
-                discount_percent: result.discount_percent || 15
+                reason: result.marketing_pitch || '',
+                discount_percent: result.discount_percent || fallbackDiscount
             };
 
-            // Save to L1 + L2 cache
-            this.recommendationCache.set(cacheKey, finalResponse);
-            this.saveToDbCache(cacheKey, finalResponse.reason, finalResponse.discount_percent).catch(() => { });
-
-            return finalResponse;
-
-        } catch (error: any) {
-            const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
-            console.warn(`[AI Service] ${isTimeout ? '⏱️ Ollama timeout' : '❌ Ollama error'} — using smart fallback`);
-
-            // Cache the fallback too so next request is instant
-            this.recommendationCache.set(cacheKey, smartFallback);
-            this.saveToDbCache(cacheKey, smartFallback.reason, smartFallback.discount_percent).catch(() => { });
-
-            return smartFallback;
+            if (aiResponse.reason) {
+                console.log(`[AI Service] 🎯 AI pitch ready for "${winner.name}" — cache upgraded!`);
+                this.recommendationCache.set(cacheKey, aiResponse);
+                this.saveToDbCache(cacheKey, aiResponse.reason, aiResponse.discount_percent).catch(() => { });
+            }
+        } catch {
+            console.log(`[AI Service] ℹ️ Background AI warming skipped (Ollama unavailable). Fallback stays in cache.`);
         }
     }
 
@@ -176,7 +192,7 @@ Output Format (STRICT JSON):
             ],
         };
 
-        const category = (winner as any).category || 'Apparel';
+        const category = winner.category || 'Apparel';
         const options = pitches[category] || pitches['Apparel'];
         const reason = options[Math.floor(Math.random() * options.length)];
 
@@ -228,5 +244,3 @@ Output Format (STRICT JSON):
 }
 
 export const aiService = new AIService();
-
-
