@@ -2,7 +2,7 @@
     // ─── Velocity AI Upsell Widget v2.5.0 ────────────────────────────────────
     // Fixes: event_id priority, cart page detection, double-init guard,
     //        ngrok interstitial bypass, AbortController for stale requests
-    const VERSION = '2.5.0';
+    const VERSION = '2.6.0';
 
     // Detect origin dynamically from the script tag src
     const scriptSrc = document.currentScript
@@ -192,6 +192,49 @@
             color: #16a34a;
         }
 
+        /* ── Carousel ──────────────────────────────────── */
+        .velocity-carousel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .velocity-counter {
+            font-size: 12px; font-weight: 700;
+            color: #94a3b8;
+            background: rgba(0,0,0,0.05);
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .velocity-nav-arrows { display: flex; gap: 6px; }
+        .velocity-nav-btn {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: #374151;
+            transition: all 0.2s;
+            font-size: 14px; line-height: 1;
+        }
+        .velocity-nav-btn:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .velocity-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .velocity-slides-container { overflow: hidden; margin-bottom: 14px; }
+        .velocity-slides-track {
+            display: flex;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .velocity-slide { min-width: 100%; }
+        .velocity-dots {
+            display: flex; justify-content: center; gap: 6px; margin-bottom: 16px;
+        }
+        .velocity-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #e2e8f0; border: none; cursor: pointer;
+            transition: all 0.25s; padding: 0;
+        }
+        .velocity-dot.active { background: #3b82f6; width: 20px; border-radius: 3px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     `;
 
@@ -340,8 +383,10 @@
             })
             .then(data => {
                 isLoading = false;
-                if (!data.success && !data.recommended_product) throw new Error('No recommendation');
-                console.log('[Velocity AI] ✨ Recommendation Found! Rendering widget...');
+                const hasRecs = Array.isArray(data.recommendations) && data.recommendations.length > 0;
+                const hasLegacy = !!data.recommended_product;
+                if (!data.success && !hasRecs && !hasLegacy) throw new Error('No recommendation');
+                console.log('[Velocity AI] ✨ Recommendation Found! Rendering carousel...');
                 currentEventId = data.event_id || null;
                 renderWidget(data);
                 if (currentEventId) trackShown(currentEventId);
@@ -409,20 +454,21 @@
             });
     }
 
-    // ─── Render Widget ────────────────────────────────────────────────────────
+    // ─── Render Widget (Carousel) ─────────────────────────────────────────────
     function renderWidget(data) {
-        const prod = data.recommended_product;
-        if (!prod) return;
+        // Normalize: support new recommendations[] and legacy recommended_product
+        const recs = (Array.isArray(data.recommendations) && data.recommendations.length > 0)
+            ? data.recommendations
+            : (data.recommended_product ? [data.recommended_product] : []);
+        if (recs.length === 0) return;
 
-        // Remove existing widget if any
         const existing = document.getElementById('velocity-upsell-root');
         if (existing) existing.remove();
 
-        const discountPrice = prod.price * (1 - (prod.discount_percent || 0) / 100);
+        const total = recs.length;
+        const FALLBACK_IMG = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
 
-        if (prod.shopify_url) currentProductUrl = prod.shopify_url;
-        else if (prod.shopify_id) currentProductUrl = `/cart/add?id=${prod.shopify_id}&quantity=1`;
-
+        // Timer
         let timerHtml = '';
         if (data.expires_at) {
             const msLeft = new Date(data.expires_at).getTime() - Date.now();
@@ -432,6 +478,42 @@
                 timerHtml = `<div class="velocity-timer"><div class="velocity-timer-dot"></div>Offer expires in ${h}h ${m}m</div>`;
             }
         }
+
+        // Build slides HTML
+        const slidesHtml = recs.map(prod => {
+            const dPrice = (prod.price * (1 - (prod.discount_percent || 0) / 100)).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            const oPrice = Number(prod.price).toLocaleString('en-IN');
+            return `
+            <div class="velocity-slide">
+                <div class="velocity-product-box">
+                    <img src="${prod.image || FALLBACK_IMG}" class="velocity-img"
+                         onerror="this.src='${FALLBACK_IMG}'" alt="${prod.name || 'Product'}" />
+                    <div class="velocity-info">
+                        <div class="velocity-pname">${prod.name || 'Top Pick'}</div>
+                        ${prod.reason ? `<div class="velocity-reason">${prod.reason}</div>` : ''}
+                        <div class="velocity-price-tag">
+                            <span class="velocity-old-price">&#8377;${oPrice}</span>
+                            <span class="velocity-price">&#8377;${dPrice}</span>
+                            <span class="velocity-discount-badge">-${prod.discount_percent || 15}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Dots HTML
+        const dotsHtml = total > 1
+            ? `<div class="velocity-dots">${recs.map((_, i) => `<button class="velocity-dot${i === 0 ? ' active' : ''}" data-idx="${i}"></button>`).join('')}</div>`
+            : '';
+
+        // Counter / arrows
+        const counterHtml = total > 1 ? `<span class="velocity-counter">1 / ${total}</span>` : '';
+        const arrowsHtml = total > 1
+            ? `<div class="velocity-nav-arrows">
+                <button class="velocity-nav-btn" id="vel-prev" disabled>&#8592;</button>
+                <button class="velocity-nav-btn" id="vel-next">&#8594;</button>
+               </div>`
+            : '';
 
         const container = document.createElement('div');
         container.id = 'velocity-upsell-root';
@@ -444,50 +526,102 @@
         shadow.innerHTML = `
             <style>${styles}</style>
             <div class="velocity-card">
-                <button class="velocity-close" id="vel-close-btn" aria-label="Close">
+                <button class="velocity-close" id="vel-close" aria-label="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
 
-                <div class="velocity-badge">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                     
+                <div class="velocity-carousel-header">
+                    <div class="velocity-badge">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        AI PICKS
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        ${counterHtml}
+                        ${arrowsHtml}
+                    </div>
                 </div>
 
                 <div class="velocity-title">Perfect Match Found</div>
                 ${timerHtml}
 
-                <div class="velocity-product-box">
-                    <img src="${prod.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop'}"
-                         class="velocity-img"
-                         onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop'"
-                         alt="${prod.name}" />
-                    <div class="velocity-info">
-                        <div class="velocity-pname">${prod.name}</div>
-                        ${prod.reason ? `<div class="velocity-reason">${prod.reason}</div>` : ''}
-                        <div class="velocity-price-tag">
-                            <span class="velocity-old-price">₹${Number(prod.price).toLocaleString('en-IN')}</span>
-                            <span class="velocity-price">₹${discountPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                            <span class="velocity-discount-badge">-${prod.discount_percent}%</span>
-                        </div>
-                    </div>
+                <div class="velocity-slides-container">
+                    <div class="velocity-slides-track" id="vel-track">${slidesHtml}</div>
                 </div>
 
-                <button class="velocity-btn" id="vel-claim-btn">
-                    Claim ${prod.discount_percent}% Discount
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                ${dotsHtml}
+
+                <button class="velocity-btn" id="vel-claim">
+                    Claim ${recs[0].discount_percent || 15}% Discount
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
 
                 <div class="velocity-footer">Powered by Velocity AI Engine</div>
-            </div>
-        `;
+            </div>`;
 
         document.body.appendChild(container);
 
-        shadow.getElementById('vel-close-btn').addEventListener('click', () => container.remove());
-        shadow.getElementById('vel-claim-btn').addEventListener('click', () => {
-            if (currentEventId) trackConversion(currentEventId, shadow.getElementById('vel-claim-btn'));
+        let currentSlide = 0;
+
+        function goTo(idx) {
+            currentSlide = idx;
+            shadow.getElementById('vel-track').style.transform = `translateX(-${idx * 100}%)`;
+
+            // Update counter
+            const counter = shadow.querySelector('.velocity-counter');
+            if (counter) counter.textContent = `${idx + 1} / ${total}`;
+
+            // Update dots
+            shadow.querySelectorAll('.velocity-dot').forEach((d, i) => {
+                d.classList.toggle('active', i === idx);
+            });
+
+            // Update nav buttons
+            const prev = shadow.getElementById('vel-prev');
+            const next = shadow.getElementById('vel-next');
+            if (prev) prev.disabled = idx === 0;
+            if (next) next.disabled = idx === total - 1;
+
+            // Update claim button text + current product URL
+            const prod = recs[idx];
+            const claimBtn = shadow.getElementById('vel-claim');
+            claimBtn.innerHTML = `Claim ${prod.discount_percent || 15}% Discount <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+
+            if (prod.shopify_url) currentProductUrl = prod.shopify_url;
+            else if (prod.shopify_id) currentProductUrl = `/cart/add?id=${prod.shopify_id}&quantity=1`;
+        }
+
+        // Event listeners
+        shadow.getElementById('vel-close').addEventListener('click', () => container.remove());
+
+        shadow.getElementById('vel-claim').addEventListener('click', () => {
+            const btn = shadow.getElementById('vel-claim');
+            if (currentEventId) trackConversion(currentEventId, btn);
             else if (currentProductUrl) window.location.href = currentProductUrl;
         });
+
+        if (total > 1) {
+            shadow.getElementById('vel-prev').addEventListener('click', () => { if (currentSlide > 0) goTo(currentSlide - 1); });
+            shadow.getElementById('vel-next').addEventListener('click', () => { if (currentSlide < total - 1) goTo(currentSlide + 1); });
+
+            shadow.querySelectorAll('.velocity-dot').forEach((dot, i) => {
+                dot.addEventListener('click', () => goTo(i));
+            });
+
+            // Touch swipe
+            let touchStartX = 0;
+            const track = shadow.getElementById('vel-track');
+            track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+            track.addEventListener('touchend', e => {
+                const diff = touchStartX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0 && currentSlide < total - 1) goTo(currentSlide + 1);
+                    else if (diff < 0 && currentSlide > 0) goTo(currentSlide - 1);
+                }
+            }, { passive: true });
+        }
+
+        // Initialize first slide
+        goTo(0);
     }
 
     // ─── Navigation Monitor ───────────────────────────────────────────────────

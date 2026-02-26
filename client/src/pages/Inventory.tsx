@@ -1,26 +1,39 @@
 import { useState, useEffect } from 'react'
 import apiClient from '@/lib/api-client'
-import { Package, Search, Filter, ArrowUpRight, TrendingUp, AlertCircle, MoreHorizontal, Loader2, RefreshCcw } from 'lucide-react'
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Product } from '@/types/dashboard'
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-
+    Package, Search, Filter, ArrowUpRight, TrendingUp, AlertCircle,
+    MoreHorizontal, Loader2, RefreshCcw, Pencil, BarChart2, Trash2
+} from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Product } from '@/types/dashboard'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
 import { useMerchant } from '@/contexts/MerchantContext'
 
+type EditForm = { name: string; category: string; price: string }
+
 export default function InventoryPage() {
+    const navigate = useNavigate()
     const { syncProducts } = useMerchant()
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+    const [editForm, setEditForm] = useState<EditForm>({ name: '', category: '', price: '' })
+    const [saving, setSaving] = useState(false)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
     const [stats, setStats] = useState({
         totalProducts: "0",
         upsellPerformance: "+0%",
@@ -35,12 +48,11 @@ export default function InventoryPage() {
                 apiClient.get('/products'),
                 apiClient.get('/products/stats')
             ]);
-
             setProducts(productsRes.data);
             setStats({
                 totalProducts: statsRes.data.totalProducts.toLocaleString(),
                 upsellPerformance: statsRes.data.performanceIncrease,
-                lowStockItems: "0", // Could be calculated if stock field existed
+                lowStockItems: "0",
                 totalRevenue: `₹${Number(statsRes.data.totalRevenue).toLocaleString()}`
             });
         } catch (error) {
@@ -56,19 +68,55 @@ export default function InventoryPage() {
             const result = await syncProducts();
             if (result) {
                 await fetchData();
-                alert(`Shopify Sync Complete! Synced ${result.count} products.`);
+                toast.success(`Shopify Sync Complete! Synced ${result.count} products.`);
             }
         } catch (error: any) {
             console.error("Sync failed:", error);
-            alert(`Sync failed: ${error.message}`);
+            toast.error(`Sync failed: ${error.message}`);
         } finally {
             setSyncing(false);
         }
     }
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    const openEditModal = (product: Product) => {
+        setEditingProduct(product)
+        setEditForm({ name: product.name, category: product.category, price: String(product.price) })
+    }
+
+    const handleSaveEdit = async () => {
+        if (!editingProduct) return
+        setSaving(true)
+        try {
+            await apiClient.patch(`/products/${editingProduct.id}`, {
+                name: editForm.name,
+                category: editForm.category,
+                price: parseFloat(editForm.price),
+            })
+            toast.success(`"${editForm.name}" updated successfully!`)
+            setEditingProduct(null)
+            await fetchData()
+        } catch (err: any) {
+            toast.error(`Failed to update: ${err?.response?.data?.error || err.message}`)
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const handleDelete = async (product: Product) => {
+        if (!confirm(`⚠️ Delete "${product.name}"?\n\nThis will also remove all related upsell history. This cannot be undone.`)) return
+        setDeletingId(product.id)
+        try {
+            await apiClient.delete(`/products/${product.id}`)
+            toast.success(`"${product.name}" removed from inventory.`)
+            await fetchData()
+        } catch (err: any) {
+            toast.error(`Failed to delete: ${err?.response?.data?.error || err.message}`)
+        } finally {
+            setDeletingId(null)
+        }
+    }
+
+    useEffect(() => { fetchData(); }, []);
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -94,7 +142,7 @@ export default function InventoryPage() {
                 </div>
             </div>
 
-            {/* Stats Overview ... unchanged ... */}
+            {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: "Total Products", value: stats.totalProducts, icon: Package, color: "text-blue-500" },
@@ -158,7 +206,13 @@ export default function InventoryPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {products.map((product) => (
+                            {products.length === 0 ? (
+                                <TableRow>
+                                    <td colSpan={7} className="text-center py-16 text-sm text-muted-foreground font-bold">
+                                        No products found. Sync from Shopify to get started.
+                                    </td>
+                                </TableRow>
+                            ) : products.map((product) => (
                                 <TableRow key={product.id} className="border-foreground/[0.04] hover:bg-foreground/[0.01] transition-colors group">
                                     <TableCell className="py-4">
                                         <div className="flex items-center gap-4">
@@ -194,9 +248,37 @@ export default function InventoryPage() {
                                     </TableCell>
                                     <TableCell className="text-right font-black text-sm text-foreground">₹{Number(product.revenueGenerated || 0).toLocaleString()}</TableCell>
                                     <TableCell>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-foreground/[0.05]">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-foreground/[0.05]"
+                                                    disabled={deletingId === product.id}>
+                                                    {deletingId === product.id
+                                                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                                                        : <MoreHorizontal className="h-4 w-4" />}
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="rounded-xl border-foreground/[0.08] bg-background/95 backdrop-blur-xl">
+                                                <DropdownMenuItem
+                                                    className="gap-2 font-medium cursor-pointer"
+                                                    onClick={() => openEditModal(product)}
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" /> Edit Product
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="gap-2 font-medium cursor-pointer"
+                                                    onClick={() => navigate('/dashboard/analytics')}
+                                                >
+                                                    <BarChart2 className="h-3.5 w-3.5" /> View Analytics
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="gap-2 font-medium cursor-pointer text-red-500 focus:text-red-500"
+                                                    onClick={() => handleDelete(product)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" /> Remove Product
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -204,6 +286,66 @@ export default function InventoryPage() {
                     </Table>
                 )}
             </Card>
+
+            {/* ── Edit Product Modal ── */}
+            {editingProduct && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={(e) => { if (e.target === e.currentTarget) setEditingProduct(null) }}>
+                    <div className="bg-background border border-foreground/[0.08] rounded-3xl p-8 w-full max-w-md space-y-6 shadow-2xl">
+                        <div>
+                            <h2 className="text-xl font-black uppercase tracking-tight">Edit Product</h2>
+                            <p className="text-xs text-muted-foreground mt-1">Update the product details below.</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 block">Product Name</label>
+                                <Input
+                                    value={editForm.name}
+                                    onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                                    className="rounded-xl h-11 bg-foreground/[0.02] border-foreground/[0.08] focus-visible:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 block">Category</label>
+                                <Input
+                                    value={editForm.category}
+                                    onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))}
+                                    className="rounded-xl h-11 bg-foreground/[0.02] border-foreground/[0.08] focus-visible:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 block">Price (₹)</label>
+                                <Input
+                                    type="number"
+                                    value={editForm.price}
+                                    onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
+                                    className="rounded-xl h-11 bg-foreground/[0.02] border-foreground/[0.08] focus-visible:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                onClick={handleSaveEdit}
+                                disabled={saving}
+                                className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest text-[11px]"
+                            >
+                                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                {saving ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setEditingProduct(null)}
+                                disabled={saving}
+                                className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] border-foreground/[0.08]"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, CalendarPlus } from 'lucide-react'
 import apiClient from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,7 @@ export default function OrdersPage() {
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
+    const [viewingOrder, setViewingOrder] = useState<Order | null>(null)
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -41,6 +42,14 @@ export default function OrdersPage() {
         return matchesSearch && matchesStatus
     })
 
+    const handleRowAction = (action: string, row: Order) => {
+        if (action === 'view') {
+            setViewingOrder(row)
+        } else if (action === 'schedule') {
+            alert(`🚀 Manual Upsell Scheduling\n\nThis will queue a manual upsell campaign for:\n👤 ${row.customerName} (${row.customerEmail})\n📦 Products: ${row.products.join(', ')}\n\n⚡ Feature coming in the next release — this will allow you to trigger AI-powered upsells for non-automated orders.`)
+        }
+    }
+
     const columns: Column<Order>[] = [
         { key: 'id', header: 'Order ID', sortable: true },
         {
@@ -60,17 +69,12 @@ export default function OrdersPage() {
             render: (row) => (
                 <div className="flex gap-1 flex-wrap max-w-xs">
                     {row.products.slice(0, 2).map((product, i) => (
-                        <span
-                            key={i}
-                            className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs"
-                        >
+                        <span key={i} className="px-2 py-0.5 rounded-md bg-secondary text-foreground text-xs">
                             {product}
                         </span>
                     ))}
                     {row.products.length > 2 && (
-                        <span className="text-xs text-muted-foreground">
-                            +{row.products.length - 2}
-                        </span>
+                        <span className="text-xs text-muted-foreground">+{row.products.length - 2}</span>
                     )}
                 </div>
             ),
@@ -139,18 +143,94 @@ export default function OrdersPage() {
             </div>
 
             {/* Orders Table */}
-            <DataTable
-                data={filteredOrders}
-                columns={columns}
-                rowActions={[
-                    { label: 'View Order Details', value: 'view' },
-                    { label: 'Schedule Upsell', value: 'schedule' },
-                ]}
-                onRowAction={(action, row) => {
-                    console.log(`Action: ${action} on order ${row.id}`)
-                }}
-                pageSize={10}
-            />
+            {loading ? (
+                <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span className="text-sm font-medium">Loading orders...</span>
+                </div>
+            ) : (
+                <DataTable
+                    data={filteredOrders}
+                    columns={columns}
+                    rowActions={[
+                        { label: '👁️ View Order Details', value: 'view' },
+                        { label: '🚀 Schedule Upsell', value: 'schedule' },
+                    ]}
+                    onRowAction={handleRowAction}
+                    pageSize={10}
+                />
+            )}
+
+            {/* ── Order Details Modal ── */}
+            {viewingOrder && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={(e) => { if (e.target === e.currentTarget) setViewingOrder(null) }}
+                >
+                    <div className="bg-background border border-border rounded-3xl p-8 w-full max-w-lg space-y-6 shadow-2xl">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <h2 className="text-xl font-black uppercase tracking-tight">Order Details</h2>
+                                <p className="text-xs text-muted-foreground mt-0.5 font-mono">{viewingOrder.id}</p>
+                            </div>
+                            <StatusBadge status={viewingOrder.upsellStatus} />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Customer</p>
+                                <p className="font-bold text-sm">{viewingOrder.customerName}</p>
+                                <p className="text-xs text-muted-foreground">{viewingOrder.customerEmail}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Order Date</p>
+                                <p className="font-bold text-sm">{new Date(viewingOrder.orderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Order Amount</p>
+                                <p className="font-black text-xl text-emerald-500">₹{viewingOrder.amount.toLocaleString()}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Upsell Status</p>
+                                <StatusBadge status={viewingOrder.upsellStatus} />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Products Ordered</p>
+                            <div className="flex flex-wrap gap-2">
+                                {viewingOrder.products.map((p, i) => (
+                                    <span key={i} className="px-3 py-1 rounded-xl bg-foreground/[0.04] border border-foreground/[0.06] text-xs font-bold">
+                                        {p}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            {viewingOrder.upsellStatus === 'none' && (
+                                <Button
+                                    className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest text-[11px]"
+                                    onClick={() => {
+                                        setViewingOrder(null)
+                                        alert(`🚀 Manual upsell scheduling for ${viewingOrder.customerName} — coming soon!`)
+                                    }}
+                                >
+                                    <CalendarPlus className="h-4 w-4 mr-2" />
+                                    Schedule Upsell
+                                </Button>
+                            )}
+                            <Button
+                                variant="outline"
+                                className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] border-foreground/[0.08]"
+                                onClick={() => setViewingOrder(null)}
+                            >
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

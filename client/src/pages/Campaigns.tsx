@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Plus, Search, Filter, Zap, Smartphone, Sparkles, ArrowRight, Loader2 } from 'lucide-react'
 import apiClient from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
@@ -15,10 +17,12 @@ import {
 } from '@/components/ui/select'
 
 export default function CampaignsPage() {
+    const navigate = useNavigate()
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
+    const [retriggering, setRetriggering] = useState<number | null>(null)
 
     useEffect(() => {
         const fetchCampaigns = async () => {
@@ -42,6 +46,31 @@ export default function CampaignsPage() {
         const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter
         return matchesSearch && matchesStatus
     })
+
+    const handleRowAction = async (action: string, row: Campaign) => {
+        if (action === 'view') {
+            navigate('/dashboard/analytics')
+        } else if (action === 'resend') {
+            if (row.status === 'converted') {
+                toast.info(`Campaign already converted — no need to retrigger.`)
+                return
+            }
+            if (!confirm(`Retrigger upsell to ${row.customerEmail}?\n\nProduct: ${row.productName}\nDiscount: ${row.discountPercent}%`)) return
+
+            setRetriggering(row.id)
+            try {
+                await apiClient.post(`/upsells/${row.id}/resend`)
+                toast.success(`✅ Upsell campaign re-triggered for ${row.customerEmail}!`)
+                const res = await apiClient.get('/upsells')
+                setCampaigns(res.data)
+            } catch (err: any) {
+                const msg = err?.response?.data?.error || 'Could not retrigger campaign'
+                toast.error(`❌ ${msg}`)
+            } finally {
+                setRetriggering(null)
+            }
+        }
+    }
 
     const columns: Column<Campaign>[] = [
         {
@@ -82,11 +111,21 @@ export default function CampaignsPage() {
             ),
         },
         {
+            key: 'impressionCount' as any,
+            header: 'Views',
+            sortable: true,
+            render: (row: any) => (
+                <span className={`text-[10px] font-black ${row.impressionCount > 0 ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                    {row.impressionCount > 0 ? `👁 ${row.impressionCount}` : '—'}
+                </span>
+            ),
+        },
+        {
             key: 'status',
             header: 'State',
             sortable: true,
             render: (row) => {
-                const colors = {
+                const colors: Record<string, string> = {
                     active: 'bg-blue-500/10 text-blue-600',
                     converted: 'bg-emerald-500/10 text-emerald-600',
                     expired: 'bg-red-500/10 text-red-500',
@@ -171,7 +210,7 @@ export default function CampaignsPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Content Body */}
+                    {/* Table */}
                     <div className="border border-foreground/[0.04] rounded-3xl overflow-hidden bg-foreground/[0.01] shadow-2xl shadow-foreground/[0.02]">
                         {loading ? (
                             <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
@@ -183,17 +222,17 @@ export default function CampaignsPage() {
                                 data={filteredCampaigns}
                                 columns={columns}
                                 rowActions={[
-                                    { label: 'In-depth Analytics', value: 'view' },
-                                    { label: 'Retrigger', value: 'resend' },
+                                    { label: '📊 In-depth Analytics', value: 'view' },
+                                    { label: retriggering ? '⏳ Retriggering...' : '🔄 Retrigger', value: 'resend' },
                                 ]}
-                                onRowAction={(action, row) => console.log(action, row)}
+                                onRowAction={handleRowAction}
                                 pageSize={8}
                             />
                         )}
                     </div>
                 </div>
 
-                {/* Live Preview Side (The WoW Factor) */}
+                {/* Live Preview Side */}
                 <div className="xl:col-span-4 flex flex-col gap-6">
                     <div className="flex items-center gap-3 mb-2 px-2">
                         <Smartphone className="h-5 w-5 text-blue-500" />
@@ -201,9 +240,7 @@ export default function CampaignsPage() {
                     </div>
 
                     <div className="relative group">
-                        {/* Device Frame */}
                         <div className="rounded-[3rem] border-8 border-foreground/[0.08] bg-background shadow-2xl overflow-hidden relative aspect-[9/16] max-w-[320px] mx-auto transition-transform duration-500 group-hover:scale-[1.02]">
-                            {/* StatusBar */}
                             <div className="absolute top-0 inset-x-0 h-10 flex items-center justify-between px-8 z-10">
                                 <span className="text-[10px] font-bold">9:41</span>
                                 <div className="flex gap-1.5 items-center">
@@ -211,8 +248,6 @@ export default function CampaignsPage() {
                                     <div className="h-2 w-3.5 rounded-sm border border-foreground/30" />
                                 </div>
                             </div>
-
-                            {/* Content Overflow */}
                             <div className="pt-16 pb-6 px-6 h-full overflow-y-auto bg-foreground/[0.01]">
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 mb-4">
@@ -221,14 +256,11 @@ export default function CampaignsPage() {
                                         </div>
                                         <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Order Successful</span>
                                     </div>
-
                                     <div className="h-32 w-full rounded-2xl bg-foreground/[0.03] animate-pulse" />
                                     <div className="space-y-2">
                                         <div className="h-4 w-3/4 rounded-lg bg-foreground/[0.05]" />
                                         <div className="h-3 w-1/2 rounded-lg bg-foreground/[0.03]" />
                                     </div>
-
-                                    {/* THE AI WIDGET */}
                                     <div className="mt-8 relative animate-fade-in-up">
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
                                             <span className="bg-blue-600 text-[9px] font-black uppercase tracking-widest text-white px-3 py-1 rounded-full shadow-lg shadow-blue-500/50">
@@ -239,14 +271,8 @@ export default function CampaignsPage() {
                                             <CardContent className="p-0">
                                                 <div className="p-5 flex flex-col items-center gap-4 text-center">
                                                     <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-white border border-foreground/5">
-                                                        <img
-                                                            src="/airpods_reco.png"
-                                                            alt="Recommendation"
-                                                            className="w-full h-full object-contain p-4 transition-transform group-hover:scale-110 duration-500"
-                                                        />
-                                                        <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded">
-                                                            Save 15%
-                                                        </div>
+                                                        <img src="/airpods_reco.png" alt="Recommendation" className="w-full h-full object-contain p-4 transition-transform group-hover:scale-110 duration-500" />
+                                                        <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded">Save 15%</div>
                                                     </div>
                                                     <div className="space-y-1">
                                                         <h4 className="text-sm font-black uppercase leading-tight">AirPods Pro Gen 2</h4>
@@ -255,9 +281,6 @@ export default function CampaignsPage() {
                                                             <span className="text-blue-500 font-bold">₹21,165</span>
                                                         </p>
                                                     </div>
-                                                    <p className="text-[9px] text-muted-foreground leading-relaxed italic opacity-80 px-2">
-                                                        "Based on your Wireless Headphone purchase, these AirPods offer seamless integration."
-                                                    </p>
                                                     <Button className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-2 group/btn">
                                                         Add to Order
                                                         <ArrowRight className="h-3 w-3 transition-transform group-hover/btn:translate-x-1" />
@@ -269,8 +292,6 @@ export default function CampaignsPage() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Floating elements for aesthetics */}
                         <div className="absolute -right-6 top-1/4 h-24 w-24 rounded-full bg-blue-500/10 blur-3xl" />
                         <div className="absolute -left-6 bottom-1/4 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
                     </div>

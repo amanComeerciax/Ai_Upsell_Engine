@@ -54,6 +54,7 @@ export const upsellController = {
                     discountedPrice: Number(u.products?.price || 0) * (1 - (u.discount_percent || 0) / 100),
                     status,
                     timeRemaining,
+                    impressionCount: u.impression_count,
                     shownAt: u.shown_at,
                     expiresAt: u.expires_at,
                     revenue: u.converted
@@ -179,7 +180,7 @@ export const upsellController = {
         }
     },
 
-    // STEP 2a: Mark widget as shown (impression tracking)
+    // STEP 2a: Mark widget as shown (real impression tracking)
     async markShown(req: Request, res: Response) {
         try {
             const eventId = parseInt(req.params.eventId as string);
@@ -188,17 +189,30 @@ export const upsellController = {
             const event = await prisma.upsell_events.findUnique({ where: { id: eventId } });
             if (!event) return res.status(404).json({ error: 'Upsell event not found' });
 
-            // Update shown_at to now (impression recorded)
-            await prisma.upsell_events.update({
+            // Atomically increment impression_count
+            // Also set shown_at only on the FIRST impression (preserves time-of-first-view)
+            const isFirstImpression = !event.shown_at || event.impression_count === 0;
+            const updated = await prisma.upsell_events.update({
                 where: { id: eventId },
-                data: { shown_at: new Date() }
+                data: {
+                    impression_count: { increment: 1 },
+                    // Only stamp shown_at on first impression so time-of-first-view is preserved
+                    ...(isFirstImpression ? { shown_at: new Date() } : {})
+                }
             });
 
-            res.status(200).json({ success: true, message: 'Impression recorded' });
+            console.log(`[Upsell Controller] 👁️ Widget shown — Event ${eventId}, total impressions: ${updated.impression_count}`);
+
+            res.status(200).json({
+                success: true,
+                message: 'Impression recorded',
+                impression_count: updated.impression_count
+            });
 
             // Notify via Socket
             emitEvent('upsell:shown', {
                 eventId,
+                impressionCount: updated.impression_count,
                 timestamp: new Date()
             });
         } catch (error) {
@@ -266,6 +280,35 @@ export const upsellController = {
         } catch (error) {
             console.error('[Upsell Controller] convertUpsell Error:', error);
             res.status(500).json({ error: 'Failed to record conversion' });
+        }
+    },
+
+    async resendUpsell(req: Request, res: Response) {
+        try {
+            const eventId = parseInt(req.params.eventId as string);
+            if (isNaN(eventId)) return res.status(400).json({ error: 'Invalid event ID' });
+
+            const event = await prisma.upsell_events.findUnique({ where: { id: eventId } });
+            if (!event) return res.status(404).json({ error: 'Campaign not found' });
+            if (event.converted) return res.status(400).json({ error: 'Campaign already converted — cannot retrigger.' });
+
+            // Extend the expiry window by 24 hours from now
+            const newExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            await prisma.upsell_events.update({
+                where: { id: eventId },
+                data: { expires_at: newExpiry }
+            });
+
+            console.log(`[Upsell Controller] 🔄 Retriggered event ${eventId} — new expiry: ${newExpiry.toISOString()}`);
+
+            res.status(200).json({
+                success: true,
+                message: 'Campaign window extended by 24 hours. Email re-queued.',
+                new_expires_at: newExpiry
+            });
+        } catch (error) {
+            console.error('[Upsell Controller] resendUpsell Error:', error);
+            res.status(500).json({ error: 'Failed to retrigger campaign' });
         }
     }
 };

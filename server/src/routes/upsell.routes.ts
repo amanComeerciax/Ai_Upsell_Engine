@@ -9,5 +9,7 @@ router.get('/order/:orderId', upsellController.getUpsellByOrderId);       // Wid
 router.get('/:eventId', upsellController.getUpsellById);                    // Widget: fetch recommendation by event ID
 router.post('/:eventId/shown', upsellController.markShown);               // Widget: impression tracking
 router.post('/:eventId/convert', upsellController.convertUpsell);         // Widget: click/conversion tracking
+router.post('/:eventId/resend', optionalMerchant, upsellController.resendUpsell); // Dashboard: retrigger campaign
 
 export default router;
+

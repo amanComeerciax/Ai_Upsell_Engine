@@ -96,6 +96,7 @@ model upsell_events {
   expires_at        DateTime? @db.Timestamp(6)
   converted         Boolean?  @default(false)
   test_group        String?   @db.VarChar(10) // 'A' (AI/Personalized) vs 'B' (Control/Generic)
+  impression_count  Int       @default(0)     // Real widget display count (incremented by /shown endpoint)
   merchants         merchants? @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   orders            orders?   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products          products? @relation(fields: [upsell_product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)

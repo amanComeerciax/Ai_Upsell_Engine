@@ -83,5 +83,40 @@ export const productController = {
             console.error('Error fetching stats:', error);
             res.status(500).json({ error: 'Failed to fetch stats' });
         }
+    },
+
+    async updateProduct(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const { name, category, price } = req.body;
+            const updated = await prisma.products.update({
+                where: { id },
+                data: {
+                    ...(name !== undefined && { name }),
+                    ...(category !== undefined && { category }),
+                    ...(price !== undefined && { price: String(price) }),
+                }
+            });
+            res.status(200).json({
+                success: true,
+                product: { id: updated.id, name: updated.name, category: updated.category, price: Number(updated.price) }
+            });
+        } catch (error) {
+            console.error('Error updating product:', error);
+            res.status(500).json({ error: 'Failed to update product' });
+        }
+    },
+
+    async deleteProduct(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            // Delete related upsell events first (FK constraint)
+            await (prisma as any).upsell_events.deleteMany({ where: { product_id: id } });
+            await prisma.products.delete({ where: { id } });
+            res.status(200).json({ success: true });
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            res.status(500).json({ error: 'Failed to delete product' });
+        }
     }
 };

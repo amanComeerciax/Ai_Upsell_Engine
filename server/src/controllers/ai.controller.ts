@@ -24,7 +24,7 @@ export const aiController = {
     },
 
     /**
-     * Main recommendation pipeline: Triggers AI reasoning to find the best upsell
+     * Main recommendation pipeline: Returns top 3 products for the carousel widget.
      */
     async getRecommendation(req: Request, res: Response) {
         try {
@@ -73,8 +73,7 @@ export const aiController = {
                 return res.status(401).json({ error: 'Unidentified Merchant', message: 'No shop identifier found in request.' });
             }
 
-
-            // 2. Fetch available products from DB (Potential candidates)
+            // 2. Fetch available products from DB
             const allProducts = await prisma.products.findMany({
                 where: merchantFilter,
                 orderBy: { created_at: 'desc' }
@@ -89,7 +88,7 @@ export const aiController = {
                 });
             }
 
-            // 3. Logic: Find Trigger Product
+            // 3. Find Trigger Product
             let triggerProduct = allProducts[0];
             if (product_id) {
                 const found = allProducts.find(p => p.shopify_id === BigInt(product_id as string));
@@ -98,28 +97,36 @@ export const aiController = {
 
             const candidates = allProducts.filter(p => p.id !== triggerProduct.id);
 
-            // 4. Delegation: Ask AI Service for a smart recommendation
-            const aiRecommendation = await aiService.getSmartRecommendation(triggerProduct, candidates);
+            // 4. Get top 3 recommendations for the carousel (instant — smart fallback + background AI)
+            const topRecs = await aiService.getTopRecommendations(triggerProduct, candidates);
 
-            // Fetch the actual product details for the recommendation
-            const recProduct = allProducts.find(p => p.id === aiRecommendation.recommended_product_id);
+            // 5. Build full product details for each recommendation
+            const shopDomain = shopName
+                ? (shopName.includes('.') ? shopName : `${shopName}.myshopify.com`)
+                : (process.env.SHOPIFY_SHOP_NAME || 'store.myshopify.com');
 
-            // 5. Response: Return structured data for the widget
+            const recProducts = topRecs.map(rec => {
+                const rp = allProducts.find(p => p.id === rec.recommended_product_id);
+                const slug = rp?.handle
+                    || rp?.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+                return {
+                    id: rec.recommended_product_id,
+                    name: rec.recommended_product_name,
+                    price: Number(rp?.price) || 0,
+                    discount_percent: rec.discount_percent,
+                    image: rp?.image_url || null,
+                    reason: rec.reason,
+                    shopify_id: rp?.shopify_id?.toString() || null,
+                    shopify_url: rp?.shopify_id ? `https://${shopDomain}/products/${slug}` : null,
+                };
+            });
+
+            // Return recommendations[] for carousel + recommended_product for legacy compat
             res.status(200).json({
                 success: true,
                 order_id: null,
-                recommended_product: {
-                    id: aiRecommendation.recommended_product_id,
-                    name: aiRecommendation.recommended_product_name,
-                    price: Number(recProduct?.price) || 0,
-                    discount_percent: aiRecommendation.discount_percent,
-                    image: recProduct?.image_url,
-                    reason: aiRecommendation.reason,
-                    shopify_id: recProduct?.shopify_id?.toString() || null,
-                    shopify_url: recProduct?.shopify_id
-                        ? `https://${shopName ? (shopName.includes('.') ? shopName : `${shopName}.myshopify.com`) : (process.env.SHOPIFY_SHOP_NAME || 'store.myshopify.com')}/products/${(recProduct as any).handle || recProduct.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
-                        : null,
-                }
+                recommendations: recProducts,              // New: carousel array
+                recommended_product: recProducts[0] || null, // Legacy: email/event compat
             });
 
         } catch (error: any) {

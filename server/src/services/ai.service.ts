@@ -100,7 +100,61 @@ export class AIService {
     }
 
     /**
+     * Returns top N recommendations for the carousel widget.
+     * Each product gets an instant smart fallback; Ollama warms cache in background.
+     */
+    async getTopRecommendations(
+        triggerProduct: Product,
+        candidates: Product[],
+        context?: { location?: string; interests?: string[] },
+        testGroup: 'A' | 'B' = 'A',
+        n: number = 3
+    ): Promise<RecommendationResponse[]> {
+        const ranked = scoringService.rankCandidates(triggerProduct, candidates, context?.interests);
+        const topN = ranked.slice(0, Math.min(n, ranked.length));
+        const results: RecommendationResponse[] = [];
+
+        for (const winner of topN) {
+            const contextKey = context ? `_${context.location || ''}_${context.interests?.join(',') || ''}` : '';
+            const cacheKey = `rec_${triggerProduct.id}_${winner.id}${contextKey}_group_${testGroup}`;
+
+            // L1 cache hit — instant
+            if (this.recommendationCache.has(cacheKey)) {
+                results.push(this.recommendationCache.get(cacheKey)!);
+                continue;
+            }
+
+            // L2 DB cache hit
+            const dbCached = await this.getFromDbCache(cacheKey, winner.id, winner.name || 'Unknown');
+            if (dbCached) {
+                this.recommendationCache.set(cacheKey, dbCached);
+                results.push(dbCached);
+                continue;
+            }
+
+            // Group B: generic pitch, no AI
+            if (testGroup === 'B') {
+                const generic = this.buildSmartFallback(triggerProduct, winner, undefined, 'B');
+                this.recommendationCache.set(cacheKey, generic);
+                this.saveToDbCache(cacheKey, generic.reason, generic.discount_percent).catch(() => { });
+                results.push(generic);
+                continue;
+            }
+
+            // Group A: instant smart fallback + background AI warm
+            const fallback = this.buildSmartFallback(triggerProduct, winner, context, testGroup);
+            this.recommendationCache.set(cacheKey, fallback);
+            this.saveToDbCache(cacheKey, fallback.reason, fallback.discount_percent).catch(() => { });
+            this.warmCacheWithAI(triggerProduct, winner, context, cacheKey, fallback.discount_percent);
+            results.push(fallback);
+        }
+
+        return results;
+    }
+
+    /**
      * Calls Ollama asynchronously to upgrade the cached pitch.
+
      * Never blocks the main request — runs entirely in the background.
      */
     private async warmCacheWithAI(

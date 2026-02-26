@@ -212,9 +212,9 @@ export default function DashboardPage() {
                     trend="up"
                 />
                 <StatCard
-                    label="AI Opt-in Rate"
+                    label="Widget Impressions"
                     value={`${stats?.conversionRates.openRate}%`}
-                    change="+5.2%"
+                    change={`${stats?.conversionRates.impressedCount ?? 0} shown`}
                     icon={MailOpen}
                     iconBg="bg-emerald-500/10"
                     iconColor="text-emerald-500"

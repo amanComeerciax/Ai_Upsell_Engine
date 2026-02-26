@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
                         </div>
                         <div>
                             <CardTitle className="text-lg font-black uppercase tracking-tight">AI Insights</CardTitle>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Powered by Z.ai GLM · Auto-refreshes every hour</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Powered by Groq · Auto-refreshes every hour</p>
                         </div>
                     </div>
                 </CardHeader>

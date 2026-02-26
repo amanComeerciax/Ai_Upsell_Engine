@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import axios from 'axios';
 
-// 1-hour in-memory cache for AI insights (avoid calling GLM on every page load)
+// 1-hour in-memory cache for AI insights (avoid calling Groq on every page load)
 const insightsCache = new Map<string, { insights: any[]; generatedAt: number }>();
 const INSIGHTS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -47,7 +47,12 @@ export const analyticsController = {
             const convertedOrders = await prisma.upsell_events.count({ where: { ...merchantFilter, converted: true } });
 
             // Calculate rates based on actual events
-            const openRate = totalUpsellEvents > 0 ? 85.0 : 0.0;
+            const impressedCount = await prisma.upsell_events.count({
+                where: { ...merchantFilter, impression_count: { gt: 0 } }
+            });
+            const openRate = totalUpsellEvents > 0
+                ? parseFloat(((impressedCount / totalUpsellEvents) * 100).toFixed(1))
+                : 0.0;
             const clickRate = totalUpsellEvents > 0 ? ((convertedOrders / totalUpsellEvents) * 100).toFixed(1) : "0.0";
 
             // 5. Calculate Revenue Trajectory (Last 7 days)
@@ -115,8 +120,9 @@ export const analyticsController = {
                     createdAt: o.created_at
                 })),
                 conversionRates: {
-                    openRate: openRate,
-                    clickRate: clickRate,
+                    openRate,         // % of upsell events where the widget was actually displayed
+                    impressedCount,   // raw count of widget impressions
+                    clickRate,
                     conversionRate: totalOrders > 0 ? ((convertedOrders / totalOrders) * 100).toFixed(1) : "0.0"
                 },
                 trajectory,
@@ -147,7 +153,7 @@ export const analyticsController = {
 
                 const dateFilter = { gte: startOfDay, lte: endOfDay };
 
-                const [sent, converted, dayRevenue] = await Promise.all([
+                const [sent, converted, dayRevenue, impressed] = await Promise.all([
                     prisma.upsell_events.count({
                         where: { ...merchantFilter, shown_at: dateFilter }
                     }),
@@ -157,6 +163,10 @@ export const analyticsController = {
                     prisma.orders.aggregate({
                         where: { ...merchantFilter, created_at: dateFilter },
                         _sum: { total_amount: true }
+                    }),
+                    // Real impressions: events with impression_count > 0, shown on this day
+                    prisma.upsell_events.count({
+                        where: { ...merchantFilter, shown_at: dateFilter, impression_count: { gt: 0 } }
                     })
                 ]);
 
@@ -164,6 +174,7 @@ export const analyticsController = {
                     date: startOfDay.toISOString(),
                     label: startOfDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
                     sent,
+                    impressed,   // widget actually displayed (impression_count > 0)
                     converted,
                     revenue: Number(dayRevenue._sum.total_amount || 0)
                 });
@@ -226,6 +237,7 @@ export const analyticsController = {
             // ── 3. Summary KPIs ───────────────────────────────────────────────
             const totalSent = timeSeries.reduce((s, d) => s + d.sent, 0);
             const totalConverted = timeSeries.reduce((s, d) => s + d.converted, 0);
+            const totalImpressed = timeSeries.reduce((s, d) => s + d.impressed, 0);
             const totalRevenue = timeSeries.reduce((s, d) => s + d.revenue, 0);
 
             // Avg time from order creation to upsell shown (in hours)
@@ -249,6 +261,10 @@ export const analyticsController = {
                 topProducts,
                 kpis: {
                     totalSent,
+                    totalImpressed,                          // widget actually shown
+                    impressionRate: totalSent > 0
+                        ? parseFloat(((totalImpressed / totalSent) * 100).toFixed(1))
+                        : 0,                                 // real open/impression rate (%)
                     totalConverted,
                     conversionRate: totalSent > 0 ? parseFloat(((totalConverted / totalSent) * 100).toFixed(1)) : 0,
                     totalRevenue: parseFloat(totalRevenue.toFixed(2)),
@@ -263,26 +279,111 @@ export const analyticsController = {
     },
 
     /**
-     * AI Analytics Insights — powered by Z.ai (GLM)
-     * Fetches real store data, sends to GLM, returns actionable insights.
+     * AI Analytics Insights — powered by Groq (Llama 3.3 70B)
+     * Fetches real store data, sends to Groq, returns actionable insights.
      */
     async getInsights(req: Request, res: Response) {
         try {
-            // NOTE: Z.ai API call is temporarily disabled due to balance issues.
-            // Directly returning smart fallback insights for now.
+            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+            const cacheKey = `insights_${req.merchant?.id || 'global'}`;
 
-            const fallback = [
-                { icon: '📊', title: 'Conversion Health', insight: 'Your current upsell funnel is stable. Monitor the 48-hour conversion window for optimization.' },
-                { icon: '⚡', title: 'Velocity Check', insight: 'Upsell offers are being dispatched immediately after order detection. Speed is optimized.' },
-                { icon: '🎯', title: 'Growth Tip', insight: 'Consistent tracking of impressions vs clicks helps identify which products customers love pairing.' }
-            ];
+            // Check 1-hour cache first
+            const cached = insightsCache.get(cacheKey);
+            if (cached && (Date.now() - cached.generatedAt < INSIGHTS_CACHE_TTL_MS)) {
+                return res.status(200).json({ insights: cached.insights, cached: true, fallback: false });
+            }
 
-            return res.status(200).json({ insights: fallback, cached: false, fallback: true });
+            // ── Gather real store data for Groq ──────────────────────────────
+            const [totalOrders, totalProducts, totalUpsells, convertedUpsells, impressedUpsells, revenueResult] = await Promise.all([
+                prisma.orders.count({ where: merchantFilter }),
+                prisma.products.count({ where: merchantFilter }),
+                prisma.upsell_events.count({ where: merchantFilter }),
+                prisma.upsell_events.count({ where: { ...merchantFilter, converted: true } }),
+                prisma.upsell_events.count({ where: { ...merchantFilter, impression_count: { gt: 0 } } }),
+                prisma.orders.aggregate({ where: merchantFilter, _sum: { total_amount: true } }),
+            ]);
+
+            const totalRevenue = Number(revenueResult._sum.total_amount || 0);
+            const conversionRate = totalUpsells > 0 ? ((convertedUpsells / totalUpsells) * 100).toFixed(1) : '0';
+            const impressionRate = totalUpsells > 0 ? ((impressedUpsells / totalUpsells) * 100).toFixed(1) : '0';
+
+            // ── Call Groq API ────────────────────────────────────────────────
+            const GROQ_API_KEY = process.env.GROQ_API_KEY;
+            const GROQ_BASE_URL = process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1';
+            const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+
+            if (!GROQ_API_KEY) {
+                console.warn('[Analytics] No GROQ_API_KEY set. Returning fallback insights.');
+                return res.status(200).json({ insights: this.getFallbackInsights(), cached: false, fallback: true });
+            }
+
+            const prompt = `You are an AI analytics advisor for an e-commerce upsell platform. Analyze this store data and return exactly 3 actionable insights.
+
+Store Data:
+- Total Orders: ${totalOrders}
+- Total Products: ${totalProducts}
+- Total Upsell Campaigns Sent: ${totalUpsells}
+- Upsell Conversions: ${convertedUpsells} (${conversionRate}% conversion rate)
+- Widget Impressions: ${impressedUpsells} (${impressionRate}% impression rate)
+- Total Revenue: ₹${totalRevenue.toLocaleString()}
+
+Return a JSON array of exactly 3 objects with this format:
+[
+  { "icon": "📊", "title": "Short Title", "insight": "Actionable insight in 1-2 sentences." }
+]
+
+Rules:
+- Use relevant emojis for icons (📊, ⚡, 🎯, 💡, 🔥, 📈, 🛒, etc.)
+- Insights must be actionable and specific to the data
+- If impression rate is low, suggest ways to improve widget visibility
+- If conversion rate is high, celebrate it and suggest scaling
+- Keep language concise, business-focused, and professional
+- Return ONLY the JSON array, no extra text`;
+
+            const groqResponse = await axios.post(`${GROQ_BASE_URL}/chat/completions`, {
+                model: GROQ_MODEL,
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.7,
+                max_tokens: 500,
+                response_format: { type: 'json_object' }
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${GROQ_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 10000
+            });
+
+            const rawContent = groqResponse.data.choices?.[0]?.message?.content || '[]';
+            let insights;
+            try {
+                const parsed = JSON.parse(rawContent);
+                // Handle both direct array and { insights: [...] } formats
+                insights = Array.isArray(parsed) ? parsed : (parsed.insights || parsed.data || [parsed]);
+            } catch {
+                console.error('[Analytics] Failed to parse Groq response:', rawContent);
+                insights = this.getFallbackInsights();
+            }
+
+            // Cache for 1 hour
+            insightsCache.set(cacheKey, { insights, generatedAt: Date.now() });
+
+            console.log(`[Analytics] 🤖 Groq insights generated for merchant ${req.merchant?.id || 'global'}`);
+            return res.status(200).json({ insights, cached: false, fallback: false });
 
         } catch (error: any) {
-            console.error('[Analytics] Insights Error:', error.message);
-            return res.status(200).json({ insights: [], cached: false });
+            console.error('[Analytics] Groq Insights Error:', error.response?.data || error.message);
+            return res.status(200).json({ insights: this.getFallbackInsights(), cached: false, fallback: true });
         }
+    },
+
+    /** Static fallback if Groq is down */
+    getFallbackInsights() {
+        return [
+            { icon: '📊', title: 'Conversion Health', insight: 'Your upsell funnel is active. Monitor the 48-hour conversion window to maximize yield.' },
+            { icon: '⚡', title: 'Velocity Check', insight: 'Upsell offers are dispatched immediately after order detection. Response speed is optimized.' },
+            { icon: '🎯', title: 'Growth Tip', insight: 'Track widget impressions vs conversions to identify your best-performing product pairings.' }
+        ];
     },
 
     /**
