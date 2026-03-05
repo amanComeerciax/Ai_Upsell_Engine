@@ -78,7 +78,7 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="relative py-24 md:py-40 bg-white dark:bg-[#030303] overflow-hidden">
+    <section id="features" className="relative py-24 md:py-40 bg-white dark:!bg-black overflow-hidden">
       {/* Background visual elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
       <div className="absolute top-40 left-1/2 -translate-x-1/2 h-[500px] w-full max-w-[1200px] rounded-full bg-blue-500/[0.03] blur-[120px] pointer-events-none" />
@@ -87,15 +87,15 @@ export function Features() {
         <div className="text-center max-w-3xl mx-auto mb-24">
           <div className="inline-flex items-center gap-2 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-1.5 mb-8">
             <Zap className="h-3.5 w-3.5 text-blue-500 fill-blue-500" />
-            <span className="text-[13px] font-bold text-foreground/60 uppercase tracking-wider">Engine Capabilities</span>
+            <span className="text-[13px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Engine Capabilities</span>
           </div>
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-tight mb-8">
+          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-black dark:text-white leading-tight mb-8">
             Maximize Revenue <br />
-            <span className="bg-gradient-to-r from-foreground via-foreground/80 to-foreground/40 bg-clip-text text-transparent">
+            <span className="text-black/40 dark:text-white/40">
               With Precision AI
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-xl text-black/70 dark:text-white/50 leading-relaxed">
             One integration, unlimited growth. Our engine automates the entire post-purchase journey using state-of-the-art machine learning.
           </p>
         </div>
@@ -104,7 +104,7 @@ export function Features() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className={`group relative flex flex-col rounded-[32px] border border-foreground/5 bg-white dark:bg-white/[0.02] p-2 transition-all hover:border-foreground/10 hover:shadow-2xl hover:shadow-foreground/5 
+              className={`group relative flex flex-col rounded-[32px] border border-foreground/[0.06] bg-white dark:bg-white/[0.02] p-2 transition-all hover:border-foreground/10 hover:shadow-2xl hover:shadow-foreground/5 
                 ${feature.large ? 'md:col-span-12 lg:col-span-8' : 'md:col-span-6 lg:col-span-4'}
               `}
             >
@@ -114,12 +114,12 @@ export function Features() {
                   <div className={`h-10 w-10 rounded-xl ${feature.color}/10 flex items-center justify-center mb-6`}>
                     <feature.icon className={`h-5 w-5 ${feature.color.replace('bg-', 'text-')}`} />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-4">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed mb-8 flex-grow">
+                  <h3 className="text-2xl font-bold text-black dark:text-white mb-4">{feature.title}</h3>
+                  <p className="text-black/60 dark:text-white/50 leading-relaxed mb-8 flex-grow">
                     {feature.description}
                   </p>
 
-                  <div className="inline-flex items-center gap-2 text-sm font-bold text-foreground/40 transition-colors group-hover:text-foreground">
+                  <div className="inline-flex items-center gap-2 text-sm font-bold text-black/40 dark:text-white/60 transition-colors group-hover:text-black dark:group-hover:text-white">
                     Learn more
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </div>
@@ -139,28 +139,28 @@ export function Features() {
             <div className="h-14 w-14 rounded-2xl bg-blue-500 flex items-center justify-center mb-6 shadow-xl shadow-blue-500/20 group-hover:scale-110 transition-transform">
               <Target className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">Ready to scale?</h3>
-            <p className="text-sm text-muted-foreground mb-6">Join 2,500+ merchants already using the engine.</p>
+            <h3 className="text-xl font-bold text-black dark:text-white mb-3">Ready to scale?</h3>
+            <p className="text-sm text-black/60 dark:text-white/50 mb-6">Join 2,500+ merchants already using the engine.</p>
             <button className="px-6 py-3 bg-foreground text-background rounded-xl font-bold text-sm transition-transform active:scale-95">
               Get Started
             </button>
           </div>
 
-          <div className="md:col-span-6 lg:col-span-4 flex flex-col rounded-[32px] border border-foreground/5 bg-white dark:bg-white/[0.02] p-8 items-center justify-center text-center group cursor-pointer hover:border-foreground/10 transition-all">
+          <div className="md:col-span-6 lg:col-span-4 flex flex-col rounded-[32px] border border-foreground/[0.06] bg-white dark:bg-white/[0.02] p-8 items-center justify-center text-center group cursor-pointer hover:border-foreground/10 transition-all">
             <div className="h-14 w-14 rounded-2xl bg-foreground/5 flex items-center justify-center mb-6 text-foreground/40 group-hover:text-foreground transition-colors">
               <MousePointer2 className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">Custom SDK</h3>
-            <p className="text-sm text-muted-foreground mb-6">Integrate with any platform in under 10 minutes.</p>
+            <h3 className="text-xl font-bold text-black dark:text-white mb-3">Custom SDK</h3>
+            <p className="text-sm text-black/60 dark:text-white/50 mb-6">Integrate with any platform in under 10 minutes.</p>
             <div className="text-sm font-bold border-b border-foreground/20 pb-1">View Docs</div>
           </div>
 
-          <div className="md:col-span-12 lg:col-span-4 flex flex-col rounded-[32px] border border-foreground/5 bg-white dark:bg-white/[0.02] p-8 items-center justify-center text-center relative overflow-hidden group">
+          <div className="md:col-span-12 lg:col-span-4 flex flex-col rounded-[32px] border border-foreground/[0.06] bg-white dark:bg-white/[0.02] p-8 items-center justify-center text-center relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-5">
               <Zap className="h-32 w-32" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">Security First</h3>
-            <p className="text-sm text-muted-foreground mb-6">GDPR & SOC2 Type II compliant infrastructure.</p>
+            <h3 className="text-xl font-bold text-black dark:text-white mb-3">Security First</h3>
+            <p className="text-sm text-black/60 dark:text-white/50 mb-6">GDPR & SOC2 Type II compliant infrastructure.</p>
             <div className="flex gap-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">All systems operational</span>

@@ -216,7 +216,8 @@ export const merchantController = {
     },
 
     /**
-     * Register webhook for merchant's Shopify store
+     * Register webhooks for merchant's Shopify store
+     * Registers: orders/create + carts/create + carts/update
      */
     async registerWebhook(req: Request, res: Response) {
         try {
@@ -227,38 +228,64 @@ export const merchantController = {
                 return res.status(400).json({ error: 'Shopify store not connected.' });
             }
 
-            const webhookAddress = `${webhook_base_url}/api/v1/shopify/webhooks/orders/create`;
-
             const apiUrl = `https://${merchant.shopify_shop_name}.myshopify.com/admin/api/2024-04/webhooks.json`;
-            const response = await axios.post(apiUrl, {
-                webhook: {
-                    topic: 'orders/create',
-                    address: webhookAddress,
-                    format: 'json'
+            const headers = {
+                'X-Shopify-Access-Token': merchant.shopify_access_token,
+                'Content-Type': 'application/json',
+            };
+
+            // Register all webhook topics
+            const webhookTopics = [
+                { topic: 'orders/create', path: 'orders/create' },
+                { topic: 'carts/create', path: 'carts/create' },
+                { topic: 'carts/update', path: 'carts/update' },
+                { topic: 'checkouts/create', path: 'checkouts/create' },
+                { topic: 'checkouts/update', path: 'checkouts/update' },
+            ];
+
+            const results = [];
+            for (const wh of webhookTopics) {
+                try {
+                    const response = await axios.post(apiUrl, {
+                        webhook: {
+                            topic: wh.topic,
+                            address: `${webhook_base_url}/api/v1/shopify/webhooks/${wh.path}`,
+                            format: 'json'
+                        }
+                    }, { headers, timeout: 10000 });
+
+                    results.push({ topic: wh.topic, status: 'registered', id: response.data.webhook?.id });
+                    console.log(`[Merchant] ✅ Webhook registered: ${wh.topic}`);
+                } catch (whErr: any) {
+                    // Skip if already registered (422 error)
+                    if (whErr.response?.status === 422) {
+                        results.push({ topic: wh.topic, status: 'already_registered' });
+                        console.log(`[Merchant] ⏩ Webhook already exists: ${wh.topic}`);
+                    } else {
+                        results.push({ topic: wh.topic, status: 'failed', error: whErr.message });
+                        console.error(`[Merchant] ❌ Failed to register: ${wh.topic}`, whErr.response?.data);
+                    }
                 }
-            }, {
-                headers: {
-                    'X-Shopify-Access-Token': merchant.shopify_access_token,
-                    'Content-Type': 'application/json',
-                },
-                timeout: 10000
-            });
+            }
 
-            // Save webhook ID
-            await prisma.merchants.update({
-                where: { id: merchant.id },
-                data: { webhook_id: response.data.webhook.id.toString() }
-            });
+            // Save the order webhook ID (primary)
+            const orderWebhook = results.find(r => r.topic === 'orders/create' && r.id);
+            if (orderWebhook?.id) {
+                await prisma.merchants.update({
+                    where: { id: merchant.id },
+                    data: { webhook_id: orderWebhook.id.toString() }
+                });
+            }
 
-            console.log(`[Merchant] Webhook registered for merchant ${merchant.id}`);
+            console.log(`[Merchant] Webhooks registered for merchant ${merchant.id}`);
 
             res.status(200).json({
-                message: 'Webhook registered successfully!',
-                webhook: response.data.webhook,
+                message: 'Webhooks registered successfully!',
+                webhooks: results,
             });
         } catch (error: any) {
             console.error('[Merchant Controller] Webhook Error:', error.response?.data || error.message);
-            res.status(500).json({ error: 'Failed to register webhook' });
+            res.status(500).json({ error: 'Failed to register webhooks' });
         }
     },
 

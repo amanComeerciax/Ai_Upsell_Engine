@@ -6,7 +6,7 @@ const connection = new IORedis(REDIS_URL, {
     maxRetriesPerRequest: null,
 });
 
-// Initialize the BullMQ queue
+// Initialize the BullMQ queues
 export const upsellQueue = new Queue('upsell-processing', {
     connection: connection as any,
     defaultJobOptions: {
@@ -17,6 +17,16 @@ export const upsellQueue = new Queue('upsell-processing', {
         },
         removeOnComplete: true, // Clean up successful jobs
         removeOnFail: false,    // Keep failed jobs for debugging
+    },
+});
+
+export const cartQueue = new Queue('cart-abandonment', {
+    connection: connection as any,
+    defaultJobOptions: {
+        attempts: 2,
+        backoff: { type: 'fixed', delay: 10000 },
+        removeOnComplete: true,
+        removeOnFail: false,
     },
 });
 
@@ -40,6 +50,39 @@ export const queueService = {
             return job;
         } catch (error) {
             console.error('[Queue Service] ❌ Failed to add job to queue:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Adds a cart abandonment check job with a delay (default 30 min)
+     * If a job for this cart already exists, it's replaced (customer updated cart)
+     */
+    async addCartCheckJob(cartToken: string, merchantId: number, delayMs: number = 30 * 60 * 1000) {
+        try {
+            const jobId = `cart-${cartToken}`;
+
+            // Remove existing job if any (customer updated their cart, reset the timer)
+            const existing = await cartQueue.getJob(jobId);
+            if (existing) {
+                await existing.remove();
+                console.log(`[Queue Service] 🔄 Reset cart check timer for: ${cartToken}`);
+            }
+
+            const job = await cartQueue.add('check-cart', {
+                cartToken,
+                merchantId,
+                timestamp: new Date()
+            }, {
+                jobId,
+                delay: delayMs,
+            });
+
+            const delayMin = Math.round(delayMs / 60000);
+            console.log(`[Queue Service] 🛒 Cart check scheduled: ${cartToken} (fires in ${delayMin} min)`);
+            return job;
+        } catch (error) {
+            console.error('[Queue Service] ❌ Failed to add cart check job:', error);
             throw error;
         }
     }

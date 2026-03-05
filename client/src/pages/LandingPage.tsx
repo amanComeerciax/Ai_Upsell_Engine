@@ -9,7 +9,7 @@ import { Footer } from "@/components/footer"
 
 export function LandingPage() {
     return (
-        <main className="relative min-h-screen overflow-hidden">
+        <main className="relative min-h-screen overflow-hidden bg-white dark:!bg-black">
             <Navbar />
             <Hero />
             <Features />

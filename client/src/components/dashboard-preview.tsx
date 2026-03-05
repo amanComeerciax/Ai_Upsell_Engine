@@ -70,7 +70,7 @@ const kpis = [
 
 export function DashboardPreview() {
   return (
-    <section id="dashboard" className="relative py-24 md:py-40 bg-white dark:bg-[#030303] overflow-hidden">
+    <section id="dashboard" className="relative py-24 md:py-40 bg-white dark:!bg-black overflow-hidden">
       {/* Background visual elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-full max-w-[1400px] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
 
@@ -79,20 +79,20 @@ export function DashboardPreview() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-1.5 mb-8">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[13px] font-bold text-foreground/60 uppercase tracking-wider">Live System Feed</span>
+              <span className="text-[13px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Live System Feed</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-tight">
-              Command <span className="text-muted-foreground/30">Center</span> <br />
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black dark:text-white leading-tight">
+              Command <span className="text-black/40 dark:text-white/40">Center</span> <br />
               for Your Growth
             </h2>
           </div>
-          <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
+          <p className="text-xl text-black/70 dark:text-white/50 leading-relaxed max-w-lg">
             Monitor AI performance in real-time. Track every automated decision, conversion uplift, and revenue attribution across your entire ecosystem.
           </p>
         </div>
 
         {/* Dashboard Shell */}
-        <div className="relative rounded-[40px] border border-foreground/5 bg-white dark:bg-white/[0.02] p-4 md:p-12 shadow-2xl shadow-foreground/5 overflow-hidden">
+        <div className="relative rounded-[40px] border border-foreground/[0.06] bg-white dark:bg-white/[0.02] p-4 md:p-12 shadow-2xl shadow-foreground/5 overflow-hidden">
           {/* Internal Glow */}
           <div className="absolute top-0 left-1/4 h-[300px] w-[600px] rounded-full bg-blue-500/[0.05] blur-[100px] pointer-events-none" />
 
@@ -104,7 +104,7 @@ export function DashboardPreview() {
               <div className="h-8 w-8 rounded-lg bg-foreground/[0.02]" />
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-xs font-bold text-foreground/40 hidden md:block">LAST UPDATED: 2 SECONDS AGO</div>
+              <div className="text-xs font-bold text-black/40 dark:text-white/60 hidden md:block">LAST UPDATED: 2 SECONDS AGO</div>
               <div className="h-4 w-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               </div>
@@ -115,15 +115,15 @@ export function DashboardPreview() {
             {/* KPI Section */}
             <div className="lg:col-span-12 grid grid-cols-2 lg:grid-cols-4 gap-6">
               {kpis.map((kpi) => (
-                <div key={kpi.label} className="group p-6 rounded-3xl border border-foreground/5 bg-foreground/[0.01] transition-all hover:bg-foreground/[0.03]">
+                <div key={kpi.label} className="group p-6 rounded-3xl border border-foreground/[0.06] bg-white dark:bg-white/[0.02] transition-all hover:bg-black/[0.03] dark:hover:bg-white/[0.04]">
                   <div className="flex items-center justify-between mb-6">
                     <div className={`h-10 w-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
                       <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
                     </div>
                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{kpi.change}</span>
                   </div>
-                  <div className="text-3xl font-bold tracking-tight text-foreground mb-1">{kpi.value}</div>
-                  <div className="text-xs font-bold text-foreground/40 uppercase tracking-widest">{kpi.label}</div>
+                  <div className="text-3xl font-bold tracking-tight text-black dark:text-white mb-1">{kpi.value}</div>
+                  <div className="text-xs font-bold text-black/60 dark:text-white/60 uppercase tracking-widest">{kpi.label}</div>
                 </div>
               ))}
             </div>
@@ -132,8 +132,8 @@ export function DashboardPreview() {
             <div className="lg:col-span-8 p-8 rounded-[32px] border border-foreground/5 bg-foreground/[0.01]">
               <div className="flex items-center justify-between mb-10">
                 <div>
-                  <h3 className="text-lg font-bold text-foreground">Revenue Trajectory</h3>
-                  <p className="text-sm text-muted-foreground">AI-attributed post-purchase growth</p>
+                  <h3 className="text-lg font-bold text-black dark:text-white">Revenue Trajectory</h3>
+                  <p className="text-sm text-black/60 dark:text-white/50">AI-attributed post-purchase growth</p>
                 </div>
                 <div className="flex gap-2">
                   <div className="px-3 py-1 rounded-full bg-foreground text-background text-[10px] font-bold">7D</div>
@@ -190,8 +190,8 @@ export function DashboardPreview() {
                     <span className="text-[10px] font-bold text-foreground/40 tracking-widest">LIFT</span>
                   </div>
                 </div>
-                <h4 className="font-bold text-foreground">Efficiency Index</h4>
-                <p className="text-sm text-muted-foreground mt-2">Current AI model accuracy and conversion probability lift.</p>
+                <h4 className="font-bold text-black dark:text-white">Efficiency Index</h4>
+                <p className="text-sm text-black/60 dark:text-white/50 mt-2">Current AI model accuracy and conversion probability lift.</p>
               </div>
 
               <div className="p-6 rounded-[32px] border border-foreground/5 bg-foreground/[0.01] flex items-center gap-4">

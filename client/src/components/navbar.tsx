@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Zap, Moon, Sun, ArrowRight } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "@/contexts/ThemeContext"
 import { Link } from "react-router-dom"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
 
@@ -15,21 +15,7 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { setTheme } = useTheme()
-  const [isDark, setIsDark] = useState(true)
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'))
-    }
-    checkTheme()
-    const observer = new MutationObserver(checkTheme)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    })
-    return () => observer.disconnect()
-  }, [])
+  const { toggleTheme, isDark } = useTheme()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md">
@@ -55,10 +41,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {
-              const isDarkNow = document.documentElement.classList.contains('dark')
-              setTheme(isDarkNow ? 'light' : 'dark')
-            }}
+            onClick={toggleTheme}
             className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-transparent"
           >
             {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
@@ -140,10 +123,7 @@ export function Navbar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
-                    const isDarkNow = document.documentElement.classList.contains('dark')
-                    setTheme(isDarkNow ? 'light' : 'dark')
-                  }}
+                  onClick={toggleTheme}
                   className="h-12 w-12 text-muted-foreground"
                 >
                   {isDark ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}

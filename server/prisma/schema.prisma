@@ -33,6 +33,7 @@ model merchants {
   users         users[]
   upsell_events upsell_events[]
   upsell_rules  upsell_rules[]
+  abandoned_carts abandoned_carts[]
 }
 
 // ============================================
@@ -97,14 +98,18 @@ model upsell_events {
   converted         Boolean?  @default(false)
   test_group        String?   @db.VarChar(10) // 'A' (AI/Personalized) vs 'B' (Control/Generic)
   impression_count  Int       @default(0)     // Real widget display count (incremented by /shown endpoint)
+  event_type        String    @default("post_purchase") @db.VarChar(20) // "post_purchase" | "abandoned_cart"
+  abandoned_cart_id Int?      // Links to abandoned_carts table (null for post_purchase)
   merchants         merchants? @relation(fields: [merchant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   orders            orders?   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products          products? @relation(fields: [upsell_product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users             users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  abandoned_cart   abandoned_carts? @relation(fields: [abandoned_cart_id], references: [id])
 
   @@index([merchant_id])
   @@index([user_id])
   @@index([order_id])
+  @@index([event_type])
 }
 
 model upsell_rules {
@@ -131,3 +136,27 @@ model users {
 
   @@index([merchant_id])
 }
+
+// ============================================
+// ABANDONED CART TRACKING
+// ============================================
+model abandoned_carts {
+  id              Int       @id @default(autoincrement())
+  merchant_id     Int?
+  cart_token      String    @unique @db.VarChar(255)
+  customer_email  String?   @db.VarChar(255)
+  customer_name   String?   @db.VarChar(200)
+  cart_items      Json                                  // [{product_id, title, quantity, price, image}]
+  cart_total      Decimal?  @db.Decimal(10, 2)
+  status          String    @default("pending") @db.VarChar(20) // pending | recovered | expired | converted
+  recovery_sent   Boolean   @default(false)
+  created_at      DateTime  @default(now()) @db.Timestamp(6)
+  updated_at      DateTime  @updatedAt @db.Timestamp(6)
+  merchants       merchants? @relation(fields: [merchant_id], references: [id])
+  upsell_events   upsell_events[]
+
+  @@index([merchant_id])
+  @@index([customer_email])
+  @@index([status])
+}
+

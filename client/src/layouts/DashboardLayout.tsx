@@ -12,7 +12,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     useSocket(); // Initialize real-time notifications
 
     return (
-        <div className="flex h-screen bg-background">
+        <div className="pastel-gradient-bg flex h-screen overflow-hidden">
             {/* Sidebar */}
             <Sidebar />
 
@@ -22,8 +22,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DashboardHeader />
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-6">
-                    {children || <Outlet />}
+                <main className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="max-w-[1600px] mx-auto p-8">
+                        {children || <Outlet />}
+                    </div>
                 </main>
             </div>
         </div>

@@ -125,6 +125,24 @@ export const analyticsController = {
                     clickRate,
                     conversionRate: totalOrders > 0 ? ((convertedOrders / totalOrders) * 100).toFixed(1) : "0.0"
                 },
+                // Abandoned cart stats
+                abandonedCarts: await (async () => {
+                    try {
+                        const total = await (prisma as any).abandoned_carts.count({ where: merchantFilter });
+                        const recovered = await (prisma as any).abandoned_carts.count({ where: { ...merchantFilter, status: 'recovered' } });
+                        const converted = await (prisma as any).abandoned_carts.count({ where: { ...merchantFilter, status: 'converted' } });
+                        const pending = await (prisma as any).abandoned_carts.count({ where: { ...merchantFilter, status: 'pending' } });
+                        return {
+                            total,
+                            recovered,
+                            converted,
+                            pending,
+                            recoveryRate: total > 0 ? parseFloat(((recovered / total) * 100).toFixed(1)) : 0,
+                        };
+                    } catch {
+                        return { total: 0, recovered: 0, converted: 0, pending: 0, recoveryRate: 0 };
+                    }
+                })(),
                 trajectory,
                 activityFeed: activityFeed.slice(0, 5)
             });

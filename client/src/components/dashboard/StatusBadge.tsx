@@ -1,30 +1,86 @@
 import { cn } from '@/lib/utils'
 
-type BadgeVariant = 'sent' | 'opened' | 'clicked' | 'converted' | 'scheduled' | 'none'
-
 interface StatusBadgeProps {
-    status: BadgeVariant
-    children?: React.ReactNode
+    status: string
+    className?: string
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-    sent: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    opened: 'bg-green-500/20 text-green-400 border-green-500/30',
-    clicked: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    converted: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    scheduled: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    none: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
+    completed: {
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-600',
+        label: 'Complete',
+    },
+    complete: {
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-600',
+        label: 'Complete',
+    },
+    converted: {
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-600',
+        label: 'Complete',
+    },
+    pending: {
+        bg: 'bg-orange-50',
+        text: 'text-orange-500',
+        label: 'Pending',
+    },
+    cancelled: {
+        bg: 'bg-red-50',
+        text: 'text-red-500',
+        label: 'Cancelled',
+    },
+    failed: {
+        bg: 'bg-red-50',
+        text: 'text-red-500',
+        label: 'Cancelled',
+    },
+    active: {
+        bg: 'bg-blue-50',
+        text: 'text-blue-600',
+        label: 'Active',
+    },
+    sent: {
+        bg: 'bg-blue-50',
+        text: 'text-blue-600',
+        label: 'Sent',
+    },
+    in_stock: {
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-600',
+        label: 'In Stock',
+    },
+    low_stock: {
+        bg: 'bg-orange-50',
+        text: 'text-orange-500',
+        label: 'Low Stock',
+    },
+    out_of_stock: {
+        bg: 'bg-red-50',
+        text: 'text-red-500',
+        label: 'Out of Stock',
+    },
 }
 
-export function StatusBadge({ status, children }: StatusBadgeProps) {
+export function StatusBadge({ status, className }: StatusBadgeProps) {
+    const normalizedStatus = status?.toLowerCase()?.replace(/\s+/g, '_')
+    const config = statusConfig[normalizedStatus] || {
+        bg: 'bg-gray-50',
+        text: 'text-gray-500',
+        label: status,
+    }
+
     return (
         <span
             className={cn(
-                'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border',
-                variantStyles[status]
+                'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold',
+                config.bg,
+                config.text,
+                className
             )}
         >
-            {children || status.charAt(0).toUpperCase() + status.slice(1)}
+            {config.label}
         </span>
     )
 }

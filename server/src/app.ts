@@ -12,6 +12,7 @@ import orderRoutes from './routes/order.routes';
 import upsellRoutes from './routes/upsell.routes';
 import merchantRoutes from './routes/merchant.routes';
 import './workers/upsell.worker'; // Initialize the background worker
+import './workers/cart.worker';    // Initialize the cart abandonment worker
 
 dotenv.config();
 

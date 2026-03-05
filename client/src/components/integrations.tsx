@@ -11,7 +11,7 @@ const platforms = [
 
 export function Integrations() {
   return (
-    <section id="integrations" className="relative py-24 md:py-40 bg-white dark:bg-[#030303] overflow-hidden">
+    <section id="integrations" className="relative py-24 md:py-40 bg-white dark:!bg-black overflow-hidden">
       {/* Background visual element */}
       <div className="absolute top-0 right-0 h-[600px] w-[600px] bg-blue-500/[0.02] rounded-full blur-[140px] pointer-events-none" />
 
@@ -19,13 +19,13 @@ export function Integrations() {
         <div className="text-center max-w-3xl mx-auto mb-24">
           <div className="inline-flex items-center gap-2 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-1.5 mb-8">
             <Database className="h-3.5 w-3.5 text-foreground/40" />
-            <span className="text-[13px] font-bold text-foreground/60 uppercase tracking-wider">Ecosystem</span>
+            <span className="text-[13px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Ecosystem</span>
           </div>
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-tight mb-8">
-            Fits Your <span className="text-muted-foreground/30">Existing</span> <br />
+          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-black dark:text-white leading-tight mb-8">
+            Fits Your <span className="text-black/40 dark:text-white/40">Existing</span> <br />
             Stack perfectly
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-xl text-black/70 dark:text-white/50 leading-relaxed">
             Engineered for flexibility. Whether you run a managed store or a custom-built infrastructure, our engine integrates in minutes.
           </p>
         </div>
@@ -33,12 +33,12 @@ export function Integrations() {
         {/* Integration Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {platforms.map((platform) => (
-            <div key={platform.name} className="group p-8 rounded-[32px] border border-foreground/5 bg-foreground/[0.01] flex flex-col items-center justify-center text-center transition-all hover:bg-foreground/[0.03] hover:border-foreground/10 hover:shadow-xl hover:shadow-foreground/5">
+            <div key={platform.name} className="group p-8 rounded-[32px] border border-foreground/[0.06] bg-white dark:bg-white/[0.02] flex flex-col items-center justify-center text-center transition-all hover:bg-black/[0.03] dark:hover:bg-white/[0.04] hover:border-foreground/10 hover:shadow-xl hover:shadow-foreground/5">
               <div className="h-16 w-16 rounded-2xl bg-foreground/5 flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
                 <platform.icon className="h-8 w-8 text-foreground/60" />
               </div>
-              <div className="text-sm font-bold text-foreground tracking-tight mb-1">{platform.name}</div>
-              <div className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">{platform.category}</div>
+              <div className="text-sm font-bold text-black dark:text-white tracking-tight mb-1">{platform.name}</div>
+              <div className="text-[10px] font-black text-black/40 dark:text-white/60 uppercase tracking-widest">{platform.category}</div>
             </div>
           ))}
         </div>
@@ -51,8 +51,8 @@ export function Integrations() {
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-3xl font-bold text-foreground mb-6">High-Performance <br />Developer SDK</h3>
-              <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+              <h3 className="text-3xl font-bold text-black dark:text-white mb-6">High-Performance <br />Developer SDK</h3>
+              <p className="text-lg text-black/70 dark:text-white/50 leading-relaxed mb-8">
                 Build custom post-purchase flows with our lightweight SDK. Fully typed, platform-agnostic, and optimized for sub-10ms response times.
               </p>
               <div className="flex flex-wrap gap-4">

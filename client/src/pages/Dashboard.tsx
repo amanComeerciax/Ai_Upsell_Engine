@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     ResponsiveContainer,
     AreaChart,
@@ -6,35 +7,130 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip
+    Tooltip,
+    BarChart,
+    Bar,
+    PieChart,
+    Pie,
+    Cell,
 } from 'recharts'
-import { Mail, MailOpen, MousePointerClick, TrendingUp, DollarSign, Target, Download, Zap, ArrowUpRight, Activity, Loader2, Sparkles } from 'lucide-react'
-import { StatCard } from '@/components/dashboard/StatCard'
-import { DataTable, Column } from '@/components/dashboard/DataTable'
+import {
+    ShoppingBag, Package, Loader2, Zap, Download, ChevronDown,
+    MoreHorizontal, TrendingUp, ArrowUpRight, ArrowDownRight,
+    Sparkles, Eye, MousePointerClick, Target, Activity,
+    ExternalLink, Cpu, DollarSign, Users, ShoppingCart,
+} from 'lucide-react'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { cn } from '@/lib/utils'
 import apiClient from '@/lib/api-client'
 import { useMerchant } from '@/contexts/MerchantContext'
 
+// Fallback chart data
+const salesChartData = [
+    { time: '10am', value: 30 },
+    { time: '11am', value: 25 },
+    { time: '12am', value: 35 },
+    { time: '01pm', value: 30 },
+    { time: '02pm', value: 45 },
+    { time: '03pm', value: 42 },
+    { time: '04pm', value: 55 },
+    { time: '05pm', value: 40 },
+    { time: '06pm', value: 48 },
+    { time: '07pm', value: 55 },
+]
+
+const donutData = [
+    { name: 'Converted', value: 45, color: '#7C3AED' },
+    { name: 'Active', value: 35, color: '#34D399' },
+    { name: 'Expired', value: 20, color: '#F87171' },
+]
+
+const analyticsBarData = [
+    { day: 'Sun', upsells: 45, orders: 30 },
+    { day: 'Mon', upsells: 75, orders: 55 },
+    { day: 'Tue', upsells: 60, orders: 40 },
+    { day: 'Wed', upsells: 55, orders: 42 },
+    { day: 'Thu', upsells: 85, orders: 65 },
+    { day: 'Fri', upsells: 70, orders: 50 },
+    { day: 'Sat', upsells: 62, orders: 48 },
+]
+
+const recentOrders = [
+    { id: '#9812567', product: 'Air Vapomax', status: 'complete', price: '$22.78', img: '👟' },
+    { id: '#9812411', product: 'Canon EOS 1500D', status: 'pending', price: '$122.8', img: '📷' },
+    { id: '#9812556', product: 'MI Backpack Black', status: 'cancelled', price: '$15.99', img: '🎒' },
+    { id: '#9812619', product: 'iPhone 12 128GB', status: 'complete', price: '$4022', img: '📱' },
+]
+
+// Mini sparkline component for stat cards
+function MiniSparkline({ data, color }: { data: number[]; color: string }) {
+    const max = Math.max(...data)
+    const min = Math.min(...data)
+    const range = max - min || 1
+    const w = 80
+    const h = 32
+    const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(' ')
+    return (
+        <svg width={w} height={h} className="opacity-60 group-hover:opacity-100 transition-opacity">
+            <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={points} />
+        </svg>
+    )
+}
+
+// Custom tooltip for area chart
+const SalesTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-gray-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl border border-gray-700/50">
+                <p className="text-gray-400 text-[10px] font-medium mb-0.5">Revenue</p>
+                <p className="text-white font-bold text-sm">₹{payload[0].value.toLocaleString()}</p>
+            </div>
+        )
+    }
+    return null
+}
+
+const BarTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-gray-900 text-white px-4 py-3 rounded-xl text-xs shadow-xl border border-gray-700/50">
+                <p className="text-gray-400 text-[10px] font-medium mb-1.5">{label}</p>
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-violet-500" />
+                        <span className="text-gray-300">Upsells:</span>
+                        <span className="font-bold">{payload[0]?.value}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-violet-300" />
+                        <span className="text-gray-300">Orders:</span>
+                        <span className="font-bold">{payload[1]?.value}</span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+    return null
+}
+
 export default function DashboardPage() {
+    const navigate = useNavigate()
     const { merchant } = useMerchant()
     const [stats, setStats] = useState<any>(null)
-    const [abMetrics, setAbMetrics] = useState<any>(null)
+    const [upsells, setUpsells] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [simulating, setSimulating] = useState(false)
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const [statsRes, abRes] = await Promise.all([
+            const [statsRes, upsellsRes] = await Promise.all([
                 apiClient.get('/analytics/stats'),
-                apiClient.get('/analytics/ab-test')
+                apiClient.get('/upsells').catch(() => ({ data: [] })),
             ]);
             setStats(statsRes.data);
-            setAbMetrics(abRes.data);
+            setUpsells(upsellsRes.data?.slice?.(0, 5) || []);
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
         } finally {
@@ -45,407 +141,433 @@ export default function DashboardPage() {
     const handleSimulateOrder = async () => {
         try {
             setSimulating(true);
-
-            if (!merchant?.shopify_shop_name) {
-                alert("Please connect your Shopify store in Settings first.");
-                return;
-            }
-
-            // Get a real product from the list to make the simulation realistic
+            if (!merchant?.shopify_shop_name) { alert("Please connect your Shopify store in Settings first."); return; }
             const productsRes = await apiClient.get('/products');
-            const products = productsRes.data;
-            const realProduct = products.find((p: any) => p.shopifyId);
-
-            if (!realProduct) {
-                alert("Please sync products first to get real IDs for simulation.");
-                return;
-            }
-
-            const mockOrder = {
+            const realProduct = productsRes.data.find((p: any) => p.shopifyId);
+            if (!realProduct) { alert("Please sync products first."); return; }
+            await apiClient.post('/shopify/webhooks/orders/create', {
                 id: Math.floor(Math.random() * 1000000000),
-                email: "customer@example.com",
-                total_price: "450.00",
-                customer: {
-                    first_name: "Aman",
-                    last_name: "Patel"
-                },
-                line_items: [
-                    {
-                        id: Math.floor(Math.random() * 1000000),
-                        product_id: realProduct.shopifyId,
-                        title: realProduct.name,
-                        quantity: 1,
-                        price: realProduct.price
-                    }
-                ]
-            };
-
-            // Pass the shop domain so the webhook controller identifies this merchant
-            await apiClient.post('/shopify/webhooks/orders/create', mockOrder, {
-                headers: {
-                    'x-shopify-shop-domain': merchant.shopify_shop_name
-                }
-            });
-
+                email: "customer@example.com", total_price: "450.00",
+                customer: { first_name: "Aman", last_name: "Patel" },
+                line_items: [{ id: Math.floor(Math.random() * 1000000), product_id: realProduct.shopifyId, title: realProduct.name, quantity: 1, price: realProduct.price }]
+            }, { headers: { 'x-shopify-shop-domain': merchant.shopify_shop_name } });
             await fetchDashboardData();
-            alert("Order Simulated! AI Recommendation generated in background.");
-        } catch (error) {
-            console.error("Simulation failed:", error);
-            alert("Simulation failed. Check console.");
-        } finally {
-            setSimulating(false);
-        }
+            alert("Order Simulated! AI Recommendation generated.");
+        } catch (error) { console.error("Simulation failed:", error); alert("Simulation failed."); }
+        finally { setSimulating(false); }
     }
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
+    useEffect(() => { fetchDashboardData(); }, []);
 
-    const columns: Column<any>[] = [
-        { key: 'id', header: 'Order ID', sortable: true },
-        {
-            key: 'customerEmail',
-            header: 'Customer',
-            sortable: true,
-            render: (row: any) => <span className="font-bold">{row.customerEmail}</span>
-        },
-        {
-            key: 'status',
-            header: 'Status',
-            render: (row: any) => <StatusBadge status={row.status} />,
-        },
-        {
-            key: 'createdAt',
-            header: 'Date',
-            sortable: true,
-            render: (row: any) => <span className="text-muted-foreground font-medium">{new Date(row.createdAt).toLocaleDateString()}</span>,
-        },
-        {
-            key: 'totalAmount',
-            header: 'Amount',
-            sortable: true,
-            render: (row: any) => <span className="font-black text-emerald-500">₹{row.totalAmount.toLocaleString()}</span>,
-        },
-    ]
+    const handleExport = () => {
+        if (!stats?.recentOrders?.length) { alert("No data to export"); return; }
+        const headers = ["Order ID", "Customer", "Status", "Amount", "Date"];
+        const rows = stats.recentOrders.map((o: any) => [o.id, o.customerEmail, o.status, o.totalAmount, new Date(o.createdAt).toLocaleDateString()]);
+        const csv = [headers.join(","), ...rows.map((r: any[]) => r.join(","))].join("\n");
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+        link.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    };
 
     if (loading) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center gap-4">
-                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
-                <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Dashboard...</p>
+            <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
+                    <Loader2 className="h-7 w-7 text-violet-500 animate-spin" />
+                </div>
+                <p className="text-sm font-medium text-gray-400">Loading dashboard...</p>
             </div>
         )
     }
 
-    const handleExport = () => {
-        if (!stats?.recentOrders?.length) {
-            alert("No data available to export");
-            return;
-        }
-
-        const headers = ["Order ID", "Customer", "Status", "Amount", "Date"];
-        const rows = stats.recentOrders.map((o: any) => [
-            o.id,
-            o.customerEmail,
-            o.status,
-            o.totalAmount,
-            new Date(o.createdAt).toLocaleDateString()
-        ]);
-
-        const csvContent = [
-            headers.join(","),
-            ...rows.map((r: any[]) => r.join(","))
-        ].join("\n");
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `store_export_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+    const chartData = stats?.trajectory?.map((d: any) => ({ time: d.day, value: d.revenue })) || salesChartData
+    const apiOrders = stats?.recentOrders?.slice(0, 4).map((o: any) => ({
+        id: `#${o.id?.toString().slice(-7) || '0000000'}`,
+        product: o.customerEmail || 'Product',
+        status: o.status || 'pending',
+        price: `₹${o.totalAmount?.toLocaleString() || '0'}`,
+        img: '📦',
+    })) || recentOrders
+    const convRates = stats?.conversionRates || {}
+    const activityFeed = stats?.activityFeed || []
+    const sparkData = chartData.map((d: any) => d.value)
 
     return (
-        <div className="space-y-10 animate-fade-in pb-12">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-4 w-4 text-blue-600 fill-current" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Live Intelligence</span>
+        <div className="space-y-5 animate-fade-in pb-8">
+            {/* ──── Top Bar: Actions ──── */}
+            <div className="flex items-center gap-3 justify-end">
+                <Button onClick={handleSimulateOrder} disabled={simulating || !merchant?.shopify_connected}
+                    className="h-9 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold px-5 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all">
+                    {simulating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Zap className="h-3.5 w-3.5 mr-2" />}
+                    Simulate Order
+                </Button>
+                <Button onClick={handleExport} variant="outline" className="h-9 rounded-xl border-gray-200 text-xs font-semibold px-5 text-gray-600 hover:bg-white/60">
+                    <Download className="h-3.5 w-3.5 mr-2" /> Export
+                </Button>
+            </div>
+
+            {/* ──── ROW 1: 4 Stat Cards with Sparklines (no height mismatch) ──── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Total Revenue */}
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-violet-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center">
+                            <DollarSign className="h-5 w-5 text-violet-500" />
+                        </div>
+                        <MiniSparkline data={sparkData.length ? sparkData : [10, 20, 15, 30, 25, 35]} color="#7C3AED" />
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight text-foreground uppercase italic">Neural Command</h1>
-                    <p className="text-muted-foreground mt-1 font-medium underline decoration-blue-500/30 underline-offset-4 tracking-tight">
-                        Welcome back, {merchant?.business_name || 'Merchant'}. Monitoring {merchant?.shopify_shop_name || 'autonomous'} node.
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Button
-                        onClick={handleSimulateOrder}
-                        disabled={simulating || !merchant?.shopify_connected}
-                        className="h-12 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.1em] text-[11px] px-8 shadow-xl shadow-blue-500/20"
-                    >
-                        {simulating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
-                        Simulate Order
-                    </Button>
-                    <Button
-                        onClick={handleExport}
-                        className="h-12 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-[0.1em] text-[11px] px-8"
-                    >
-                        <Download className="h-4 w-4 mr-2" />
-                        Export Data
-                    </Button>
-                </div>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard
-                    label="Total Orders"
-                    value={stats?.counts.totalOrders || 0}
-                    change="+12.3%"
-                    icon={Mail}
-                    iconBg="bg-blue-500/10"
-                    iconColor="text-blue-500"
-                    trend="up"
-                />
-                <StatCard
-                    label="Widget Impressions"
-                    value={`${stats?.conversionRates.openRate}%`}
-                    change={`${stats?.conversionRates.impressedCount ?? 0} shown`}
-                    icon={MailOpen}
-                    iconBg="bg-emerald-500/10"
-                    iconColor="text-emerald-500"
-                    trend="up"
-                />
-                <StatCard
-                    label="Click-through"
-                    value={`${stats?.conversionRates.clickRate}%`}
-                    change="+3.1%"
-                    icon={MousePointerClick}
-                    iconBg="bg-purple-500/10"
-                    iconColor="text-purple-500"
-                    trend="up"
-                />
-                <StatCard
-                    label="Net Conversion"
-                    value={`${stats?.conversionRates.conversionRate}%`}
-                    change="-1.4%"
-                    icon={TrendingUp}
-                    iconBg="bg-amber-500/10"
-                    iconColor="text-amber-500"
-                    trend="down"
-                />
-            </div>
-
-            {/* Premium Revenue Strip */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="border-foreground/[0.04] bg-foreground/[0.01] overflow-hidden group">
-                    <CardContent className="p-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                <DollarSign className="h-6 w-6 text-blue-500" />
-                            </div>
-                            <div className="flex items-center gap-1 text-emerald-500 text-xs font-black">
-                                <ArrowUpRight className="h-3 w-3" />
-                                14%
-                            </div>
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 mb-1">Total Revenue Harvested</p>
-                        <p className="text-4xl font-black tracking-tighter">
-                            ₹{(stats?.counts.totalRevenue / 1000).toFixed(1)}K
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-foreground/[0.04] bg-foreground/[0.01] overflow-hidden group">
-                    <CardContent className="p-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                <Target className="h-6 w-6 text-purple-500" />
-                            </div>
-                            <div className="flex items-center gap-1 text-emerald-500 text-xs font-black">
-                                <ArrowUpRight className="h-3 w-3" />
-                                8%
-                            </div>
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 mb-1">Avg. Ticket Expansion</p>
-                        <p className="text-4xl font-black tracking-tighter">
-                            ₹{Math.floor(stats?.counts.totalRevenue / (stats?.counts.totalOrders || 1)).toLocaleString()}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-foreground/[0.04] bg-foreground/[0.01] overflow-hidden group">
-                    <CardContent className="p-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                <Zap className="h-6 w-6 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
-                            </div>
-                            <div className="flex items-center gap-1 text-emerald-500 text-xs font-black">
-                                <Activity className="h-3 w-3" />
-                                Stable
-                            </div>
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 mb-1">AI Recommendation Events</p>
-                        <p className="text-4xl font-black tracking-tighter">
-                            {stats?.counts.totalUpsellEvents}
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* AI ROI Lift Summary */}
-            {abMetrics && (
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2rem] p-[1px] shadow-2xl shadow-blue-500/20">
-                    <div className="bg-[#0a0a0a] rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden relative border border-white/5">
-                        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                            <Sparkles className="h-48 w-48 text-white" />
-                        </div>
-
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="h-5 w-5 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                    <Sparkles className="h-3 w-3 text-blue-400" />
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Intelligence Performance</span>
-                            </div>
-                            <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
-                                AI PERSONALIZATION IS DRIVING <span className="text-blue-400">+{abMetrics.lift}% LIFT</span>
-                            </h2>
-                            <p className="text-white/40 mt-4 font-bold text-sm max-w-lg leading-relaxed">
-                                {abMetrics.summary} Comparing AI-personalized pitches against generic marketing control group.
-                            </p>
-                        </div>
-
-                        <div className="flex items-center gap-8 shrink-0">
-                            <div className="text-center">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">AI Conversion</p>
-                                <p className="text-4xl font-black text-blue-400 tracking-tighter italic">{abMetrics.groupA.rate}%</p>
-                            </div>
-                            <div className="h-10 w-[1px] bg-white/10" />
-                            <div className="text-center">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Control Group</p>
-                                <p className="text-4xl font-black text-white/40 tracking-tighter italic">{abMetrics.groupB.rate}%</p>
-                            </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">₹{(stats?.counts?.totalRevenue || 0).toLocaleString()}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs font-medium text-gray-400">Total Revenue</p>
+                        <div className="flex items-center gap-0.5 text-emerald-500">
+                            <ArrowUpRight className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">+12.5%</span>
                         </div>
                     </div>
                 </div>
-            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Performance Chart */}
-                <Card className="lg:col-span-2 border-foreground/[0.04] bg-foreground/[0.01]">
-                    <CardHeader className="flex flex-row items-center justify-between px-8 py-6 border-b border-foreground/[0.04]">
+                {/* Total Orders */}
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/15 flex items-center justify-center">
+                            <ShoppingCart className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <MiniSparkline data={[20, 35, 28, 40, 45, 38, 50]} color="#3B82F6" />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats?.counts?.totalOrders || 0}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs font-medium text-gray-400">Total Orders</p>
+                        <div className="flex items-center gap-0.5 text-emerald-500">
+                            <ArrowUpRight className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">+8.3%</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* AI Upsell Events */}
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
+                            <Sparkles className="h-5 w-5 text-emerald-500" />
+                        </div>
+                        <div className="flex items-center gap-1 text-violet-500 bg-violet-50 px-2 py-0.5 rounded-lg">
+                            <Activity className="h-3 w-3" /><span className="text-[10px] font-bold">LIVE</span>
+                        </div>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats?.counts?.totalUpsellEvents || 0}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs font-medium text-gray-400">AI Upsells Triggered</p>
+                        <span className="text-[10px] font-bold text-violet-500">{convRates.conversionRate || '0'}% CVR</span>
+                    </div>
+                </div>
+
+                {/* Products Synced */}
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-amber-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/15 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <MiniSparkline data={[15, 22, 18, 25, 30, 28, 32]} color="#F59E0B" />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats?.counts?.totalProducts || 0}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs font-medium text-gray-400">Products Synced</p>
+                        <div className="flex items-center gap-0.5 text-emerald-500">
+                            <ArrowUpRight className="h-3 w-3" />
+                            <span className="text-[10px] font-bold">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ──── ROW 2: Revenue Chart (8) + Donut + Bar (4) ──── */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+                {/* Revenue Line Chart */}
+                <div className="xl:col-span-8 glass-card p-6">
+                    <div className="flex items-center justify-between mb-6">
                         <div>
-                            <CardTitle className="text-lg font-black uppercase tracking-tight">Revenue Trajectory</CardTitle>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Daily Conversion Delta</p>
+                            <h3 className="text-base font-bold text-gray-800">Revenue Overview</h3>
+                            <p className="text-xs text-gray-400 mt-0.5 font-medium">Last 7 days trajectory</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-blue-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Real-time</span>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-8">
-                        <div className="h-[300px] w-full">
-                            {stats?.trajectory ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.trajectory}>
-                                        <defs>
-                                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
-                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                                        <XAxis
-                                            dataKey="day"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: '#666', fontSize: 10, fontWeight: 900 }}
-                                            dy={10}
-                                        />
-                                        <YAxis hide />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#111',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                borderRadius: '12px',
-                                                fontSize: '10px',
-                                                fontWeight: '900'
-                                            }}
-                                            itemStyle={{ color: '#3b82f6' }}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="revenue"
-                                            stroke="#3b82f6"
-                                            strokeWidth={3}
-                                            fillOpacity={1}
-                                            fill="url(#colorRevenue)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="h-full w-full flex items-center justify-center bg-foreground/[0.01] border border-dashed border-foreground/5 rounded-2xl">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">Calibrating Data Matrix...</p>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-gray-200 text-xs font-medium text-gray-600 hover:bg-violet-50 hover:border-violet-200 transition-colors">
+                            Weekly <ChevronDown className="h-3 w-3" />
+                        </button>
+                    </div>
+                    <div className="h-[280px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.15} />
+                                        <stop offset="50%" stopColor="#818CF8" stopOpacity={0.08} />
+                                        <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.01} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} dx={-10} />
+                                <Tooltip content={<SalesTooltip />} />
+                                <Area type="monotone" dataKey="value" stroke="#7C3AED" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)"
+                                    dot={{ fill: '#7C3AED', strokeWidth: 2, stroke: '#fff', r: 4 }}
+                                    activeDot={{ fill: '#7C3AED', strokeWidth: 3, stroke: '#fff', r: 6 }} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
 
-                {/* System Status Feed */}
-                <Card className="border-foreground/[0.04] bg-foreground/[0.01]">
-                    <CardHeader className="px-8 py-6 border-b border-foreground/[0.04]">
-                        <CardTitle className="text-lg font-black uppercase tracking-tight text-blue-500">Global Activity</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="divide-y divide-foreground/[0.04]">
-                            {(stats?.activityFeed || []).map((item: any, i: number) => (
-                                <div key={i} className="px-8 py-4 flex items-center justify-between group hover:bg-foreground/[0.01] transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn(
-                                            "h-1.5 w-1.5 rounded-full shrink-0",
-                                            item.type === 'success' ? 'bg-emerald-500' :
-                                                item.type === 'ai' ? 'bg-blue-500' :
-                                                    item.type === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-                                        )} />
-                                        <p className="text-[11px] font-bold text-foreground/80 truncate max-w-[150px]">{item.msg}</p>
+                {/* Right Column: Donut + Summary */}
+                <div className="xl:col-span-4 space-y-5">
+                    {/* Upsell Funnel Donut */}
+                    <div className="glass-card p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-bold text-gray-800">Upsell Funnel</h3>
+                            <button className="text-gray-300 hover:text-gray-500 transition-colors"><MoreHorizontal className="h-4 w-4" /></button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <PieChart width={120} height={120}>
+                                    <Pie data={donutData} cx={60} cy={60} innerRadius={38} outerRadius={55} paddingAngle={3} dataKey="value" strokeWidth={0}>
+                                        {donutData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
+                                    </Pie>
+                                </PieChart>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-lg font-bold text-gray-800">{convRates.conversionRate || '0'}%</span>
+                                </div>
+                            </div>
+                            <div className="space-y-2 flex-1">
+                                {donutData.map((item) => (
+                                    <div key={item.name} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                            <span className="text-[11px] font-medium text-gray-500">{item.name}</span>
+                                        </div>
+                                        <span className="text-[11px] font-bold text-gray-700">{item.value}%</span>
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/30">{item.time}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Upsell Metrics Mini Cards */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="glass-card p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Eye className="h-3.5 w-3.5 text-blue-500" />
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase">Impressions</span>
+                            </div>
+                            <p className="text-lg font-bold text-gray-800">{convRates.impressedCount || 0}</p>
+                            <p className="text-[10px] text-blue-500 font-medium mt-0.5">{convRates.openRate || 0}% rate</p>
+                        </div>
+                        <div className="glass-card p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <MousePointerClick className="h-3.5 w-3.5 text-amber-500" />
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase">CTR</span>
+                            </div>
+                            <p className="text-lg font-bold text-gray-800">{convRates.clickRate || '0.0'}%</p>
+                            <p className="text-[10px] text-amber-500 font-medium mt-0.5">Click-through</p>
+                        </div>
+                        <div className="glass-card p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Target className="h-3.5 w-3.5 text-emerald-500" />
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase">CVR</span>
+                            </div>
+                            <p className="text-lg font-bold text-gray-800">{convRates.conversionRate || '0.0'}%</p>
+                            <p className="text-[10px] text-emerald-500 font-medium mt-0.5">Conversion</p>
+                        </div>
+                        <div className="glass-card p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <ShoppingBag className="h-3.5 w-3.5 text-rose-500" />
+                                <span className="text-[10px] font-semibold text-gray-400 uppercase">Abandoned</span>
+                            </div>
+                            <p className="text-lg font-bold text-gray-800">{stats?.abandonedCarts?.totalAbandoned || 0}</p>
+                            <p className="text-[10px] text-rose-500 font-medium mt-0.5">{stats?.abandonedCarts?.recovered || 0} recovered</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ──── ROW 3: Analytics Bar Chart (8) + Quick Actions (4) ──── */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+                <div className="xl:col-span-8 glass-card p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 className="text-base font-bold text-gray-800">Upsell vs Orders</h3>
+                            <p className="text-xs text-gray-400 mt-0.5 font-medium">Weekly comparison</p>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs">
+                            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-violet-500" /><span className="text-gray-500 font-medium">Upsells</span></div>
+                            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-violet-300" /><span className="text-gray-500 font-medium">Orders</span></div>
+                        </div>
+                    </div>
+                    <div className="h-[220px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analyticsBarData} barGap={3} barSize={12}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} dy={8} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} />
+                                <Tooltip content={<BarTooltip />} />
+                                <Bar dataKey="upsells" fill="#7C3AED" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="orders" fill="#C4B5FD" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Quick Actions + AI Activity */}
+                <div className="xl:col-span-4 glass-card p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Activity className="h-4 w-4 text-violet-500" />
+                        <h3 className="text-sm font-bold text-gray-800">AI Activity Feed</h3>
+                    </div>
+                    {activityFeed.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-6 text-center">
+                            <Activity className="h-5 w-5 text-gray-300 mb-2" />
+                            <p className="text-xs text-gray-400">No recent activity</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2.5 max-h-[140px] overflow-y-auto custom-scrollbar pr-1">
+                            {activityFeed.slice(0, 6).map((event: any, i: number) => (
+                                <div key={i} className="flex items-start gap-2.5">
+                                    <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${event.type === 'ai' ? 'bg-violet-500' : event.type === 'success' ? 'bg-emerald-500' : 'bg-gray-300'
+                                        }`} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] font-medium text-gray-600 leading-snug">{event.msg}</p>
+                                        <p className="text-[9px] text-gray-400">{event.time}</p>
+                                    </div>
+                                    {event.type === 'ai' && <Sparkles className="h-3 w-3 text-violet-400 shrink-0 mt-0.5" />}
                                 </div>
                             ))}
                         </div>
-                        <div className="p-4">
-                            <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest text-blue-500 hover:bg-blue-500/5">
-                                View Full Audit Log
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Recent Activity Table */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Live Order Pipeline</h2>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Real-time sync with database orders</p>
+                    )}
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-1.5">
+                        <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Actions</p>
+                        <button onClick={() => navigate('/dashboard/campaigns')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-violet-50/50 transition-colors text-left group">
+                            <div className="h-6 w-6 rounded-lg bg-violet-50 flex items-center justify-center"><Sparkles className="h-3 w-3 text-violet-500" /></div>
+                            <span className="text-[11px] font-semibold text-gray-600 group-hover:text-violet-600 transition-colors">View All Campaigns</span>
+                        </button>
+                        <button onClick={() => navigate('/dashboard/analytics')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/50 transition-colors text-left group">
+                            <div className="h-6 w-6 rounded-lg bg-blue-50 flex items-center justify-center"><TrendingUp className="h-3 w-3 text-blue-500" /></div>
+                            <span className="text-[11px] font-semibold text-gray-600 group-hover:text-blue-600 transition-colors">Full Analytics Report</span>
+                        </button>
+                        <button onClick={() => navigate('/dashboard/ai-models')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-emerald-50/50 transition-colors text-left group">
+                            <div className="h-6 w-6 rounded-lg bg-emerald-50 flex items-center justify-center"><Cpu className="h-3 w-3 text-emerald-500" /></div>
+                            <span className="text-[11px] font-semibold text-gray-600 group-hover:text-emerald-600 transition-colors">AI Model Config</span>
+                        </button>
                     </div>
                 </div>
-                <div className="border border-foreground/[0.04] rounded-2xl overflow-hidden bg-foreground/[0.01]">
-                    <DataTable
-                        data={stats?.recentOrders || []}
-                        columns={columns}
-                        rowActions={[
-                            { label: 'View Order', value: 'view' },
-                            { label: 'Refund', value: 'refund' },
-                        ]}
-                        onRowAction={(action, row) => console.log(action, row)}
-                    />
+            </div>
+
+            {/* ──── ROW 4: Recent Orders (8) + Recent Upsell Campaigns (4) ──── */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+                {/* Recent Orders Table */}
+                <div className="xl:col-span-7 glass-card p-6">
+                    <div className="flex items-center justify-between mb-5">
+                        <h3 className="text-base font-bold text-gray-800">Recent Orders</h3>
+                        <button onClick={() => navigate('/dashboard/orders')}
+                            className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-violet-50 hover:border-violet-200 transition-colors bg-white/80">
+                            See more
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-12 gap-3 px-3 py-2.5 text-[10px] font-semibold text-gray-400 border-b border-gray-100 bg-gray-50/50 rounded-t-xl uppercase tracking-wider">
+                        <div className="col-span-3">Tracking ID</div>
+                        <div className="col-span-4">Product</div>
+                        <div className="col-span-2">Status</div>
+                        <div className="col-span-3">Amount</div>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                        {apiOrders.map((order: any, i: number) => (
+                            <div key={i} className="grid grid-cols-12 gap-3 px-3 py-3.5 items-center hover:bg-violet-50/30 transition-colors rounded-lg group">
+                                <div className="col-span-3 text-xs font-semibold text-gray-700">{order.id}</div>
+                                <div className="col-span-4 flex items-center gap-2">
+                                    <span className="text-sm">{order.img}</span>
+                                    <span className="text-xs font-medium text-gray-700 group-hover:text-violet-600 transition-colors truncate">{order.product}</span>
+                                </div>
+                                <div className="col-span-2"><StatusBadge status={order.status} /></div>
+                                <div className="col-span-3 text-xs font-bold text-gray-800">{order.price}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Recent Upsell Campaigns */}
+                <div className="xl:col-span-5 glass-card p-6">
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2.5">
+                            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+                                <span className="text-xs">🤖</span>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-800">Recent Upsells</h3>
+                                <p className="text-[9px] text-gray-400 font-medium">AI recommendations</p>
+                            </div>
+                        </div>
+                        <button onClick={() => navigate('/dashboard/campaigns')} className="text-xs font-semibold text-violet-500 hover:text-violet-700 flex items-center gap-1 transition-colors">
+                            View All <ExternalLink className="h-3 w-3" />
+                        </button>
+                    </div>
+                    {upsells.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center mb-3">
+                                <span className="text-xl">✨</span>
+                            </div>
+                            <p className="text-xs font-semibold text-gray-700 mb-0.5">No upsells yet</p>
+                            <p className="text-[10px] text-gray-400 max-w-[200px]">Simulate an order to trigger AI recommendations.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-0 divide-y divide-gray-50">
+                            {upsells.map((u: any, i: number) => (
+                                <div key={u.id || i} className="flex items-center gap-3 py-3 hover:bg-violet-50/30 px-2 -mx-2 rounded-xl transition-colors group">
+                                    <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center shrink-0 border border-violet-200/30">
+                                        <span className="text-sm">🛍️</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold text-gray-700 truncate group-hover:text-violet-600 transition-colors">
+                                            {u.productName || 'AI Recommendation'}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400 truncate">{u.customerEmail || 'customer'}</p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${u.status === 'converted' ? 'bg-emerald-50 text-emerald-600' :
+                                            u.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
+                                            }`}>{u.status || 'pending'}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ──── ROW 5: Bottom Summary Strip ──── */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Today</p>
+                        <p className="text-lg font-bold text-gray-800 mt-0.5">₹{stats?.counts?.todayRevenue?.toLocaleString() || '0'}</p>
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">AI CVR</p>
+                        <p className="text-lg font-bold text-gray-800 mt-0.5">{convRates.conversionRate || '0'}%</p>
+                    </div>
+                    <Target className="h-4 w-4 text-violet-500" />
+                </div>
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Recovered</p>
+                        <p className="text-lg font-bold text-gray-800 mt-0.5">{stats?.abandonedCarts?.recovered || 0}</p>
+                    </div>
+                    <Users className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                    <div>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Pending</p>
+                        <p className="text-lg font-bold text-gray-800 mt-0.5">{stats?.abandonedCarts?.pending || 0}</p>
+                    </div>
+                    <ArrowDownRight className="h-4 w-4 text-amber-500" />
                 </div>
             </div>
         </div>

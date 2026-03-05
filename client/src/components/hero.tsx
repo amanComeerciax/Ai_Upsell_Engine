@@ -35,22 +35,22 @@ export function Hero() {
             <div className="h-4 w-px bg-foreground/10 mx-1" />
             <div className="flex items-center gap-1.5">
               <Star className="h-3.5 w-3.5 fill-blue-500 text-blue-500" />
-              <span className="text-[13px] font-bold text-foreground/80 tracking-tight">4.9/5 Rating</span>
+              <span className="text-[13px] font-bold text-black dark:text-white/70 tracking-tight">4.9/5 Rating</span>
             </div>
             <div className="h-4 w-px bg-foreground/10 mx-1" />
-            <span className="text-[11px] font-black uppercase tracking-widest text-foreground/40 hidden sm:block">Trusted by 2.5k+ Merchants</span>
+            <span className="text-[11px] font-black uppercase tracking-widest text-black/60 dark:text-white/60 hidden sm:block">Trusted by 2.5k+ Merchants</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="mx-auto max-w-5xl text-6xl font-bold leading-[1.05] tracking-tight text-foreground md:text-8xl lg:text-9xl text-balance animate-fade-in-up [animation-delay:0.1s]">
+          <h1 className="mx-auto max-w-5xl text-6xl font-bold leading-[1.05] tracking-tight text-black dark:text-white md:text-8xl lg:text-9xl text-balance animate-fade-in-up [animation-delay:0.1s]">
             High-Velocity <br className="hidden md:block" />
-            <span className="bg-gradient-to-r from-foreground via-foreground/80 to-foreground/40 bg-clip-text text-transparent">
+            <span className="text-black/40 dark:text-white/40">
               Upsell Infrastructure
             </span>
           </h1>
 
           {/* High-Performance Subtext */}
-          <p className="mx-auto mt-10 max-w-3xl text-xl leading-relaxed text-muted-foreground md:text-2xl text-pretty font-medium animate-fade-in-up [animation-delay:0.2s]">
+          <p className="mx-auto mt-10 max-w-3xl text-xl leading-relaxed text-black/70 dark:text-white/50 md:text-2xl text-pretty font-medium animate-fade-in-up [animation-delay:0.2s]">
             Convert 35% more post-purchase revenue using our state-of-the-art AI inference engine. Architected for speed, built for scale.
           </p>
 
@@ -63,7 +63,7 @@ export function Hero() {
             ].map((chip) => (
               <div key={chip.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] border border-foreground/5">
                 <chip.icon className="h-3.5 w-3.5 text-blue-500" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-foreground/60">{chip.label}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-black/70 dark:text-white/50">{chip.label}</span>
               </div>
             ))}
           </div>
@@ -99,9 +99,9 @@ export function Hero() {
             { value: "85k+", label: "Active Integrations", color: "text-purple-500" },
             { value: "99.99%", label: "Engine Uptime", color: "text-amber-500" },
           ].map((stat) => (
-            <div key={stat.label} className="p-6 rounded-[24px] border border-foreground/[0.03] bg-foreground/[0.01] text-center group hover:bg-foreground/[0.02] transition-colors">
+            <div key={stat.label} className="p-6 rounded-[24px] border border-foreground/[0.05] bg-white dark:bg-white/[0.02] text-center group hover:bg-black/[0.03] dark:hover:bg-white/[0.04] transition-colors">
               <div className={`text-3xl font-black tracking-tighter ${stat.color} mb-1`}>{stat.value}</div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30">{stat.label}</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60 dark:text-white/60">{stat.label}</div>
             </div>
           ))}
         </div>

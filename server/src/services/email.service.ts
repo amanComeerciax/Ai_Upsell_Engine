@@ -96,7 +96,7 @@ class EmailService {
                     <!-- Header -->
                     <tr>
                         <td style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);padding:32px 40px;text-align:center;">
-                            <div style="font-size:13px;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">⚡ Velocity AI Engine</div>
+                            <div style="font-size:13px;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;"></div>
                             <h1 style="color:white;font-size:28px;font-weight:900;margin:0;line-height:1.2;font-style:italic;">
                                 A Perfect Match<br/>Just For You
                             </h1>

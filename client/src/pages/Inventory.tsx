@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import apiClient from '@/lib/api-client'
 import {
     Package, Search, Filter, ArrowUpRight, TrendingUp, AlertCircle,
-    MoreHorizontal, Loader2, RefreshCcw, Pencil, BarChart2, Trash2
+    MoreHorizontal, Loader2, RefreshCcw, Pencil, BarChart2, Trash2,
+    ChevronLeft, ChevronRight
 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Product } from '@/types/dashboard'
@@ -21,6 +21,7 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { useMerchant } from '@/contexts/MerchantContext'
+import { cn } from '@/lib/utils'
 
 type EditForm = { name: string; category: string; price: string }
 
@@ -30,6 +31,9 @@ export default function InventoryPage() {
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const PAGE_SIZE = 12
     const [editingProduct, setEditingProduct] = useState<Product | null>(null)
     const [editForm, setEditForm] = useState<EditForm>({ name: '', category: '', price: '' })
     const [saving, setSaving] = useState(false)
@@ -118,210 +122,318 @@ export default function InventoryPage() {
 
     useEffect(() => { fetchData(); }, []);
 
+    const filteredProducts = useMemo(() => {
+        if (!searchQuery.trim()) return products;
+        const q = searchQuery.toLowerCase();
+        return products.filter(p =>
+            p.name?.toLowerCase().includes(q) ||
+            p.category?.toLowerCase().includes(q)
+        );
+    }, [products, searchQuery]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+    const paginatedProducts = filteredProducts.slice(
+        (currentPage - 1) * PAGE_SIZE,
+        currentPage * PAGE_SIZE
+    );
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const pageWindow = useMemo(() => {
+        const delta = 2;
+        const range: number[] = [];
+        for (let i = Math.max(1, currentPage - delta); i <= Math.min(totalPages, currentPage + delta); i++) {
+            range.push(i);
+        }
+        return range;
+    }, [currentPage, totalPages]);
+
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-5 animate-fade-in pb-8">
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight text-foreground uppercase italic">Global Inventory</h1>
-                    <p className="text-muted-foreground mt-1 font-medium">Manage products and monitor their individual upsell performance.</p>
+                    <div className="flex items-center gap-2 mb-1.5">
+                        <Package className="h-4 w-4 text-violet-500" />
+                        <span className="text-xs font-semibold text-violet-500">Inventory Control</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1 font-medium max-w-lg">
+                        Manage your catalog and monitor <span className="text-gray-700 font-semibold">performance</span> per SKU.
+                    </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={handleSync}
                         disabled={syncing}
                         variant="outline"
-                        className="border-blue-500/20 bg-blue-500/[0.02] text-blue-500 hover:bg-blue-500/10 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                        className="h-10 border-violet-200 bg-violet-50/50 text-violet-600 hover:bg-violet-100/50 rounded-xl text-xs font-semibold px-5"
                     >
-                        {syncing ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <RefreshCcw className="h-3 w-3 mr-2" />}
-                        Sync from Shopify
+                        {syncing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
+                        Sync Shopify
                     </Button>
-                    <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px] px-6">
+                    <Button className="h-10 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold px-5 shadow-lg shadow-violet-500/20">
                         Add Product
                     </Button>
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { label: "Total Products", value: stats.totalProducts, icon: Package, color: "text-blue-500" },
-                    { label: "Upsell Performance", value: stats.upsellPerformance, icon: TrendingUp, color: "text-emerald-500" },
-                    { label: "Low Stock Items", value: stats.lowStockItems, icon: AlertCircle, color: "text-amber-500" },
-                    { label: "Total Revenue", value: stats.totalRevenue, icon: ArrowUpRight, color: "text-purple-500" },
-                ].map((stat) => (
-                    <Card key={stat.label} className="border-foreground/[0.04] bg-foreground/[0.01]">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div className="h-10 w-10 rounded-xl bg-foreground/[0.03] flex items-center justify-center">
-                                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30">{stat.label}</p>
-                                    <p className="text-2xl font-black mt-1">{stat.value}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-violet-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-violet-500" />
+                        </div>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.totalProducts}</p>
+                    <p className="text-xs font-medium text-gray-400 mt-1">Total Products</p>
+                </div>
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
+                            <TrendingUp className="h-5 w-5 text-emerald-500" />
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-lg">{stats.upsellPerformance}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.upsellPerformance}</p>
+                    <p className="text-xs font-medium text-gray-400 mt-1">AI Lift</p>
+                </div>
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-amber-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/15 flex items-center justify-center">
+                            <AlertCircle className="h-5 w-5 text-amber-500" />
+                        </div>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.lowStockItems}</p>
+                    <p className="text-xs font-medium text-gray-400 mt-1">Stock Alerts</p>
+                </div>
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-purple-500/5 transition-all">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500/15 to-pink-500/15 flex items-center justify-center">
+                            <ArrowUpRight className="h-5 w-5 text-purple-500" />
+                        </div>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.totalRevenue}</p>
+                    <p className="text-xs font-medium text-gray-400 mt-1">Total Revenue</p>
+                </div>
             </div>
 
-            {/* Filter Bar */}
-            <Card className="border-foreground/[0.04] bg-foreground/[0.01]">
-                <CardContent className="p-4 flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="space-y-4">
+                {/* Filters */}
+                <div className="glass-card p-4 flex flex-col md:flex-row gap-3">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
-                            placeholder="Search by SKU, name or category..."
-                            className="bg-foreground/[0.02] border-foreground/[0.04] pl-10 rounded-xl h-11 focus-visible:ring-blue-500"
+                            placeholder="Search by name or category..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            className="bg-white/60 border-gray-200 pl-10 h-10 rounded-xl text-sm focus-visible:ring-violet-200"
                         />
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" className="border-foreground/[0.08] rounded-xl h-11 px-4 text-sm font-bold">
+                        <Button variant="outline" className="h-10 border-gray-200 rounded-xl px-4 text-xs font-semibold text-gray-600 hover:bg-violet-50">
                             <Filter className="h-4 w-4 mr-2" />
                             Filters
                         </Button>
+                        <span className="text-xs font-medium text-gray-400 px-3">
+                            {filteredProducts.length} results
+                        </span>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Inventory Table */}
-            <Card className="border-foreground/[0.04] bg-foreground/[0.01] overflow-hidden">
-                {loading ? (
-                    <div className="h-64 flex flex-col items-center justify-center gap-4">
-                        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
-                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Loading Inventory...</p>
-                    </div>
-                ) : (
-                    <Table>
-                        <TableHeader className="bg-foreground/[0.02]">
-                            <TableRow className="border-foreground/[0.04] hover:bg-transparent uppercase">
-                                <TableHead className="text-[10px] font-black tracking-widest py-4">Product</TableHead>
-                                <TableHead className="text-[10px] font-black tracking-widest">Category</TableHead>
-                                <TableHead className="text-[10px] font-black tracking-widest text-right">Price</TableHead>
-                                <TableHead className="text-[10px] font-black tracking-widest text-right">Upsells</TableHead>
-                                <TableHead className="text-[10px] font-black tracking-widest text-right">Conv. Rate</TableHead>
-                                <TableHead className="text-[10px] font-black tracking-widest text-right">Revenue</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {products.length === 0 ? (
-                                <TableRow>
-                                    <td colSpan={7} className="text-center py-16 text-sm text-muted-foreground font-bold">
-                                        No products found. Sync from Shopify to get started.
-                                    </td>
-                                </TableRow>
-                            ) : products.map((product) => (
-                                <TableRow key={product.id} className="border-foreground/[0.04] hover:bg-foreground/[0.01] transition-colors group">
-                                    <TableCell className="py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-lg overflow-hidden bg-white border border-foreground/[0.06] flex-shrink-0">
-                                                {product.imageURL ? (
-                                                    <img src={product.imageURL} alt={product.name} className="h-full w-full object-contain p-1" />
-                                                ) : (
-                                                    <div className="h-full w-full flex items-center justify-center bg-foreground/[0.02]">
-                                                        <Package className="h-4 w-4 text-foreground/20" />
+                {/* Table */}
+                <div className="glass-card overflow-hidden p-0">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-24 gap-3">
+                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                            <span className="text-sm font-medium text-gray-400">Loading products...</span>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader className="bg-gray-50/80">
+                                    <TableRow className="border-gray-100 hover:bg-transparent">
+                                        <TableHead className="text-[10px] font-semibold text-gray-400 py-3 px-6 uppercase tracking-wider">Product</TableHead>
+                                        <TableHead className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Category</TableHead>
+                                        <TableHead className="text-[10px] font-semibold text-gray-400 text-right px-6 uppercase tracking-wider">Price</TableHead>
+                                        <TableHead className="text-[10px] font-semibold text-gray-400 text-right px-6 uppercase tracking-wider">Revenue</TableHead>
+                                        <TableHead className="w-[60px] px-6"></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {paginatedProducts.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-20">
+                                                <p className="text-sm font-medium text-gray-400">
+                                                    {searchQuery ? `No matches for "${searchQuery}"` : 'No products. Sync your catalog.'}
+                                                </p>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : paginatedProducts.map((product) => (
+                                        <TableRow key={product.id} className="border-gray-50 hover:bg-violet-50/30 transition-colors group">
+                                            <TableCell className="py-4 px-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0 group-hover:scale-105 transition-transform">
+                                                        {product.imageURL ? (
+                                                            <img src={product.imageURL} alt={product.name} className="h-full w-full object-contain p-1.5" />
+                                                        ) : (
+                                                            <div className="h-full w-full flex items-center justify-center">
+                                                                <Package className="h-5 w-5 text-gray-300" />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-foreground group-hover:text-blue-500 transition-colors uppercase text-[12px]">{product.name}</p>
-                                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter opacity-50">SHP_{product.shopifyId || product.id}</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="px-2 py-1 rounded-md bg-foreground/[0.03] text-[9px] font-black uppercase tracking-widest border border-foreground/[0.04]">
-                                            {product.category}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right font-black text-sm">₹{Number(product.price).toLocaleString()}</TableCell>
-                                    <TableCell className="text-right font-black text-blue-500">{product.timesRecommended || 0}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <div className="w-12 h-1.5 bg-foreground/[0.05] rounded-full overflow-hidden">
-                                                <div className="h-full bg-emerald-500" style={{ width: `${product.conversionRate || 0}%` }} />
-                                            </div>
-                                            <span className="font-bold text-[10px]">{product.conversionRate || 0}%</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right font-black text-sm text-foreground">₹{Number(product.revenueGenerated || 0).toLocaleString()}</TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-foreground/[0.05]"
-                                                    disabled={deletingId === product.id}>
-                                                    {deletingId === product.id
-                                                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                                                        : <MoreHorizontal className="h-4 w-4" />}
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-xl border-foreground/[0.08] bg-background/95 backdrop-blur-xl">
-                                                <DropdownMenuItem
-                                                    className="gap-2 font-medium cursor-pointer"
-                                                    onClick={() => openEditModal(product)}
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5" /> Edit Product
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="gap-2 font-medium cursor-pointer"
-                                                    onClick={() => navigate('/dashboard/analytics')}
-                                                >
-                                                    <BarChart2 className="h-3.5 w-3.5" /> View Analytics
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    className="gap-2 font-medium cursor-pointer text-red-500 focus:text-red-500"
-                                                    onClick={() => handleDelete(product)}
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" /> Remove Product
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )}
-            </Card>
+                                                    <div>
+                                                        <p className="font-semibold text-sm text-gray-700 group-hover:text-violet-600 transition-colors">{product.name}</p>
+                                                        <p className="text-[10px] text-gray-400 mt-0.5">SKU_{product.shopifyId || product.id}</p>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-violet-50/50 text-gray-500 text-xs font-medium">
+                                                    {product.category}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right px-6 font-semibold text-sm text-gray-700">
+                                                ₹{Number(product.price).toLocaleString()}
+                                            </TableCell>
+                                            <TableCell className="text-right px-6">
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-bold text-emerald-500">₹{Number(product.revenueGenerated || 0).toLocaleString()}</span>
+                                                        <span className="text-[10px] text-gray-400">({product.conversionRate || 0}%)</span>
+                                                    </div>
+                                                    <div className="w-20 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${product.conversionRate || 0}%` }} />
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="px-6">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-gray-100"
+                                                            disabled={deletingId === product.id}>
+                                                            {deletingId === product.id
+                                                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                                                : <MoreHorizontal className="h-4 w-4 text-gray-400" />}
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="rounded-xl border-gray-200 bg-white shadow-lg p-1.5 w-48">
+                                                        <DropdownMenuItem
+                                                            className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer"
+                                                            onClick={() => openEditModal(product)}
+                                                        >
+                                                            <Pencil className="h-3.5 w-3.5 text-violet-500" /> Edit Product
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer"
+                                                            onClick={() => navigate('/dashboard/analytics')}
+                                                        >
+                                                            <BarChart2 className="h-3.5 w-3.5 text-purple-500" /> View Analytics
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator className="my-1 bg-gray-100" />
+                                                        <DropdownMenuItem
+                                                            className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer text-red-500 focus:text-red-500"
+                                                            onClick={() => handleDelete(product)}
+                                                        >
+                                                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
 
-            {/* ── Edit Product Modal ── */}
+                    {/* Pagination */}
+                    {!loading && totalPages > 1 && (
+                        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                            <p className="text-xs font-medium text-gray-400">
+                                Page {currentPage} of {totalPages}
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-lg hover:bg-white"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                {pageWindow.map(page => (
+                                    <Button
+                                        key={page}
+                                        variant={page === currentPage ? 'default' : 'ghost'}
+                                        size="icon"
+                                        className={cn(
+                                            "h-8 w-8 rounded-lg text-xs font-semibold",
+                                            page === currentPage
+                                                ? "bg-violet-500 text-white shadow-md shadow-violet-500/20"
+                                                : "hover:bg-white text-gray-500"
+                                        )}
+                                        onClick={() => setCurrentPage(page)}
+                                    >
+                                        {page}
+                                    </Button>
+                                ))}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-lg hover:bg-white"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Edit Modal */}
             {editingProduct && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in"
                     onClick={(e) => { if (e.target === e.currentTarget) setEditingProduct(null) }}>
-                    <div className="bg-background border border-foreground/[0.08] rounded-3xl p-8 w-full max-w-md space-y-6 shadow-2xl">
+                    <div className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-lg space-y-6 shadow-glass-xl">
                         <div>
-                            <h2 className="text-xl font-black uppercase tracking-tight">Edit Product</h2>
-                            <p className="text-xs text-muted-foreground mt-1">Update the product details below.</p>
+                            <h2 className="text-xl font-bold text-gray-800">Edit Product</h2>
+                            <p className="text-xs font-medium text-gray-400 mt-1 font-mono">ID: {editingProduct.id}</p>
                         </div>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 block">Product Name</label>
+                                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Product Name</label>
                                 <Input
                                     value={editForm.name}
                                     onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                                    className="rounded-xl h-11 bg-foreground/[0.02] border-foreground/[0.08] focus-visible:ring-blue-500"
+                                    className="rounded-xl h-11 bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm"
                                 />
                             </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 block">Category</label>
-                                <Input
-                                    value={editForm.category}
-                                    onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))}
-                                    className="rounded-xl h-11 bg-foreground/[0.02] border-foreground/[0.08] focus-visible:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 block">Price (₹)</label>
-                                <Input
-                                    type="number"
-                                    value={editForm.price}
-                                    onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
-                                    className="rounded-xl h-11 bg-foreground/[0.02] border-foreground/[0.08] focus-visible:ring-blue-500"
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Category</label>
+                                    <Input
+                                        value={editForm.category}
+                                        onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))}
+                                        className="rounded-xl h-11 bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Price (₹)</label>
+                                    <Input
+                                        type="number"
+                                        value={editForm.price}
+                                        onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
+                                        className="rounded-xl h-11 bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm font-bold text-emerald-500"
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -329,16 +441,16 @@ export default function InventoryPage() {
                             <Button
                                 onClick={handleSaveEdit}
                                 disabled={saving}
-                                className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 rounded-xl font-black uppercase tracking-widest text-[11px]"
+                                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
                             >
                                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                {saving ? 'Saving...' : 'Save Changes'}
+                                Save Changes
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => setEditingProduct(null)}
                                 disabled={saving}
-                                className="flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[11px] border-foreground/[0.08]"
+                                className="flex-1 h-11 rounded-xl border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
                             >
                                 Cancel
                             </Button>

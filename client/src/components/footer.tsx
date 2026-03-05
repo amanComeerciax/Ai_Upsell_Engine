@@ -9,7 +9,7 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-white dark:bg-[#030303] border-t border-foreground/[0.05] overflow-hidden">
+    <footer className="bg-white dark:!bg-black border-t border-foreground/[0.05] overflow-hidden">
       <div className="mx-auto max-w-[1400px] px-6 py-24 md:py-32">
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-12 items-start mb-24">
           {/* Brand - Span 2 */}
@@ -18,7 +18,7 @@ export function Footer() {
               <Zap className="h-8 w-8 text-foreground fill-foreground" />
               <span className="text-2xl font-black tracking-tighter text-foreground uppercase">upsell<span className="text-muted-foreground/40">.ai</span></span>
             </a>
-            <p className="text-lg font-bold leading-relaxed text-muted-foreground max-w-[320px]">
+            <p className="text-lg font-bold leading-relaxed text-black/60 dark:text-white/50 max-w-[320px]">
               Architecting the next generation of post-purchase revenue infrastructure.
             </p>
 
@@ -34,13 +34,13 @@ export function Footer() {
           {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category} className="col-span-1">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 mb-8">{category}</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 dark:text-white/60 mb-8">{category}</h4>
               <ul className="flex flex-col gap-5">
                 {links.map((link) => (
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-[15px] font-bold text-foreground/60 transition-colors hover:text-foreground"
+                      className="text-[15px] font-bold text-black/70 dark:text-white/50 transition-colors hover:text-black dark:hover:text-white"
                     >
                       {link}
                     </a>
@@ -54,7 +54,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="pt-12 border-t border-foreground/[0.05] flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <p className="text-[13px] font-bold text-muted-foreground">
+            <p className="text-[13px] font-bold text-black/60 dark:text-white/50">
               {"© 2026 upsell.ai Infrastructure. All rights reserved."}
             </p>
             <div className="flex gap-6">
@@ -65,7 +65,7 @@ export function Footer() {
 
           <div className="flex items-center gap-4">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Global Nodes Operational</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 dark:text-white/60">Global Nodes Operational</span>
           </div>
         </div>
       </div>

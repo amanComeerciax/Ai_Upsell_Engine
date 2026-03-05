@@ -51,7 +51,7 @@ const tiers = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="relative py-24 md:py-40 bg-[#fafafa] dark:bg-[#070707] overflow-hidden">
+    <section id="pricing" className="relative py-24 md:py-40 bg-[#fafafa] dark:!bg-black overflow-hidden">
       {/* Background visual elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-full max-w-[1400px] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
       <div className="absolute top-40 right-0 h-[600px] w-[600px] bg-foreground/[0.01] rounded-full blur-[140px] pointer-events-none" />
@@ -60,10 +60,10 @@ export function Pricing() {
         <div className="text-center max-w-3xl mx-auto mb-24">
           <div className="inline-flex items-center gap-2 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-1.5 mb-8">
             <Star className="h-3.5 w-3.5 text-foreground/40" />
-            <span className="text-[13px] font-bold text-foreground/60 uppercase tracking-wider">Pricing Models</span>
+            <span className="text-[13px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Pricing Models</span>
           </div>
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-tight">
-            Built for <span className="text-muted-foreground/30">Scale</span> <br />
+          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-black dark:text-white leading-tight">
+            Built for <span className="text-black/40 dark:text-white/40">Scale</span> <br />
             Not Just Software
           </h2>
         </div>
@@ -73,8 +73,8 @@ export function Pricing() {
             <div
               key={tier.name}
               className={`relative flex flex-col rounded-[48px] p-10 transition-all ${tier.highlighted
-                  ? "bg-foreground text-background shadow-[0_40px_100px_rgba(0,0,0,0.1)] scale-105 z-10 dark:shadow-[0_40px_100px_rgba(255,255,255,0.05)]"
-                  : "bg-white dark:bg-white/[0.03] border border-foreground/5 hover:border-foreground/15"
+                ? "bg-foreground text-background shadow-[0_40px_100px_rgba(0,0,0,0.1)] scale-105 z-10 dark:shadow-[0_40px_100px_rgba(255,255,255,0.05)]"
+                : "bg-white dark:bg-white/[0.03] border border-foreground/[0.06] hover:border-foreground/15"
                 }`}
             >
               {tier.highlighted && (
@@ -85,18 +85,18 @@ export function Pricing() {
 
               <div className="mb-12">
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className={`text-xl font-bold ${tier.highlighted ? "text-background" : "text-foreground"}`}>
+                  <h3 className={`text-xl font-bold ${tier.highlighted ? "text-background" : "text-black dark:text-white"}`}>
                     {tier.name}
                   </h3>
                   {tier.highlighted && <Zap className="h-6 w-6 text-[#3b82f6] fill-[#3b82f6]" />}
                 </div>
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-6xl font-black tracking-tighter">{tier.price}</span>
-                  <span className={`text-sm font-bold ${tier.highlighted ? "text-background/50" : "text-muted-foreground"}`}>
+                  <span className={`text-sm font-bold ${tier.highlighted ? "text-background/50" : "text-black/60 dark:text-white/50"}`}>
                     {tier.period}
                   </span>
                 </div>
-                <p className={`mt-6 text-[15px] font-medium leading-relaxed ${tier.highlighted ? "text-background/70" : "text-muted-foreground"}`}>
+                <p className={`mt-6 text-[15px] font-medium leading-relaxed ${tier.highlighted ? "text-background/70" : "text-black/60 dark:text-white/50"}`}>
                   {tier.description}
                 </p>
               </div>
@@ -118,8 +118,8 @@ export function Pricing() {
 
               <button
                 className={`h-16 rounded-3xl text-sm font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-[0.98] ${tier.highlighted
-                    ? "bg-[#3b82f6] text-white shadow-xl shadow-[#3b82f6]/20"
-                    : "bg-foreground text-background hover:bg-foreground/90"
+                  ? "bg-[#3b82f6] text-white shadow-xl shadow-[#3b82f6]/20"
+                  : "bg-foreground text-background hover:bg-foreground/90"
                   }`}
               >
                 {tier.cta}
@@ -129,7 +129,7 @@ export function Pricing() {
         </div>
 
         <div className="mt-20 text-center">
-          <p className="text-sm font-bold text-muted-foreground">
+          <p className="text-sm font-bold text-black/60 dark:text-white/50">
             {"Need a custom configuration? "}
             <a href="#" className="text-foreground border-b border-foreground/20 pb-0.5 ml-1">Connect with our infrastructure team</a>
           </p>

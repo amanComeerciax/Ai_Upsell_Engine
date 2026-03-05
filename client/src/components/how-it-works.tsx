@@ -33,7 +33,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative py-24 md:py-40 bg-[#fafafa] dark:bg-[#070707] overflow-hidden">
+    <section id="how-it-works" className="relative py-24 md:py-40 bg-[#fafafa] dark:!bg-black overflow-hidden">
       {/* Background visual - Large subtle text */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 text-[20vw] font-black text-foreground/[0.02] whitespace-nowrap pointer-events-none select-none">
         OPERATIONAL FLOW
@@ -45,13 +45,13 @@ export function HowItWorks() {
           <div className="lg:col-span-4 lg:sticky lg:top-40">
             <div className="inline-flex items-center gap-2 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-1.5 mb-8">
               <CheckCircle2 className="h-3.5 w-3.5 text-foreground/40" />
-              <span className="text-[13px] font-bold text-foreground/60 uppercase tracking-wider">The Workflow</span>
+              <span className="text-[13px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">The Workflow</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-tight mb-8">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-black dark:text-white leading-tight mb-8">
               Architected <br />
-              for <span className="text-muted-foreground/30">Velocity</span>
+              for <span className="text-black/40 dark:text-white/40">Velocity</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl text-black/70 dark:text-white/50 leading-relaxed">
               We've engineered a four-stage engine designed to transform static transactions into dynamic revenue streams—automatically.
             </p>
 
@@ -61,7 +61,7 @@ export function HowItWorks() {
                   <div className="h-5 w-5 rounded-full bg-foreground/5 flex items-center justify-center">
                     <div className="h-1.5 w-1.5 rounded-full bg-foreground/40" />
                   </div>
-                  <span className="text-sm font-bold text-foreground/60 tracking-wide uppercase">{feat}</span>
+                  <span className="text-sm font-bold text-black/60 dark:text-white/60 tracking-wide uppercase">{feat}</span>
                 </div>
               ))}
             </div>
@@ -70,7 +70,7 @@ export function HowItWorks() {
           {/* Right Process Column */}
           <div className="lg:col-span-8 flex flex-col gap-6">
             {steps.map((step, idx) => (
-              <div key={step.number} className="group relative flex flex-col md:flex-row gap-8 p-10 rounded-[40px] border border-foreground/5 bg-white dark:bg-white/[0.03] transition-all hover:bg-white dark:hover:bg-white/[0.05] hover:border-foreground/10 hover:shadow-2xl hover:shadow-foreground/5">
+              <div key={step.number} className="group relative flex flex-col md:flex-row gap-8 p-10 rounded-[40px] border border-foreground/[0.06] bg-white dark:bg-white/[0.03] transition-all hover:bg-white dark:hover:bg-white/[0.05] hover:border-foreground/10 hover:shadow-2xl hover:shadow-foreground/5">
                 {/* Step Number Badge */}
                 <div className="flex-shrink-0">
                   <div className="h-16 w-16 rounded-2xl bg-foreground/5 flex items-center justify-center text-2xl font-black text-foreground/20 group-hover:text-foreground transition-colors group-hover:bg-foreground group-hover:text-background">
@@ -81,13 +81,13 @@ export function HowItWorks() {
                 <div className="flex-grow">
                   <div className="flex flex-wrap gap-2 mb-4">
                     {step.tags.map(tag => (
-                      <span key={tag} className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-foreground/5 text-foreground/40">
+                      <span key={tag} className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-foreground/5 text-black/60 dark:text-white/60">
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-4">{step.title}</h3>
-                  <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
+                  <h3 className="text-2xl font-bold text-black dark:text-white mb-4">{step.title}</h3>
+                  <p className="text-lg text-black/70 dark:text-white/50 leading-relaxed max-w-2xl">
                     {step.description}
                   </p>
                 </div>

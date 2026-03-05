@@ -9,19 +9,20 @@ export const upsellController = {
             const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
             const now = new Date();
 
-            const upsells = await prisma.upsell_events.findMany({
+            const upsells = await (prisma as any).upsell_events.findMany({
                 where: merchantFilter,
                 include: {
                     users: true,
                     products: true,
-                    orders: true
+                    orders: true,
+                    abandoned_cart: true
                 },
                 orderBy: {
-                    shown_at: 'desc'
+                    id: 'desc'
                 }
             });
 
-            const formattedUpsells = upsells.map(u => {
+            const formattedUpsells = upsells.map((u: any) => {
                 // Compute dynamic status
                 let status: string;
                 if (u.converted) {
@@ -42,23 +43,27 @@ export const upsellController = {
                 }
 
                 return {
-                    id: u.id,
-                    campaignId: `CAMP-${u.id.toString().padStart(4, '0')}`,
-                    customerEmail: u.users?.email || 'guest@example.com',
-                    customerName: u.users?.name || 'Guest',
-                    productName: u.products?.name || 'Unknown Product',
-                    productImage: (u.products as any)?.image_url || null,
-                    productCategory: u.products?.category || 'General',
-                    discountPercent: u.discount_percent || 0,
-                    originalPrice: Number(u.products?.price || 0),
-                    discountedPrice: Number(u.products?.price || 0) * (1 - (u.discount_percent || 0) / 100),
+                    id: (u as any).id,
+                    campaignId: `CAMP-${(u as any).id.toString().padStart(4, '0')}`,
+                    customerEmail: ((u as any).users?.email && (u as any).users.email !== 'guest@example.com')
+                        ? (u as any).users.email
+                        : ((u as any).abandoned_cart?.customer_email || (u as any).users?.email || 'guest@example.com'),
+                    customerName: ((u as any).users?.name && (u as any).users.name !== 'Guest' && (u as any).users.name !== 'Guest Customer')
+                        ? (u as any).users.name
+                        : ((u as any).abandoned_cart?.customer_name || (u as any).users?.name || 'Guest'),
+                    productName: (u as any).products?.name || 'Unknown Product',
+                    productImage: (u as any).products?.image_url || null,
+                    productCategory: (u as any).products?.category || 'General',
+                    discountPercent: (u as any).discount_percent || 0,
+                    originalPrice: Number((u as any).products?.price || 0),
+                    discountedPrice: Number((u as any).products?.price || 0) * (1 - ((u as any).discount_percent || 0) / 100),
                     status,
                     timeRemaining,
-                    impressionCount: u.impression_count,
-                    shownAt: u.shown_at,
-                    expiresAt: u.expires_at,
-                    revenue: u.converted
-                        ? Number(u.products?.price || 0) * (1 - (u.discount_percent || 0) / 100)
+                    impressionCount: (u as any).impression_count,
+                    shownAt: (u as any).shown_at,
+                    expiresAt: (u as any).expires_at,
+                    revenue: (u as any).converted
+                        ? Number((u as any).products?.price || 0) * (1 - ((u as any).discount_percent || 0) / 100)
                         : 0,
                 };
             });
@@ -309,6 +314,64 @@ export const upsellController = {
         } catch (error) {
             console.error('[Upsell Controller] resendUpsell Error:', error);
             res.status(500).json({ error: 'Failed to retrigger campaign' });
+        }
+    },
+
+    /**
+     * Cart Recovery — serves upsell recommendation for abandoned cart links
+     * Called by the widget when customer visits ?recovery=true&cart_token=XXX
+     */
+    async getCartRecovery(req: Request, res: Response) {
+        try {
+            const { cartToken } = req.params;
+            if (!cartToken) return res.status(400).json({ error: 'Cart token required' });
+
+            // Find the abandoned cart
+            const cart = await (prisma as any).abandoned_carts.findUnique({
+                where: { cart_token: cartToken }
+            });
+
+            if (!cart) return res.status(404).json({ error: 'Cart not found' });
+
+            // Find the upsell event linked to this cart
+            const upsellEvent = await (prisma as any).upsell_events.findFirst({
+                where: { abandoned_cart_id: cart.id },
+                include: { products: true },
+                orderBy: { id: 'desc' }
+            });
+
+            if (!upsellEvent || !upsellEvent.products) {
+                return res.status(404).json({ error: 'No recommendation found for this cart' });
+            }
+
+            const product = upsellEvent.products;
+            const originalPrice = Number(product.price || 0);
+            const discountedPrice = originalPrice * (1 - (upsellEvent.discount_percent || 0) / 100);
+
+            // Mark cart as recovered (customer clicked the link)
+            await (prisma as any).abandoned_carts.update({
+                where: { id: cart.id },
+                data: { status: 'recovered' }
+            });
+
+            res.status(200).json({
+                event_id: upsellEvent.id,
+                product_name: product.name,
+                product_handle: product.handle,
+                product_image: product.image_url,
+                original_price: originalPrice,
+                discounted_price: discountedPrice,
+                discount_percent: upsellEvent.discount_percent,
+                pitch: upsellEvent.pitch,
+                variant_id: product.shopify_variant_id?.toString() || null,
+                expires_at: upsellEvent.expires_at,
+                cart_items: cart.cart_items,
+                event_type: 'abandoned_cart',
+            });
+
+        } catch (error) {
+            console.error('[Upsell Controller] getCartRecovery Error:', error);
+            res.status(500).json({ error: 'Failed to fetch cart recovery' });
         }
     }
 };

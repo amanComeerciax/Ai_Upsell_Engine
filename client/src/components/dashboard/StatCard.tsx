@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react'
+import { LucideIcon, MoreVertical } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface StatCardProps {
@@ -9,32 +9,98 @@ interface StatCardProps {
     iconBg?: string
     iconColor?: string
     trend?: 'up' | 'down' | 'neutral'
+    progress?: number
+    progressColor?: string
+}
+
+function CircularProgress({ value, color = '#3B82F6', size = 44 }: { value: number; color?: string; size?: number }) {
+    const strokeWidth = 3.5
+    const radius = (size - strokeWidth) / 2
+    const circumference = 2 * Math.PI * radius
+    const offset = circumference - (value / 100) * circumference
+
+    return (
+        <svg width={size} height={size} className="circular-progress">
+            <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                fill="none"
+                stroke="#f0f0f0"
+                strokeWidth={strokeWidth}
+            />
+            <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                fill="none"
+                stroke={color}
+                strokeWidth={strokeWidth}
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+            />
+            <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dy="0.35em"
+                fill="#555"
+                fontSize="9"
+                fontWeight="700"
+                style={{ transform: 'rotate(90deg)', transformOrigin: 'center' }}
+            >
+                {value}%
+            </text>
+        </svg>
+    )
 }
 
 export function StatCard({
     label,
     value,
-    change,
+    change: _change,
     icon: Icon,
-    iconBg = 'bg-primary/20',
-    iconColor = 'text-primary',
-    trend = 'neutral',
+    iconBg = 'bg-blue-50',
+    iconColor = 'text-blue-500',
+    trend: _trend = 'neutral',
+    progress = 0,
+    progressColor = '#3B82F6',
 }: StatCardProps) {
-    const trendColor = trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
-
     return (
-        <div className="group rounded-2xl border border-border/50 bg-secondary/50 p-5 hover:bg-secondary/70 hover:border-border/70 transition-all duration-200">
-            <div className="flex items-center justify-between">
-                <div className={cn('rounded-full p-2.5', iconBg)}>
-                    <Icon className={cn('h-5 w-5', iconColor)} />
+        <div className="glass-card p-5 group">
+            <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className={cn(
+                        'h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105',
+                        iconBg
+                    )}>
+                        <Icon className={cn('h-5 w-5', iconColor)} />
+                    </div>
+
+                    {/* Value & Label */}
+                    <div className="pt-0.5">
+                        <p className="text-2xl font-bold text-gray-800 tracking-tight leading-none">
+                            {value}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1.5 font-medium">
+                            {label}
+                        </p>
+                    </div>
                 </div>
-                {change && (
-                    <span className={cn('text-xs font-medium', trendColor)}>{change}</span>
-                )}
-            </div>
-            <div className="mt-4">
-                <p className="text-2xl font-bold text-foreground">{value}</p>
-                <p className="text-sm text-muted-foreground mt-1">{label}</p>
+
+                <div className="flex items-center gap-2">
+                    {/* Circular Progress */}
+                    {progress > 0 && (
+                        <CircularProgress value={progress} color={progressColor} />
+                    )}
+
+                    {/* Three dots */}
+                    <button className="text-gray-300 hover:text-gray-500 transition-colors -mt-0.5">
+                        <MoreVertical className="h-4 w-4" />
+                    </button>
+                </div>
             </div>
         </div>
     )
