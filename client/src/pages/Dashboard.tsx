@@ -516,7 +516,7 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         <div className="space-y-0 divide-y divide-gray-50">
-                            {upsells.map((u: any, i: number) => (
+                            {Array.isArray(upsells) && upsells.map((u: any, i: number) => (
                                 <div key={u.id || i} className="flex items-center gap-3 py-3 hover:bg-violet-50/30 px-2 -mx-2 rounded-xl transition-colors group">
                                     <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center shrink-0 border border-violet-200/30">
                                         <span className="text-sm">🛍️</span>
