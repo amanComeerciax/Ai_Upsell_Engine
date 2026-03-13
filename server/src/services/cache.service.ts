@@ -3,13 +3,24 @@ import IORedis from 'ioredis';
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
 // Shared Redis connection for caching (separate from BullMQ connections)
+let isRedisAvailable = false;
 const redis = new IORedis(REDIS_URL, {
-    maxRetriesPerRequest: 3,
+    maxRetriesPerRequest: 1, // Don't spam retries if it's down
     keyPrefix: 'cache:',
+    reconnectOnError: () => false,
 });
 
-redis.on('connect', () => console.log('[Cache] ✅ Redis cache connected'));
-redis.on('error', (err) => console.error('[Cache] ❌ Redis error:', err.message));
+redis.on('connect', () => {
+    isRedisAvailable = true;
+    console.log('[Cache] ✅ Redis cache connected');
+});
+
+redis.on('error', (err) => {
+    if (isRedisAvailable) {
+        console.error('[Cache] ❌ Redis disconnected:', err.message);
+        isRedisAvailable = false;
+    }
+});
 
 export const cacheService = {
     /**

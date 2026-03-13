@@ -3,7 +3,12 @@ import IORedis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const connection = new IORedis(REDIS_URL, {
-    maxRetriesPerRequest: null,
+    maxRetriesPerRequest: 1,
+    reconnectOnError: () => false,
+});
+
+connection.on('error', (err) => {
+    // Only log once to avoid spamming Render logs if down
 });
 
 // Initialize the BullMQ queues
