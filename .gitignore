@@ -6,5 +6,10 @@ __v0_jsx-dev-runtime.ts
 # Common ignores
 node_modules/
 .next/
+dist/
+build/
 .env*.local
 .DS_Store
+*.log
+.vercel/
+.vercel_build_output/

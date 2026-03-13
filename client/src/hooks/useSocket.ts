@@ -9,7 +9,7 @@ export const useSocket = () => {
 
     useEffect(() => {
         // Use the origin from the API URL or fallback to localhost
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-upsell-engine.onrender.com';
         const socketUrl = new URL(apiUrl).origin;
 
         console.log(`[Socket] 🔌 Connecting to ${socketUrl}...`);

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2, Zap, Layout, Mail, Terminal, Settings2, Percent } from 'lucide-react'
+import { useState } from 'react'
+import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
     Select,
     SelectContent,
@@ -17,37 +18,23 @@ import {
 import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function SettingsPage() {
-    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant, updateSettings } = useMerchant()
+    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant, activateAI } = useMerchant()
 
     const [timingStrategy, setTimingStrategy] = useState('purchase')
     const [delayHours, setDelayHours] = useState(48)
     const [enabled, setEnabled] = useState(true)
     const [temperature, setTemperature] = useState([0.7])
 
+    // Shopify connection state
     const [shopName, setShopName] = useState('')
     const [accessToken, setAccessToken] = useState('')
     const [connecting, setConnecting] = useState(false)
     const [syncing, setSyncing] = useState(false)
+    const [activating, setActivating] = useState(false)
     const [connectError, setConnectError] = useState<string | null>(null)
+    const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<string | null>(null)
-
-    const [emailSubject, setEmailSubject] = useState('')
-    const [emailBody, setEmailBody] = useState('')
-    const [savingTemplate, setSavingTemplate] = useState(false)
-
-    // Discount range
-    const [discountMin, setDiscountMin] = useState(5)
-    const [discountMax, setDiscountMax] = useState(25)
-    const [savingGeneral, setSavingGeneral] = useState(false)
-
-    useEffect(() => {
-        if (merchant) {
-            setEmailSubject(merchant.email_subject || '')
-            setEmailBody(merchant.email_body || '')
-            setDiscountMin(merchant.discount_min ?? 5)
-            setDiscountMax(merchant.discount_max ?? 25)
-        }
-    }, [merchant])
+    const [activationResult, setActivationResult] = useState<string | null>(null)
 
     const handleConnectShopify = async () => {
         if (!shopName || !accessToken) {
@@ -57,7 +44,9 @@ export default function SettingsPage() {
         try {
             setConnecting(true)
             setConnectError(null)
+            setConnectSuccess(null)
             await connectShopify(shopName, accessToken)
+            setConnectSuccess(`✅ Connected to ${shopName}.myshopify.com!`)
             setShopName('')
             setAccessToken('')
         } catch (err: any) {
@@ -85,140 +74,102 @@ export default function SettingsPage() {
     const handleDisconnect = async () => {
         if (confirm('Are you sure you want to disconnect your Shopify store?')) {
             await disconnectShopify()
+            setConnectSuccess(null)
             setSyncResult(null)
         }
     }
 
-    const handleSaveTemplate = async () => {
-        try {
-            setSavingTemplate(true)
-            await updateSettings({
-                email_subject: emailSubject,
-                email_body: emailBody
-            })
-            alert('Template saved successfully!')
-        } catch (err: any) {
-            alert(`Failed to save template: ${err.message}`)
-        } finally {
-            setSavingTemplate(false)
-        }
-    }
-
-    const handleSaveGeneral = async () => {
-        try {
-            setSavingGeneral(true)
-            await updateSettings({
-                discount_min: discountMin,
-                discount_max: discountMax
-            })
-            alert('Settings saved successfully!')
-        } catch (err: any) {
-            alert(`Failed to save: ${err.message}`)
-        } finally {
-            setSavingGeneral(false)
-        }
-    }
-
-    const parsePreview = (text: string) => {
-        return text
-            .replace(/{name}/g, 'John')
-            .replace(/{product}/g, 'Premium Headphones')
-            .replace(/{recommendation}/g, 'Wireless Mouse')
-    }
-
-    const scriptSnippet = `<script src="https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js" async></script>`;
+    const scriptSnippet = `<script src="https://ai-upsell-engine.onrender.com/widget.js" async></script>`;
 
     return (
-        <div className="space-y-5 animate-fade-in pb-8">
+        <div className="space-y-6">
             {/* Page Header */}
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                        <Settings2 className="h-4 w-4 text-violet-500" />
-                        <span className="text-xs font-semibold text-violet-500">Configuration</span>
-                    </div>
-                    <p className="text-sm text-gray-400 mt-1 font-medium max-w-lg">
-                        Fine-tune your <span className="text-gray-700 font-semibold">engine settings</span> and manage integrations.
-                    </p>
+            <div>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="h-6 w-[2px] bg-blue-600" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">
+                        {merchant?.business_name || 'My Store'}
+                    </span>
                 </div>
+                <h1 className="text-3xl font-black tracking-tight text-foreground uppercase italic">Settings</h1>
+                <p className="text-sm text-muted-foreground mt-1 font-medium italic">
+                    Configure your AI upsell engine & Shopify integration
+                </p>
             </div>
 
-            {/* Merchant Info */}
+            {/* Merchant Info Strip */}
             {merchant && (
-                <div className="glass-card p-5 flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-6 p-4 rounded-2xl border border-foreground/[0.04] bg-foreground/[0.01]">
                     <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Status</span>
-                        <span className="text-sm font-semibold text-gray-700">Active</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Merchant ID</span>
+                        <span className="text-xs font-bold text-foreground">{merchant.id}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Plan</span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-semibold">
-                            {merchant.plan}
-                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Plan</span>
+                        <span className="text-xs font-bold text-blue-500 uppercase">{merchant.plan}</span>
                     </div>
-                    <div className="flex items-center gap-2 ml-auto">
-                        <span className="text-xs font-medium text-gray-500">{merchant.stats.products} Products / {merchant.stats.orders} Orders</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Products</span>
+                        <span className="text-xs font-bold text-foreground">{merchant.stats.products}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Orders</span>
+                        <span className="text-xs font-bold text-foreground">{merchant.stats.orders}</span>
                     </div>
                 </div>
             )}
 
             {/* Settings Tabs */}
-            <Tabs defaultValue="integration" className="space-y-5">
-                <TabsList className="bg-white/80 border border-gray-200 rounded-xl p-1 gap-1 h-auto shadow-sm">
-                    <TabsTrigger value="integration" className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-                        <Store className="h-3.5 w-3.5 mr-1.5" />
-                        Integration
+            <Tabs defaultValue="integration" className="space-y-6">
+                <TabsList>
+                    <TabsTrigger value="integration">
+                        <Store className="h-3.5 w-3.5 mr-2" />
+                        Shopify
                     </TabsTrigger>
-                    <TabsTrigger value="general" className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-                        <Layout className="h-3.5 w-3.5 mr-1.5" />
-                        General
-                    </TabsTrigger>
-                    <TabsTrigger value="templates" className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-                        <Mail className="h-3.5 w-3.5 mr-1.5" />
-                        Templates
-                    </TabsTrigger>
-                    <TabsTrigger value="ai" className="text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm">
-                        <Terminal className="h-3.5 w-3.5 mr-1.5" />
-                        AI Config
-                    </TabsTrigger>
+                    <TabsTrigger value="general">General</TabsTrigger>
+                    <TabsTrigger value="templates">Email Templates</TabsTrigger>
+                    <TabsTrigger value="ai">AI Configuration</TabsTrigger>
                 </TabsList>
 
-                {/* Integration Tab */}
-                <TabsContent value="integration" className="space-y-5 animate-fade-in">
+                {/* Integration Tab — NOW WITH REAL FUNCTIONALITY */}
+                <TabsContent value="integration" className="space-y-6">
                     {isShopifyConnected ? (
-                        <div className="space-y-5">
-                            <div className="glass-card p-8">
-                                <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                        /* Connected State */
+                        <div className="space-y-6">
+                            <div className="rounded-[2rem] border border-emerald-500/20 bg-emerald-500/[0.02] p-8 space-y-6">
+                                <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
+                                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
                                             <CheckCircle2 className="h-6 w-6 text-emerald-500" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-800">Shopify Connected</h3>
-                                            <p className="text-sm text-emerald-500 font-semibold mt-0.5">{merchant?.shopify_shop_name}</p>
+                                            <h3 className="text-lg font-black text-foreground uppercase tracking-tight">Shopify Connected</h3>
+                                            <p className="text-sm text-emerald-500 font-bold">{merchant?.shopify_shop_name}</p>
                                         </div>
                                     </div>
                                     <Button
                                         variant="outline"
+                                        size="sm"
+                                        className="border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase tracking-widest"
                                         onClick={handleDisconnect}
-                                        className="border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-xs font-semibold px-5 h-10"
                                     >
-                                        <Unplug className="h-4 w-4 mr-2" />
+                                        <Unplug className="h-3 w-3 mr-2" />
                                         Disconnect
                                     </Button>
                                 </div>
 
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-foreground/[0.04]">
                                     <div className="space-y-4">
                                         <div>
-                                            <h4 className="text-[10px] font-semibold text-violet-500 uppercase tracking-wider mb-2">Widget Script Snippet</h4>
-                                            <p className="text-xs text-gray-400 font-medium mb-4 leading-relaxed">
-                                                Copy this into your theme's <code className="text-violet-600 font-semibold">theme.liquid</code> before the closing tag.
+                                            <h4 className="text-sm font-black text-foreground uppercase tracking-tight italic">Manual Installation</h4>
+                                            <p className="text-[11px] text-muted-foreground font-medium italic mt-1 leading-relaxed">
+                                                Copy the snippet below and paste it before the closing <code>&lt;/body&gt;</code> tag in your theme's <code>theme.liquid</code> file.
                                             </p>
                                         </div>
-                                        <div className="relative">
-                                            <div className="p-4 rounded-xl bg-gray-900 font-mono text-xs text-violet-400 break-all select-all leading-relaxed border border-gray-800">
+                                        <div className="relative group">
+                                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                                            <div className="relative p-4 rounded-xl bg-[#0c0e14] border border-foreground/[0.06] font-mono text-[10px] text-blue-400 break-all select-all">
                                                 {scriptSnippet}
                                             </div>
                                         </div>
@@ -227,434 +178,377 @@ export default function SettingsPage() {
                                                 navigator.clipboard.writeText(scriptSnippet);
                                                 alert('Snippet copied to clipboard!');
                                             }}
-                                            className="w-full h-10 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
+                                            className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px] h-11"
                                         >
                                             Copy Snippet
                                         </Button>
                                     </div>
 
-                                    <div className="p-6 rounded-2xl bg-violet-50/50 border border-violet-100 space-y-4">
+                                    <div className="p-6 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.04] flex flex-col justify-center space-y-4">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-violet-500" />
-                                            <span className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider">Setup Instructions</span>
+                                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Instructions</span>
                                         </div>
-                                        <ol className="text-xs text-gray-500 font-medium leading-relaxed space-y-3 list-decimal pl-5">
-                                            <li>Navigate to Shopify Admin → Themes → Edit Code</li>
-                                            <li>Locate <code className="text-violet-600 font-semibold">theme.liquid</code> in Layout</li>
-                                            <li>Paste the script snippet at the bottom</li>
-                                            <li>Clear browser cache and refresh</li>
-                                        </ol>
+                                        <ul className="text-[11px] text-muted-foreground font-medium leading-relaxed italic space-y-2">
+                                            <li>1. Go to Shopify Admin &rarr; Online Store &rarr; Themes.</li>
+                                            <li>2. Click **Actions** &rarr; **Edit Code**.</li>
+                                            <li>3. Find `theme.liquid` and paste the code at the very bottom.</li>
+                                            <li>4. Save and refresh your store.</li>
+                                        </ul>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-100">
-                                    {[
-                                        { label: "Products", value: merchant?.stats.products || 0 },
-                                        { label: "Orders", value: merchant?.stats.orders || 0 },
-                                        { label: "Upsells", value: merchant?.stats.upsells || 0 },
-                                    ].map(s => (
-                                        <div key={s.label} className="p-4 rounded-xl bg-gray-50/80 border border-gray-100">
-                                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{s.label}</p>
-                                            <p className="text-2xl font-bold text-gray-800 mt-1">{s.value}</p>
-                                        </div>
-                                    ))}
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Products Synced</p>
+                                        <p className="text-2xl font-black">{merchant?.stats.products || 0}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Orders Tracked</p>
+                                        <p className="text-2xl font-black">{merchant?.stats.orders || 0}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Upsell Events</p>
+                                        <p className="text-2xl font-black">{merchant?.stats.upsells || 0}</p>
+                                    </div>
                                 </div>
 
-                                <div className="flex gap-3 mt-6">
+                                <div className="flex gap-3">
                                     <Button
                                         onClick={handleSyncProducts}
                                         disabled={syncing}
-                                        className="h-10 px-6 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
+                                        className="bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px]"
                                     >
-                                        {syncing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                        Sync Products
+                                        {syncing ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-2" />}
+                                        Re-Sync Products
                                     </Button>
                                     <Button
                                         variant="outline"
                                         onClick={() => refreshMerchant()}
-                                        className="h-10 px-6 border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                                        className="rounded-xl font-bold uppercase tracking-widest text-[10px]"
                                     >
-                                        <RefreshCw className="h-4 w-4 mr-2" />
-                                        Refresh
+                                        <RefreshCw className="h-3 w-3 mr-2" />
+                                        Refresh Stats
                                     </Button>
                                 </div>
 
                                 {syncResult && (
-                                    <p className="mt-4 text-xs font-semibold text-emerald-500">{syncResult}</p>
+                                    <p className="text-sm font-bold text-emerald-500">{syncResult}</p>
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <div className="glass-card p-8 space-y-6">
+                        /* Not Connected State */
+                        <div className="rounded-[2rem] border border-foreground/[0.04] bg-foreground/[0.01] p-8 space-y-8">
                             <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center">
-                                    <Store className="h-6 w-6 text-violet-500" />
+                                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                    <Store className="h-6 w-6 text-blue-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-800">Connect Shopify</h3>
-                                    <p className="text-sm text-gray-400 font-medium mt-0.5">
-                                        Authorize the AI engine to access your Shopify data.
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight italic">Connect Your Shopify Store</h3>
+                                    <p className="text-sm text-muted-foreground font-medium italic">
+                                        Enter your store name and access token to get started
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Shop Name</Label>
-                                    <div className="flex items-center">
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Shop Name</Label>
+                                        <div className="flex items-center">
+                                            <Input
+                                                value={shopName}
+                                                onChange={(e) => setShopName(e.target.value)}
+                                                placeholder="my-store"
+                                                className="h-12 rounded-l-xl rounded-r-none bg-foreground/[0.02] border-foreground/[0.06] font-bold"
+                                            />
+                                            <span className="h-12 px-3 flex items-center bg-foreground/[0.04] border border-l-0 border-foreground/[0.06] rounded-r-xl text-xs text-muted-foreground font-mono">
+                                                .myshopify.com
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Access Token</Label>
                                         <Input
-                                            value={shopName}
-                                            onChange={(e) => setShopName(e.target.value)}
-                                            placeholder="store-name"
-                                            className="h-11 rounded-l-xl rounded-r-none bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm"
+                                            type="password"
+                                            value={accessToken}
+                                            onChange={(e) => setAccessToken(e.target.value)}
+                                            placeholder="shpat_xxxxxxxxxxxx"
+                                            className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-mono font-bold"
                                         />
-                                        <span className="h-11 px-4 flex items-center bg-gray-100 border border-l-0 border-gray-200 rounded-r-xl text-xs text-gray-400 font-medium">
-                                            .myshopify.com
-                                        </span>
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Admin API Token</Label>
-                                    <Input
-                                        type="password"
-                                        value={accessToken}
-                                        onChange={(e) => setAccessToken(e.target.value)}
-                                        placeholder="shpat_••••••••"
-                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-violet-200 font-mono text-sm"
-                                    />
+
+                                {connectError && (
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                                        <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+                                        <p className="text-sm text-red-500 font-bold">{connectError}</p>
+                                    </div>
+                                )}
+
+                                {connectSuccess && (
+                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                        <p className="text-sm text-emerald-500 font-bold">{connectSuccess}</p>
+                                    </div>
+                                )}
+
+                                <Button
+                                    onClick={handleConnectShopify}
+                                    disabled={connecting}
+                                    className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-foreground/10 group"
+                                >
+                                    {connecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Store className="h-4 w-4 mr-2" />}
+                                    Connect Shopify Store
+                                </Button>
+
+                                <div className="p-6 rounded-2xl border border-blue-500/10 bg-blue-500/[0.02] space-y-3">
+                                    <h4 className="text-sm font-black uppercase tracking-widest text-blue-500">How to get your Access Token</h4>
+                                    <ol className="text-xs text-muted-foreground font-medium leading-relaxed space-y-2 list-decimal pl-4">
+                                        <li>Go to your Shopify Admin → <strong>Settings → Apps → Develop apps</strong></li>
+                                        <li>Create a new app or open an existing one</li>
+                                        <li>Configure <strong>Admin API scopes</strong>: read_products, read_orders, write_orders, <strong>write_script_tags, read_script_tags</strong></li>
+                                        <li>Install the app and copy the <strong>Admin API access token</strong></li>
+                                    </ol>
                                 </div>
-                            </div>
-
-                            {connectError && (
-                                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
-                                    <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
-                                    <p className="text-xs text-red-500 font-medium">{connectError}</p>
-                                </div>
-                            )}
-
-                            <Button
-                                onClick={handleConnectShopify}
-                                disabled={connecting}
-                                className="w-full h-11 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-sm font-semibold shadow-lg shadow-violet-500/20"
-                            >
-                                {connecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
-                                Connect Store
-                            </Button>
-
-                            <div className="p-5 rounded-xl border border-violet-100 bg-violet-50/50 space-y-3">
-                                <h4 className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider">How to get your API token</h4>
-                                <ol className="text-xs text-gray-500 font-medium leading-relaxed space-y-2 list-decimal pl-5">
-                                    <li>Admin → Settings → Apps → Develop apps</li>
-                                    <li>Create app with <code className="text-violet-600 font-semibold">read/write_products</code> & <code className="text-violet-600 font-semibold">read/write_orders</code></li>
-                                    <li>Add <code className="text-violet-600 font-semibold">read/write_script_tags</code> for widget injection</li>
-                                    <li>Install and copy the Access Token</li>
-                                </ol>
                             </div>
                         </div>
                     )}
                 </TabsContent>
 
                 {/* General Tab */}
-                <TabsContent value="general" className="space-y-5 animate-fade-in">
-                    <div className="glass-card p-8 space-y-8">
-                        <div className="flex items-center justify-between pb-6 border-b border-gray-100">
+                <TabsContent value="general" className="space-y-6">
+                    <div className="rounded-2xl border border-border/50 bg-secondary/50 p-6 space-y-6">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-800">Upsell Settings</h3>
-                                <p className="text-sm text-gray-400 font-medium mt-0.5">
-                                    Define triggers for AI recommendations.
+                                <h3 className="text-lg font-semibold text-foreground">Campaign Settings</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Configure when and how campaigns are sent
                                 </p>
                             </div>
-                            <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                                <Switch checked={enabled} onCheckedChange={setEnabled} className="data-[state=checked]:bg-violet-500" />
-                                <span className="text-xs font-semibold text-gray-600">
+                            <div className="flex items-center gap-2">
+                                <Switch checked={enabled} onCheckedChange={setEnabled} />
+                                <span className="text-sm text-muted-foreground">
                                     {enabled ? 'Enabled' : 'Disabled'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Timing Strategy</Label>
+                        <div className="space-y-4">
+                            <div>
+                                <Label>Timing Strategy</Label>
                                 <Select value={timingStrategy} onValueChange={setTimingStrategy}>
-                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm font-medium">
+                                    <SelectTrigger className="mt-2">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-gray-200 bg-white shadow-lg">
-                                        <SelectItem value="purchase" className="text-xs font-medium py-2">Purchase-based (48h delay)</SelectItem>
-                                        <SelectItem value="delivery" className="text-xs font-medium py-2">Post-delivery</SelectItem>
-                                        <SelectItem value="smart" className="text-xs font-medium py-2">AI-powered selection</SelectItem>
+                                    <SelectContent>
+                                        <SelectItem value="purchase">Purchase-based (48h after order)</SelectItem>
+                                        <SelectItem value="delivery">Delivery-based</SelectItem>
+                                        <SelectItem value="smart">Smart AI-based</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Delay (Hours)</Label>
+                            <div>
+                                <Label>Delay (hours)</Label>
                                 <Input
                                     type="number"
                                     value={delayHours}
                                     onChange={(e) => setDelayHours(parseInt(e.target.value))}
-                                    className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm font-semibold"
+                                    className="mt-2"
                                 />
                             </div>
                         </div>
 
-                        {/* Discount Range Section */}
-                        <div className="space-y-6 pt-6 border-t border-gray-100">
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
-                                    <Percent className="h-5 w-5 text-emerald-500" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-gray-800">Discount Range</h4>
-                                    <p className="text-[10px] text-gray-400 font-medium">Min-Max discount the AI can apply on upsell offers</p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Minimum Discount</Label>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold">{discountMin}%</span>
-                                    </div>
-                                    <Slider
-                                        value={[discountMin]}
-                                        onValueChange={(v) => {
-                                            const newMin = v[0]
-                                            setDiscountMin(newMin)
-                                            if (newMin > discountMax) setDiscountMax(newMin)
-                                        }}
-                                        min={0}
-                                        max={40}
-                                        step={5}
-                                        className="py-2"
-                                    />
-                                    <p className="text-[9px] text-gray-300 font-medium">Lowest possible discount for any campaign</p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Maximum Discount</Label>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-bold">{discountMax}%</span>
-                                    </div>
-                                    <Slider
-                                        value={[discountMax]}
-                                        onValueChange={(v) => {
-                                            const newMax = v[0]
-                                            setDiscountMax(newMax)
-                                            if (newMax < discountMin) setDiscountMin(newMax)
-                                        }}
-                                        min={5}
-                                        max={50}
-                                        step={5}
-                                        className="py-2"
-                                    />
-                                    <p className="text-[9px] text-gray-300 font-medium">Highest possible discount for any campaign</p>
-                                </div>
-                            </div>
-
-                            {/* Preview bar */}
-                            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Active Range</span>
-                                    <span className="text-xs font-bold text-gray-700">{discountMin}% — {discountMax}%</span>
-                                </div>
-                                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden relative">
-                                    <div
-                                        className="absolute h-full bg-gradient-to-r from-emerald-400 to-violet-500 rounded-full transition-all"
-                                        style={{
-                                            left: `${(discountMin / 50) * 100}%`,
-                                            width: `${((discountMax - discountMin) / 50) * 100}%`
-                                        }}
-                                    />
-                                </div>
-                                <div className="flex justify-between mt-1">
-                                    <span className="text-[9px] text-gray-300">0%</span>
-                                    <span className="text-[9px] text-gray-300">50%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <Button
-                            onClick={handleSaveGeneral}
-                            disabled={savingGeneral}
-                            className="h-10 px-6 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
-                        >
-                            {savingGeneral ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                            Save Settings
+                        <Button>
+                            <Save className="h-4 w-4 mr-2" />
+                            Save Changes
                         </Button>
                     </div>
                 </TabsContent>
 
-                {/* Templates Tab */}
-                <TabsContent value="templates" className="space-y-5 animate-fade-in">
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                        <div className="glass-card p-8 space-y-6">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-800">Email Template</h3>
-                                <p className="text-xs text-gray-400 font-medium mt-1">Configure your email template fields.</p>
-                            </div>
+                {/* Email Templates Tab */}
+                <TabsContent value="templates" className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="rounded-2xl border border-border/50 bg-secondary/50 p-6 space-y-4">
+                            <h3 className="text-lg font-semibold text-foreground">Template Editor</h3>
                             <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Subject Line</Label>
+                                <div>
+                                    <Label>Subject Line</Label>
                                     <Input
-                                        value={emailSubject}
-                                        onChange={(e) => setEmailSubject(e.target.value)}
                                         placeholder="Complete your purchase with {product}"
-                                        className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm focus-visible:ring-violet-200"
+                                        className="mt-2"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Email Body</Label>
+                                <div>
+                                    <Label>Email Body</Label>
                                     <Textarea
-                                        value={emailBody}
-                                        onChange={(e) => setEmailBody(e.target.value)}
-                                        placeholder="Hi {name}, we noticed you purchased {product}..."
-                                        rows={6}
-                                        className="rounded-xl bg-gray-50 border-gray-200 text-sm leading-relaxed p-4 focus-visible:ring-violet-200"
+                                        placeholder="Hi {name}, we noticed you purchased {product}. Based on your order, we think you'll love {recommendation}..."
+                                        rows={10}
+                                        className="mt-2"
                                     />
                                 </div>
-                                <div className="flex gap-2 flex-wrap pt-1">
-                                    {['{name}', '{product}', '{recommendation}'].map(tag => (
-                                        <button
-                                            key={tag}
-                                            onClick={() => setEmailBody(prev => prev + tag)}
-                                            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors border border-violet-100"
-                                        >
-                                            {tag}
-                                        </button>
-                                    ))}
+                                <div className="flex gap-2 flex-wrap">
+                                    <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{name}'}</span>
+                                    <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{product}'}</span>
+                                    <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{recommendation}'}</span>
                                 </div>
-                                <Button
-                                    onClick={handleSaveTemplate}
-                                    disabled={savingTemplate}
-                                    className="w-full h-10 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
-                                >
-                                    {savingTemplate ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                                    Save Template
-                                </Button>
+                                <Button>Save Template</Button>
                             </div>
                         </div>
 
-                        <div className="glass-card p-8 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-base font-bold text-gray-800">Preview</h3>
-                                <Sparkles className="h-4 w-4 text-violet-400" />
-                            </div>
-                            <div className="space-y-4">
-                                <div className="pb-4 border-b border-gray-100">
-                                    <p className="text-[10px] text-gray-400 mb-1.5 uppercase tracking-wider font-semibold">Subject</p>
-                                    <p className="text-sm font-semibold text-gray-700">
-                                        {emailSubject ? parsePreview(emailSubject) : 'Complete your purchase with Premium Headphones'}
+                        <div className="rounded-2xl border border-border/50 bg-secondary/50 p-6">
+                            <h3 className="text-lg font-semibold text-foreground mb-4">Preview</h3>
+                            <div className="bg-background rounded-lg p-6 border border-border/40">
+                                <p className="text-sm text-foreground mb-4">
+                                    <strong>Subject:</strong> Complete your purchase with Premium Headphones
+                                </p>
+                                <div className="text-sm text-muted-foreground space-y-3">
+                                    <p>Hi John,</p>
+                                    <p>
+                                        We noticed you purchased Premium Headphones. Based on your order, we think you'll love our Wireless Mouse!
                                     </p>
-                                </div>
-                                <div className="space-y-3">
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Body</p>
-                                    <div className="text-sm text-gray-500 space-y-3 font-medium leading-relaxed border-l-2 border-violet-200 pl-4">
-                                        {emailBody ? parsePreview(emailBody) : (
-                                            <>
-                                                <p>Hi John,</p>
-                                                <p>We noticed you purchased Premium Headphones. Based on your order, we think you'll love our Wireless Mouse!</p>
-                                                <p className="font-bold text-violet-600 text-xs">Get 20% off with code UPSELL20</p>
-                                            </>
-                                        )}
-                                    </div>
+                                    <p>Get 20% off with code UPSELL20</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </TabsContent>
 
-                {/* AI Tab */}
-                <TabsContent value="ai" className="space-y-5 animate-fade-in">
-                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-                        <div className="xl:col-span-7">
-                            <div className="glass-card p-8 space-y-8">
+                {/* AI Configuration Tab */}
+                <TabsContent value="ai" className="space-y-6 animate-fade-in">
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                        <div className="xl:col-span-7 space-y-6">
+                            <div className="rounded-[2rem] border border-foreground/[0.04] bg-foreground/[0.01] p-8 space-y-8 shadow-sm">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-800">AI Parameters</h3>
-                                    <p className="text-sm text-gray-400 font-medium mt-0.5">
-                                        Configure the local Ollama model settings.
+                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight italic">Ollama Inference Core</h3>
+                                    <p className="text-sm text-muted-foreground mt-1 font-medium italic underline decoration-blue-500/30 underline-offset-4">
+                                        Fine-tune the local brain of your upsell engine.
                                     </p>
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Model</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Active Inference Model</Label>
                                             <Select defaultValue="dolphin-llama3:latest">
-                                                <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm font-medium">
+                                                <SelectTrigger className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-bold">
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent className="rounded-xl border-gray-200 bg-white shadow-lg">
-                                                    <SelectItem value="dolphin-llama3:latest" className="text-xs font-medium py-2">dolphin-llama3:latest</SelectItem>
-                                                    <SelectItem value="phi3:mini" className="text-xs font-medium py-2">phi3:mini (Fast)</SelectItem>
-                                                    <SelectItem value="mistral:latest" className="text-xs font-medium py-2">mistral:latest</SelectItem>
+                                                <SelectContent className="rounded-xl border-foreground/[0.08] bg-background/95 backdrop-blur-xl">
+                                                    <SelectItem value="dolphin-llama3:latest">dolphin-llama3 (Recommended)</SelectItem>
+                                                    <SelectItem value="phi3:mini">phi3:mini (Fastest)</SelectItem>
+                                                    <SelectItem value="mistral:latest">mistral:latest</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Repetition Penalty</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Repetition Penalty</Label>
                                             <Input
                                                 type="number"
                                                 defaultValue={1.1}
                                                 step={0.1}
-                                                className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm font-semibold"
+                                                className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-bold"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4">
-                                        <div className="space-y-3">
+                                    <div className="space-y-6 pt-4 border-t border-foreground/[0.04]">
+                                        <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Temperature</Label>
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-bold">{temperature[0]}</span>
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Creativity (Temperature)</Label>
+                                                <span className="text-xs font-black text-blue-500">{temperature[0]}</span>
                                             </div>
                                             <Slider
                                                 value={temperature}
                                                 onValueChange={setTemperature}
                                                 max={1}
                                                 step={0.1}
-                                                className="py-2"
+                                                className="py-4"
                                             />
+                                            <p className="text-[10px] text-muted-foreground font-medium italic">
+                                                Higher values make recommendations more diverse/creative.
+                                            </p>
                                         </div>
 
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Top P</Label>
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-purple-50 text-purple-600 text-xs font-bold">0.92</span>
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Diversity (Top P)</Label>
+                                                <span className="text-xs font-black text-purple-500">0.9</span>
                                             </div>
                                             <Slider
-                                                defaultValue={[0.92]}
+                                                defaultValue={[0.9]}
                                                 max={1}
-                                                step={0.01}
-                                                className="py-2"
+                                                step={0.05}
+                                                className="py-4"
                                             />
                                         </div>
                                     </div>
 
-                                    <Button className="w-full h-10 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20">
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Save AI Config
-                                    </Button>
+                                    <div className="flex items-center gap-4 pt-4 border-t border-foreground/[0.04]">
+                                        <div className="flex-1 space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Max Reasoning Tokens</Label>
+                                            <Input
+                                                type="number"
+                                                defaultValue={512}
+                                                className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-bold"
+                                            />
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Stop Sequence</Label>
+                                            <Input
+                                                defaultValue='"JSON_END"'
+                                                className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-mono font-bold"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <Button className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-foreground/10 group">
+                                    <Save className="h-4 w-4 mr-2 transition-transform group-hover:scale-110" />
+                                    Synchronize Neural Engine
+                                </Button>
                             </div>
                         </div>
 
-                        <div className="xl:col-span-5">
-                            <div className="glass-card p-6 space-y-5">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4 text-violet-500" />
-                                    <h4 className="text-sm font-bold text-gray-800">Prompt Preview</h4>
-                                </div>
-                                <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 font-mono text-xs leading-relaxed text-violet-400 shadow-lg">
-                                    <span className="text-gray-500">// Prompt Config</span><br />
-                                    <span className="text-purple-400">"role"</span>: <span className="text-emerald-400">"system"</span>,<br />
-                                    <span className="text-purple-400">"context"</span>: <span className="text-emerald-400">"ecommerce"</span>,<br />
-                                    <span className="text-purple-400">"temperature"</span>: <span className="text-white font-bold">{temperature[0]}</span>,<br />
-                                    <span className="text-purple-400">"output_format"</span>: <span className="text-emerald-400">"strict_json"</span>,<br />
-                                    <span className="text-purple-400">"top_p"</span>: <span className="text-white font-bold">0.92</span>
-                                </div>
-                                <p className="text-xs text-gray-400 font-medium border-l-2 border-violet-200 pl-3 leading-relaxed">
-                                    These parameters update the prompt engineering across all AI execution blocks.
+                        <div className="xl:col-span-5 space-y-6">
+                            <Card className="border-blue-500/20 bg-blue-500/[0.02] rounded-[2rem] overflow-hidden">
+                                <CardHeader className="border-b border-blue-500/10">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="h-4 w-4 text-blue-500" />
+                                        <CardTitle className="text-sm font-black uppercase tracking-widest">Logic Preview</CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-8">
+                                    <div className="rounded-2xl bg-[#0c0e14] border border-foreground/[0.06] p-6 font-mono text-[11px] leading-relaxed text-blue-400 opacity-60">
+                                        <span className="text-muted-foreground">// System Instruction Fragment</span><br />
+                                        "role": "system",<br />
+                                        "content": "You are Velocity AI. Temperature is set to <span className="text-blue-500 font-bold">{temperature[0]}</span>.
+                                        Format output as 100% valid JSON. Ensure logic matches high-velocity ecommerce patterns."<br /><br />
+
+                                        <span className="text-muted-foreground">// Inference Parameters</span><br />
+                                        "num_predict": 512,<br />
+                                        "top_p": 0.9,<br />
+                                        "repeat_penalty": 1.1
+                                    </div>
+
+                                    <div className="mt-8 space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Real-time Connection: Stable</span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground font-medium leading-relaxed italic border-l-2 border-blue-500/30 pl-4">
+                                            "Changes made here affect the prompt engineering and response behavior of your local models instantly."
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <div className="p-8 rounded-[2rem] border border-orange-500/20 bg-orange-500/[0.02] space-y-4">
+                                <h4 className="text-sm font-black uppercase tracking-widest text-orange-500">Localhost Optimization</h4>
+                                <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
+                                    Running models locally on Ollama requires minimum **16GB RAM** for 8B models to ensure latency stays under 500ms.
                                 </p>
                             </div>
                         </div>
