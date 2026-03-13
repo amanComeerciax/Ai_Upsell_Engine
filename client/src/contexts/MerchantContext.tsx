@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/react';
+import { useUser } from '@clerk/clerk-react';
 import apiClient, { setClerkUserId, setMerchantId } from '@/lib/api-client';
 
 interface MerchantProfile {

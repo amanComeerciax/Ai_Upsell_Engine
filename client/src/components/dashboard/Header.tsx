@@ -1,5 +1,5 @@
 import { Search, Bell, ChevronDown, Sun, Moon, Package, ShoppingCart, Sparkles, Eye, Trash2, CheckCheck } from 'lucide-react'
-import { UserButton, useUser } from '@clerk/react'
+import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTheme } from '@/contexts/ThemeContext'

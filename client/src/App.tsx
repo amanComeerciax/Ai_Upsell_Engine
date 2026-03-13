@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { ClerkProvider, SignedIn, SignedOut } from '@clerk/react'
+import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-react'
 import { MerchantProvider } from '@/contexts/MerchantContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { LandingLayout } from '@/layouts/LandingLayout'
