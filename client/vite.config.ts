@@ -10,6 +10,9 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    optimizeDeps: {
+        include: ['@clerk/react'],
+    },
     server: {
         port: 3000,
         open: true,
