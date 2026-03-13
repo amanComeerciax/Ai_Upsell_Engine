@@ -22,7 +22,7 @@ export default function CampaignsPage() {
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
-    const [retriggering, setRetriggering] = useState<number | null>(null)
+    const [retriggering, setRetriggering] = useState<number | string | null>(null)
 
     useEffect(() => {
         const fetchCampaigns = async () => {

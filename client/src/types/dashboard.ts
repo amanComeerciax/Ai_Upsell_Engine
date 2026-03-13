@@ -1,19 +1,27 @@
 export interface Campaign {
-    id: number
+    id: number | string
     campaignId: string
+    orderId?: string
     customerEmail: string
     customerName: string
     productName: string
-    productImage: string | null
-    productCategory: string
-    discountPercent: number
-    originalPrice: number
-    discountedPrice: number
-    status: 'active' | 'expired' | 'converted'
-    timeRemaining: string | null
-    shownAt: string | null
-    expiresAt: string | null
-    revenue: number
+    productsRecommended?: string[]
+    productImage?: string | null
+    productCategory?: string
+    discountPercent?: number
+    originalPrice?: number
+    discountedPrice?: number
+    status: 'active' | 'expired' | 'converted' | 'sent' | 'opened' | 'clicked'
+    timeRemaining?: string | null
+    shownAt?: string | null
+    expiresAt?: string | null
+    revenue? : number
+    sentAt?: Date
+    openedAt?: Date
+    clickedAt?: Date
+    converted?: boolean
+    messagePreview?: string
+    impressionCount?: number
 }
 
 export interface Order {

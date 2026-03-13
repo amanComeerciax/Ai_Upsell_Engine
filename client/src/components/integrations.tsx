@@ -1,4 +1,4 @@
-import { ShoppingBag, Globe, Smartphone, ArrowRight, Layers, Zap, Database, Terminal } from "lucide-react"
+import { ShoppingBag, Globe, Smartphone, Layers, Database, Terminal } from "lucide-react"
 
 const platforms = [
   { name: "Shopify", icon: ShoppingBag, category: "E-Commerce" },
