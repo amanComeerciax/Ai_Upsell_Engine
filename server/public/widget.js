@@ -262,11 +262,13 @@
         console.log(`[Velocity AI] 🚀 Version ${VERSION} initializing... URL: ${window.location.pathname}`);
 
         const urlParams = new URLSearchParams(window.location.search);
+        console.log('[Velocity AI] Path:', window.location.pathname);
         const shopParam = window.Shopify?.shop
             ? `&shop=${window.Shopify.shop}`
             : (window.location.hostname.includes('.myshopify.com')
                 ? `&shop=${window.location.hostname}`
                 : '');
+        console.log('[Velocity AI] Shop:', shopParam);
 
         // ── PRIORITY 1: Direct email/event link (?event_id=XX) ───────────────
         // Must check BEFORE cart detection so upsell emails work even on /cart
@@ -320,6 +322,8 @@
         const isCartPage = window.location.pathname === '/cart' || 
                           window.location.pathname.startsWith('/cart/') || 
                           window.location.pathname.includes('cart');
+        
+        console.log('[Velocity AI] isCartPage:', isCartPage);
                           
         if (isCartPage) {
             console.log('[Velocity AI] 🛒 Cart page detected. Fetching items...');
