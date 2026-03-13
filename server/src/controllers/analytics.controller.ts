@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import axios from 'axios';
+import { cacheService } from '../services/cache.service';
 
 // 1-hour in-memory cache for AI insights (avoid calling Groq on every page load)
 const insightsCache = new Map<string, { insights: any[]; generatedAt: number }>();
@@ -11,6 +12,11 @@ export const analyticsController = {
         try {
             // Tenant isolation
             const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
+            // Check Redis cache first (2 min TTL)
+            const cacheKey = cacheService.key(req.merchant?.id, 'dashboard');
+            const cached = await cacheService.get(cacheKey);
+            if (cached) return res.status(200).json(cached);
 
             // 1. Get basic counts
             const totalOrders = await prisma.orders.count({ where: merchantFilter });
@@ -105,7 +111,7 @@ export const analyticsController = {
                 });
             });
 
-            res.status(200).json({
+            const responseData = {
                 counts: {
                     totalOrders,
                     totalProducts,
@@ -145,7 +151,11 @@ export const analyticsController = {
                 })(),
                 trajectory,
                 activityFeed: activityFeed.slice(0, 5)
-            });
+            };
+
+            // Cache for 2 minutes
+            await cacheService.set(cacheKey, responseData, 120);
+            res.status(200).json(responseData);
 
         } catch (error: any) {
             console.error('[Analytics Controller] Error:', error);
@@ -160,6 +170,11 @@ export const analyticsController = {
         try {
             const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
             const days = parseInt(req.query.days as string) || 30;
+
+            // Check Redis cache first (5 min TTL)
+            const cacheKey = cacheService.key(req.merchant?.id, `analytics:${days}`);
+            const cached = await cacheService.get(cacheKey);
+            if (cached) return res.status(200).json(cached);
 
             // ── 1. Time-series: upsells sent + converted per day ──────────────
             const timeSeries = [];
@@ -274,7 +289,7 @@ export const analyticsController = {
                 avgResponseHrs = parseFloat((totalMs / shownUpsells.length / 3600000).toFixed(1));
             }
 
-            res.status(200).json({
+            const responseData = {
                 timeSeries,
                 topProducts,
                 kpis: {
@@ -288,7 +303,11 @@ export const analyticsController = {
                     totalRevenue: parseFloat(totalRevenue.toFixed(2)),
                     avgResponseHrs: avgResponseHrs || null
                 }
-            });
+            };
+
+            // Cache for 5 minutes
+            await cacheService.set(cacheKey, responseData, 300);
+            res.status(200).json(responseData);
 
         } catch (error: any) {
             console.error('[Analytics Controller] Detailed Error:', error);
@@ -411,6 +430,11 @@ Rules:
         try {
             const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
 
+            // Check Redis cache first (5 min TTL)
+            const cacheKey = cacheService.key(req.merchant?.id, 'abtest');
+            const cached = await cacheService.get(cacheKey);
+            if (cached) return res.status(200).json(cached);
+
             // 1. Get totals and conversions for Group A (AI)
             const [totalA, convertedA] = await Promise.all([
                 prisma.upsell_events.count({
@@ -443,7 +467,7 @@ Rules:
                 lift = 100; // 100% lift if B is zero but A has results
             }
 
-            res.status(200).json({
+            const responseData = {
                 groupA: {
                     total: totalA,
                     conversions: convertedA,
@@ -458,7 +482,11 @@ Rules:
                 summary: lift > 0
                     ? `AI Personalization is driving a ${lift.toFixed(1)}% lift in conversions!`
                     : "Wait for more data to see the lift from AI personalization."
-            });
+            };
+
+            // Cache for 5 minutes
+            await cacheService.set(cacheKey, responseData, 300);
+            res.status(200).json(responseData);
 
         } catch (error: any) {
             console.error('[Analytics Controller] A/B Metrics Error:', error);

@@ -6,6 +6,7 @@ import { emailService } from '../services/email.service';
 import { inferCategory } from '../lib/categorizer';
 import { emitEvent } from '../lib/socket';
 import { queueService } from '../services/queue.service';
+import { cacheService } from '../services/cache.service';
 
 export const webhookController = {
     async handleOrderCreate(req: Request, res: Response) {
@@ -57,6 +58,11 @@ export const webhookController = {
                     data: { status: 'converted' }
                 });
                 console.log(`[Webhook] 🛒→✅ Marked abandoned carts as converted for ${orderData.email}`);
+            }
+
+            // Invalidate caches for this merchant (new order = stale dashboard/analytics/orders)
+            if (merchantId) {
+                await cacheService.invalidateMerchant(merchantId);
             }
 
         } catch (error) {

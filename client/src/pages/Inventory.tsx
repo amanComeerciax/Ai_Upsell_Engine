@@ -329,7 +329,7 @@ export default function InventoryPage() {
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer"
-                                                            onClick={() => navigate('/dashboard/analytics')}
+                                                            onClick={() => navigate(`/dashboard/inventory/${product.id}`)}
                                                         >
                                                             <BarChart2 className="h-3.5 w-3.5 text-purple-500" /> View Analytics
                                                         </DropdownMenuItem>

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { emitEvent } from '../lib/socket';
+import { cacheService } from '../services/cache.service';
 
 export const upsellController = {
     async getAllUpsells(req: Request, res: Response) {
@@ -281,6 +282,11 @@ export const upsellController = {
                 revenue,
                 timestamp: new Date()
             });
+
+            // Invalidate caches (conversion changes dashboard stats, analytics, A/B metrics)
+            if (event.merchant_id) {
+                await cacheService.invalidateMerchant(event.merchant_id);
+            }
 
         } catch (error) {
             console.error('[Upsell Controller] convertUpsell Error:', error);

@@ -51,8 +51,11 @@ export class AIService {
         triggerProduct: Product,
         candidates: Product[],
         context?: { location?: string; interests?: string[] },
-        testGroup: 'A' | 'B' = 'A'
+        testGroup: 'A' | 'B' = 'A',
+        discountRange?: { min: number; max: number }
     ): Promise<RecommendationResponse> {
+        const dRange = discountRange || { min: 5, max: 25 };
+
         // 1. Scoring Engine selects the BEST candidate based on context & business logic
         const ranked = scoringService.rankCandidates(triggerProduct, candidates, context?.interests);
         const winner = ranked[0];
@@ -80,7 +83,7 @@ export class AIService {
         // If Group B, skip AI and return generic fallback immediately
         if (testGroup === 'B') {
             console.log(`[AI Service] 🧪 Group B (Control). Returning generic pitch.`);
-            const genericFallback = this.buildSmartFallback(triggerProduct, winner, undefined, 'B');
+            const genericFallback = this.buildSmartFallback(triggerProduct, winner, undefined, 'B', dRange);
             this.recommendationCache.set(cacheKey, genericFallback);
             this.saveToDbCache(cacheKey, genericFallback.reason, genericFallback.discount_percent).catch(() => { });
             return genericFallback;
@@ -89,12 +92,12 @@ export class AIService {
         console.log(`[AI Service] ⚡ Cache MISS. Returning smart fallback immediately, warming AI cache in background...`);
 
         // ── Return smart fallback IMMEDIATELY (< 50ms, no Ollama wait) ──────────
-        const smartFallback = this.buildSmartFallback(triggerProduct, winner, context, testGroup);
+        const smartFallback = this.buildSmartFallback(triggerProduct, winner, context, testGroup, dRange);
         this.recommendationCache.set(cacheKey, smartFallback);
         this.saveToDbCache(cacheKey, smartFallback.reason, smartFallback.discount_percent).catch(() => { });
 
         // ── Warm the cache with AI pitch in the background (fire-and-forget) ───
-        this.warmCacheWithAI(triggerProduct, winner, context, cacheKey, smartFallback.discount_percent);
+        this.warmCacheWithAI(triggerProduct, winner, context, cacheKey, smartFallback.discount_percent, dRange);
 
         return smartFallback;
     }
@@ -162,9 +165,11 @@ export class AIService {
         winner: Product,
         context: { location?: string; interests?: string[] } | undefined,
         cacheKey: string,
-        fallbackDiscount: number
+        fallbackDiscount: number,
+        discountRange?: { min: number; max: number }
     ): Promise<void> {
         try {
+            const dRange = discountRange || { min: 5, max: 25 };
             const locationStr = context?.location ? ` The customer is located in ${context.location}.` : '';
             const interestStr = context?.interests?.length
                 ? ` Their interests based on past purchases include: ${context.interests.join(', ')}.`
@@ -184,7 +189,7 @@ Task:
 Write a brief, catchy one-sentence "Reason" why these products go perfect together. 
 Make it PERSONALIZED using the customer's location or interests if provided. 
 Use a friendly, persuasive tone. 
-Also suggest a discount (10, 15, or 20) as a percentage.
+Also suggest a discount between ${dRange.min}% and ${dRange.max}% as a percentage.
 
 Output Format (STRICT JSON):
 {
@@ -225,8 +230,11 @@ Output Format (STRICT JSON):
         trigger: Product,
         winner: Product,
         context?: { location?: string; interests?: string[] },
-        testGroup: 'A' | 'B' = 'A'
+        testGroup: 'A' | 'B' = 'A',
+        discountRange?: { min: number; max: number }
     ): RecommendationResponse {
+        const dRange = discountRange || { min: 5, max: 25 };
+
         // If Group B, we keep it purely generic
         const locationPrefix = (testGroup === 'A' && context?.location) ? `Since you're in ${context.location.split(',')[0]}, ` : '';
         const interestSuffix = (testGroup === 'A' && context?.interests?.length) ? ` especially given your interest in ${context.interests[0]}` : '';
@@ -250,11 +258,22 @@ Output Format (STRICT JSON):
         const options = pitches[category] || pitches['Apparel'];
         const reason = options[Math.floor(Math.random() * options.length)];
 
+        // Smart discount: pick a value within merchant's allowed range
+        // Use midpoint of range as sensible default, with slight randomization
+        const mid = Math.round((dRange.min + dRange.max) / 2);
+        const step = 5;
+        const possibleDiscounts: number[] = [];
+        for (let d = dRange.min; d <= dRange.max; d += step) {
+            possibleDiscounts.push(d);
+        }
+        if (possibleDiscounts.length === 0) possibleDiscounts.push(mid);
+        const discount = possibleDiscounts[Math.floor(Math.random() * possibleDiscounts.length)];
+
         return {
             recommended_product_id: winner.id,
             recommended_product_name: winner.name || 'Top Pick',
             reason,
-            discount_percent: 15
+            discount_percent: discount
         };
     }
 

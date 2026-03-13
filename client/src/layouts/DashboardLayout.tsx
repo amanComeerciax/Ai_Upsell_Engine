@@ -2,13 +2,14 @@ import { ReactNode } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import { DashboardHeader } from '@/components/dashboard/Header'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 import { useSocket } from '@/hooks/useSocket'
 
 interface DashboardLayoutProps {
     children?: ReactNode
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+function DashboardLayoutInner({ children }: DashboardLayoutProps) {
     useSocket(); // Initialize real-time notifications
 
     return (
@@ -31,3 +32,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
     )
 }
+
+export function DashboardLayout({ children }: DashboardLayoutProps) {
+    return (
+        <NotificationProvider>
+            <DashboardLayoutInner>{children}</DashboardLayoutInner>
+        </NotificationProvider>
+    )
+}
+

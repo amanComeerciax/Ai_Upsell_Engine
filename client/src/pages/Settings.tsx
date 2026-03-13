@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2, Zap, Layout, Mail, Terminal, Settings2 } from 'lucide-react'
+import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2, Zap, Layout, Mail, Terminal, Settings2, Percent } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,10 +35,17 @@ export default function SettingsPage() {
     const [emailBody, setEmailBody] = useState('')
     const [savingTemplate, setSavingTemplate] = useState(false)
 
+    // Discount range
+    const [discountMin, setDiscountMin] = useState(5)
+    const [discountMax, setDiscountMax] = useState(25)
+    const [savingGeneral, setSavingGeneral] = useState(false)
+
     useEffect(() => {
         if (merchant) {
             setEmailSubject(merchant.email_subject || '')
             setEmailBody(merchant.email_body || '')
+            setDiscountMin(merchant.discount_min ?? 5)
+            setDiscountMax(merchant.discount_max ?? 25)
         }
     }, [merchant])
 
@@ -94,6 +101,21 @@ export default function SettingsPage() {
             alert(`Failed to save template: ${err.message}`)
         } finally {
             setSavingTemplate(false)
+        }
+    }
+
+    const handleSaveGeneral = async () => {
+        try {
+            setSavingGeneral(true)
+            await updateSettings({
+                discount_min: discountMin,
+                discount_max: discountMax
+            })
+            alert('Settings saved successfully!')
+        } catch (err: any) {
+            alert(`Failed to save: ${err.message}`)
+        } finally {
+            setSavingGeneral(false)
         }
     }
 
@@ -376,8 +398,88 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <Button className="h-10 px-6 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20">
-                            <Save className="h-4 w-4 mr-2" />
+                        {/* Discount Range Section */}
+                        <div className="space-y-6 pt-6 border-t border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
+                                    <Percent className="h-5 w-5 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-gray-800">Discount Range</h4>
+                                    <p className="text-[10px] text-gray-400 font-medium">Min-Max discount the AI can apply on upsell offers</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Minimum Discount</Label>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold">{discountMin}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[discountMin]}
+                                        onValueChange={(v) => {
+                                            const newMin = v[0]
+                                            setDiscountMin(newMin)
+                                            if (newMin > discountMax) setDiscountMax(newMin)
+                                        }}
+                                        min={0}
+                                        max={40}
+                                        step={5}
+                                        className="py-2"
+                                    />
+                                    <p className="text-[9px] text-gray-300 font-medium">Lowest possible discount for any campaign</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Maximum Discount</Label>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-bold">{discountMax}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[discountMax]}
+                                        onValueChange={(v) => {
+                                            const newMax = v[0]
+                                            setDiscountMax(newMax)
+                                            if (newMax < discountMin) setDiscountMin(newMax)
+                                        }}
+                                        min={5}
+                                        max={50}
+                                        step={5}
+                                        className="py-2"
+                                    />
+                                    <p className="text-[9px] text-gray-300 font-medium">Highest possible discount for any campaign</p>
+                                </div>
+                            </div>
+
+                            {/* Preview bar */}
+                            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Active Range</span>
+                                    <span className="text-xs font-bold text-gray-700">{discountMin}% — {discountMax}%</span>
+                                </div>
+                                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden relative">
+                                    <div
+                                        className="absolute h-full bg-gradient-to-r from-emerald-400 to-violet-500 rounded-full transition-all"
+                                        style={{
+                                            left: `${(discountMin / 50) * 100}%`,
+                                            width: `${((discountMax - discountMin) / 50) * 100}%`
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                    <span className="text-[9px] text-gray-300">0%</span>
+                                    <span className="text-[9px] text-gray-300">50%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button
+                            onClick={handleSaveGeneral}
+                            disabled={savingGeneral}
+                            className="h-10 px-6 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
+                        >
+                            {savingGeneral ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                             Save Settings
                         </Button>
                     </div>

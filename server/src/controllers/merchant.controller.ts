@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import axios from 'axios';
 import { inferCategory } from '../lib/categorizer';
+import { cacheService } from '../services/cache.service';
 
 export const merchantController = {
     /**
@@ -209,6 +210,10 @@ export const merchantController = {
                 count: syncedCount,
                 products: results
             });
+
+            // Invalidate product caches after sync
+            await cacheService.invalidate(cacheService.key(merchant.id, 'products'));
+            await cacheService.invalidate(cacheService.key(merchant.id, 'product-stats'));
         } catch (error: any) {
             console.error('[Merchant Controller] Sync Error:', error.response?.data || error.message);
             res.status(500).json({ error: 'Failed to sync products' });
@@ -315,18 +320,20 @@ export const merchantController = {
     },
 
     /**
-     * Update merchant settings (Email templates, etc.)
-     */
+ * Update merchant settings (Email templates, Discount range, etc.)
+ */
     async updateSettings(req: Request, res: Response) {
         try {
             const merchant = req.merchant!;
-            const { email_subject, email_body } = req.body;
+            const { email_subject, email_body, discount_min, discount_max } = req.body;
 
             const updated = await prisma.merchants.update({
                 where: { id: merchant.id },
                 data: {
                     email_subject: email_subject !== undefined ? email_subject : merchant.email_subject,
                     email_body: email_body !== undefined ? email_body : merchant.email_body,
+                    discount_min: discount_min !== undefined ? Number(discount_min) : undefined,
+                    discount_max: discount_max !== undefined ? Number(discount_max) : undefined,
                 }
             });
 
@@ -342,3 +349,4 @@ export const merchantController = {
         }
     }
 };
+

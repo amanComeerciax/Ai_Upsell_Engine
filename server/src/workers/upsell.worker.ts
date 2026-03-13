@@ -137,6 +137,16 @@ export const upsellWorker = new Worker(
                 const testGroup = Math.random() < 0.5 ? 'A' : 'B';
                 console.log(`[Worker] 🧪 A/B Testing: Order ${order.id} assigned to Group ${testGroup}`);
 
+                // Fetch merchant's discount range
+                const merchantSettings = await prisma.merchants.findUnique({
+                    where: { id: merchantId },
+                    select: { discount_min: true, discount_max: true }
+                });
+                const discountRange = {
+                    min: merchantSettings?.discount_min ?? 5,
+                    max: merchantSettings?.discount_max ?? 25
+                };
+
                 const recommendation = await aiService.getSmartRecommendation(
                     {
                         id: triggerProduct.id,
@@ -150,7 +160,8 @@ export const upsellWorker = new Worker(
                     },
                     formattedCandidates,
                     { location, interests },
-                    testGroup
+                    testGroup,
+                    discountRange
                 );
 
                 if (recommendation.recommended_product_id > 0) {

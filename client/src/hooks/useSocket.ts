@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export const useSocket = () => {
     const socketRef = useRef<Socket | null>(null);
+    const { addNotification } = useNotifications();
 
     useEffect(() => {
         // Use the origin from the API URL or fallback to localhost
@@ -25,6 +27,11 @@ export const useSocket = () => {
                 description: `Total: ₹${data.total}`,
                 duration: 5000,
             });
+            addNotification({
+                type: 'order',
+                title: `New Order — ${data.customer}`,
+                description: `Total: ₹${data.total}`,
+            });
         });
 
         socket.on('upsell:created', (data) => {
@@ -32,6 +39,11 @@ export const useSocket = () => {
             toast.info(`AI Choice: ${data.productName}`, {
                 description: `Sent to ${data.customer}`,
                 duration: 5000,
+            });
+            addNotification({
+                type: 'upsell',
+                title: `AI Upsell — ${data.productName}`,
+                description: `Sent to ${data.customer}`,
             });
         });
 
@@ -42,10 +54,20 @@ export const useSocket = () => {
                 duration: 8000,
                 style: { backgroundColor: '#10b981', color: 'white' }
             });
+            addNotification({
+                type: 'conversion',
+                title: `💰 Conversion — ${data.productName}`,
+                description: `Revenue: ₹${data.revenue.toFixed(2)}`,
+            });
         });
 
         socket.on('upsell:shown', (data) => {
             console.log('[Socket] 👀 Upsell viewed by customer', data);
+            addNotification({
+                type: 'impression',
+                title: `Widget Viewed`,
+                description: `Customer saw upsell offer`,
+            });
         });
 
         return () => {

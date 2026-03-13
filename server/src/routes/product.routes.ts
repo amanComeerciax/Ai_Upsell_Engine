@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', optionalMerchant, productController.getAllProducts);
 router.get('/stats', optionalMerchant, productController.getProductStats);
+router.get('/:id/analytics', optionalMerchant, productController.getProductAnalytics);
 router.patch('/:id', optionalMerchant, productController.updateProduct);
 router.delete('/:id', optionalMerchant, productController.deleteProduct);
 

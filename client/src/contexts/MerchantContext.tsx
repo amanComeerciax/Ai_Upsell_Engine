@@ -13,6 +13,8 @@ interface MerchantProfile {
     plan: string | null;
     email_subject: string | null;
     email_body: string | null;
+    discount_min: number;
+    discount_max: number;
     stats: {
         products: number;
         orders: number;
@@ -31,7 +33,7 @@ interface MerchantContextType {
     connectShopify: (shopName: string, accessToken: string) => Promise<boolean>;
     syncProducts: () => Promise<{ count: number } | null>;
     disconnectShopify: () => Promise<boolean>;
-    updateSettings: (settings: { email_subject?: string; email_body?: string }) => Promise<boolean>;
+    updateSettings: (settings: { email_subject?: string; email_body?: string; discount_min?: number; discount_max?: number }) => Promise<boolean>;
 }
 
 const MerchantContext = createContext<MerchantContextType>({

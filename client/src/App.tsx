@@ -12,6 +12,7 @@ import OrdersPage from '@/pages/Orders'
 import SettingsPage from '@/pages/Settings'
 import AIModelsPage from '@/pages/AIModels'
 import InventoryPage from '@/pages/Inventory'
+import ProductDetailPage from '@/pages/ProductDetail'
 import LoginPage from '@/pages/LoginPage'
 import SignUpPage from '@/pages/SignUpPage'
 import { Toaster } from 'sonner'
@@ -56,6 +57,7 @@ function App() {
                             <Route path="campaigns" element={<CampaignsPage />} />
                             <Route path="ai-models" element={<AIModelsPage />} />
                             <Route path="inventory" element={<InventoryPage />} />
+                            <Route path="inventory/:productId" element={<ProductDetailPage />} />
                             <Route path="analytics" element={<AnalyticsPage />} />
                             <Route path="orders" element={<OrdersPage />} />
                             <Route path="settings" element={<SettingsPage />} />

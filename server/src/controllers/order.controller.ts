@@ -1,11 +1,17 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { cacheService } from '../services/cache.service';
 
 export const orderController = {
     async getAllOrders(req: Request, res: Response) {
         try {
             // Tenant isolation
             const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+
+            // Check Redis cache first (2 min TTL)
+            const cacheKey = cacheService.key(req.merchant?.id, 'orders');
+            const cached = await cacheService.get(cacheKey);
+            if (cached) return res.status(200).json(cached);
 
             const orders = await prisma.orders.findMany({
                 where: merchantFilter,
@@ -33,6 +39,8 @@ export const orderController = {
                 upsellStatus: o.upsell_events.length > 0 ? (o.upsell_events.some(e => e.converted) ? 'sent' : 'scheduled') : 'none'
             }));
 
+            // Cache for 2 minutes
+            await cacheService.set(cacheKey, formattedOrders, 120);
             res.status(200).json(formattedOrders);
         } catch (error) {
             console.error('[Order Controller] Error:', error);
