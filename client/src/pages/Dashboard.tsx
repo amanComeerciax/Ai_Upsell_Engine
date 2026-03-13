@@ -181,16 +181,16 @@ export default function DashboardPage() {
         )
     }
 
-    const chartData = stats?.trajectory?.map((d: any) => ({ time: d.day, value: d.revenue })) || salesChartData
-    const apiOrders = stats?.recentOrders?.slice(0, 4).map((o: any) => ({
+    const chartData = Array.isArray(stats?.trajectory) ? stats.trajectory.map((d: any) => ({ time: d.day, value: d.revenue })) : salesChartData
+    const apiOrders = Array.isArray(stats?.recentOrders) ? stats.recentOrders.slice(0, 4).map((o: any) => ({
         id: `#${o.id?.toString().slice(-7) || '0000000'}`,
         product: o.customerEmail || 'Product',
         status: o.status || 'pending',
         price: `₹${o.totalAmount?.toLocaleString() || '0'}`,
         img: '📦',
-    })) || recentOrders
+    })) : recentOrders
     const convRates = stats?.conversionRates || {}
-    const activityFeed = stats?.activityFeed || []
+    const activityFeed = Array.isArray(stats?.activityFeed) ? stats.activityFeed : []
     const sparkData = chartData.map((d: any) => d.value)
 
     return (
@@ -420,14 +420,14 @@ export default function DashboardPage() {
                         <Activity className="h-4 w-4 text-violet-500" />
                         <h3 className="text-sm font-bold text-gray-800">AI Activity Feed</h3>
                     </div>
-                    {activityFeed.length === 0 ? (
+                    {Array.isArray(activityFeed) && activityFeed.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-6 text-center">
                             <Activity className="h-5 w-5 text-gray-300 mb-2" />
                             <p className="text-xs text-gray-400">No recent activity</p>
                         </div>
                     ) : (
                         <div className="space-y-2.5 max-h-[140px] overflow-y-auto custom-scrollbar pr-1">
-                            {activityFeed.slice(0, 6).map((event: any, i: number) => (
+                            {Array.isArray(activityFeed) && activityFeed.slice(0, 6).map((event: any, i: number) => (
                                 <div key={i} className="flex items-start gap-2.5">
                                     <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${event.type === 'ai' ? 'bg-violet-500' : event.type === 'success' ? 'bg-emerald-500' : 'bg-gray-300'
                                         }`} />
@@ -476,7 +476,7 @@ export default function DashboardPage() {
                         <div className="col-span-3">Amount</div>
                     </div>
                     <div className="divide-y divide-gray-50">
-                        {apiOrders.map((order: any, i: number) => (
+                        {Array.isArray(apiOrders) && apiOrders.map((order: any, i: number) => (
                             <div key={i} className="grid grid-cols-12 gap-3 px-3 py-3.5 items-center hover:bg-violet-50/30 transition-colors rounded-lg group">
                                 <div className="col-span-3 text-xs font-semibold text-gray-700">{order.id}</div>
                                 <div className="col-span-4 flex items-center gap-2">
