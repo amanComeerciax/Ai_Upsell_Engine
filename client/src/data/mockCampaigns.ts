@@ -37,12 +37,14 @@ function generateCampaign(id: number): Campaign {
 
     const campaign: Campaign = {
         id: `CAMP-${String(id).padStart(4, '0')}`,
+        campaignId: `CMP-${String(id).padStart(3, '0')}`, // Added missing field
         orderId: `ORD-${String(id * 2).padStart(4, '0')}`,
         customerEmail: generateEmail(customerName),
         customerName,
+        productName: productsRecommended[0], // Added missing field (using first recommendation)
         productsRecommended,
         messagePreview: `Hi ${customerName.split(' ')[0]}, based on your recent purchase, we think you'll love...`,
-        status,
+        status: (status === 'sent' || status === 'opened' || status === 'clicked') ? 'active' : status as any, // Map to UI status
         sentAt,
         converted: status === 'converted',
     }

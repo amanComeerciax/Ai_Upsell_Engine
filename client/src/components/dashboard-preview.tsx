@@ -1,26 +1,13 @@
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-import { ArrowUpRight, TrendingUp, DollarSign, Target, Activity, Zap } from "lucide-react"
-
-const conversionData = [
-  { month: "Jan", rate: 12 },
-  { month: "Feb", rate: 18 },
-  { month: "Mar", rate: 15 },
-  { month: "Apr", rate: 24 },
-  { month: "May", rate: 28 },
-  { month: "Jun", rate: 32 },
-  { month: "Jul", rate: 29 },
-  { month: "Aug", rate: 36 },
-]
+import { TrendingUp, DollarSign, Activity, Zap } from "lucide-react"
 
 const revenueData = [
   { month: "Jan", revenue: 4200 },
