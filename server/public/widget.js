@@ -317,7 +317,11 @@
         }
 
         // ── PRIORITY 3: Cart page ─────────────────────────────────────────────
-        if (window.location.pathname === '/cart' || window.location.pathname.startsWith('/cart/')) {
+        const isCartPage = window.location.pathname === '/cart' || 
+                          window.location.pathname.startsWith('/cart/') || 
+                          window.location.pathname.includes('cart');
+                          
+        if (isCartPage) {
             console.log('[Velocity AI] 🛒 Cart page detected. Fetching items...');
             fetch('/cart.js', FETCH_OPTS)
                 .then(r => r.json())

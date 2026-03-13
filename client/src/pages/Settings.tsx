@@ -77,7 +77,9 @@ export default function SettingsPage() {
         }
     }
 
-    const scriptSnippet = `<script src="https://ai-upsell-engine.onrender.com/widget.js" async></script>`;
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://ai-upsell-engine.onrender.com/api/v1';
+    const scriptBaseUrl = new URL(apiBaseUrl).origin;
+    const scriptSnippet = `<script src="${scriptBaseUrl}/widget.js" async></script>`;
 
     return (
         <div className="space-y-6">
