@@ -28,6 +28,8 @@ export default function SettingsPage() {
     // Shopify connection state
     const [shopName, setShopName] = useState('')
     const [accessToken, setAccessToken] = useState('')
+    const [connecting, setConnecting] = useState(false)
+    const [syncing, setSyncing] = useState(false)
     const [connectError, setConnectError] = useState<string | null>(null)
     const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<string | null>(null)
