@@ -295,6 +295,41 @@ export const merchantController = {
     },
 
     /**
+     * Register ScriptTag for merchant's Shopify store
+     */
+    async registerScriptTag(req: Request, res: Response) {
+        try {
+            const merchant = req.merchant!;
+            const { script_url } = req.body;
+
+            if (!merchant.shopify_shop_name || !merchant.shopify_access_token) {
+                return res.status(400).json({ error: 'Shopify store not connected.' });
+            }
+
+            if (!script_url) {
+                return res.status(400).json({ error: 'script_url is required.' });
+            }
+
+            const { shopifyService } = require('../services/shopify.service');
+            const scriptTag = await shopifyService.createScriptTag(
+                merchant.shopify_shop_name,
+                merchant.shopify_access_token,
+                script_url
+            );
+
+            console.log(`[Merchant] ScriptTag registered for merchant ${merchant.id}: ${script_url}`);
+
+            res.status(200).json({
+                message: 'Widget installed successfully!',
+                script_tag: scriptTag,
+            });
+        } catch (error: any) {
+            console.error('[Merchant Controller] ScriptTag Error:', error.response?.data || error.message);
+            res.status(500).json({ error: 'Failed to install widget' });
+        }
+    },
+
+    /**
      * Disconnect Shopify store
      */
     async disconnectShopify(req: Request, res: Response) {

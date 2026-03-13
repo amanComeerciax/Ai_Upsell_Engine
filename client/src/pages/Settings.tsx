@@ -18,7 +18,7 @@ import {
 import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function SettingsPage() {
-    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant } = useMerchant()
+    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant, installWidget } = useMerchant()
 
     const [timingStrategy, setTimingStrategy] = useState('purchase')
     const [delayHours, setDelayHours] = useState(48)
@@ -33,6 +33,8 @@ export default function SettingsPage() {
     const [connectError, setConnectError] = useState<string | null>(null)
     const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<string | null>(null)
+    const [installing, setInstalling] = useState(false)
+    const [installResult, setInstallResult] = useState<string | null>(null)
 
     const handleConnectShopify = async () => {
         if (!shopName || !accessToken) {
@@ -74,6 +76,21 @@ export default function SettingsPage() {
             await disconnectShopify()
             setConnectSuccess(null)
             setSyncResult(null)
+        }
+    }
+
+    const handleAutoInstall = async () => {
+        try {
+            setInstalling(true)
+            setInstallResult(null)
+            const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://ai-upsell-engine.onrender.com/api/v1';
+            const scriptUrl = `${new URL(apiBaseUrl).origin}/widget.js`;
+            await installWidget(scriptUrl)
+            setInstallResult('✅ Widget installed successfully!')
+        } catch (err: any) {
+            setInstallResult(`❌ ${err.message}`)
+        } finally {
+            setInstalling(false)
         }
     }
 
@@ -182,6 +199,26 @@ export default function SettingsPage() {
                                         >
                                             Copy Snippet
                                         </Button>
+
+                                        <div className="pt-4 border-t border-foreground/[0.04]">
+                                            <h4 className="text-sm font-black text-foreground uppercase tracking-tight italic">Auto-Installation</h4>
+                                            <p className="text-[11px] text-muted-foreground font-medium italic mt-1 mb-4 leading-relaxed">
+                                                Don't want to edit code? Let us handle it for you.
+                                            </p>
+                                            <Button
+                                                onClick={handleAutoInstall}
+                                                disabled={installing}
+                                                className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold uppercase tracking-widest text-[10px] h-11"
+                                            >
+                                                {installing ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Sparkles className="h-3 w-3 mr-2" />}
+                                                Auto-Install Widget
+                                            </Button>
+                                            {installResult && (
+                                                <p className={`mt-2 text-[10px] font-bold ${installResult.includes('✅') ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                    {installResult}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="p-6 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.04] flex flex-col justify-center space-y-4">

@@ -34,6 +34,7 @@ interface MerchantContextType {
     syncProducts: () => Promise<{ count: number } | null>;
     disconnectShopify: () => Promise<boolean>;
     updateSettings: (settings: { email_subject?: string; email_body?: string; discount_min?: number; discount_max?: number }) => Promise<boolean>;
+    installWidget: (scriptUrl: string) => Promise<boolean>;
 }
 
 const MerchantContext = createContext<MerchantContextType>({
@@ -47,6 +48,7 @@ const MerchantContext = createContext<MerchantContextType>({
     syncProducts: async () => null,
     disconnectShopify: async () => false,
     updateSettings: async () => false,
+    installWidget: async () => false,
 });
 
 export function MerchantProvider({ children }: { children: React.ReactNode }) {
@@ -155,6 +157,16 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const installWidget = async (scriptUrl: string): Promise<boolean> => {
+        try {
+            await apiClient.post('/merchant/register-script', { script_url: scriptUrl });
+            return true;
+        } catch (err: any) {
+            console.error('[Merchant] Install widget failed:', err);
+            throw new Error(err.response?.data?.error || 'Failed to install widget');
+        }
+    };
+
     return (
         <MerchantContext.Provider
             value={{
@@ -168,6 +180,7 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
                 syncProducts,
                 disconnectShopify,
                 updateSettings,
+                installWidget,
             }}
         >
             {children}
