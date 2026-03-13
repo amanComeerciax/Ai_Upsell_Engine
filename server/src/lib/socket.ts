@@ -6,7 +6,12 @@ let io: SocketIOServer | null = null;
 export const initSocket = (server: HTTPServer) => {
     io = new SocketIOServer(server, {
         cors: {
-            origin: "*", // In production, restrict this to your frontend URL
+            origin: [
+                'http://localhost:3000',
+                'https://aiupsellengine1.vercel.app',
+                /\.vercel\.app$/,
+                'https://keila-arousable-bimolecularly.ngrok-free.dev'
+            ],
             methods: ["GET", "POST"]
         }
     });

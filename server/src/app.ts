@@ -20,7 +20,15 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://aiupsellengine1.vercel.app',
+        /\.vercel\.app$/, // Allow all Vercel subdomains
+        'https://keila-arousable-bimolecularly.ngrok-free.dev'
+    ],
+    credentials: true
+}));
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
