@@ -24,7 +24,7 @@ app.use(cors({
     origin: [
         'http://localhost:3000',
         'https://aiupsellengine1.vercel.app',
-        /\.vercel\.app$/, // Allow all Vercel subdomains
+        /https:\/\/.*\.vercel\.app$/, // Allow all Vercel subdomains (with protocol)
         'https://keila-arousable-bimolecularly.ngrok-free.dev'
     ],
     credentials: true

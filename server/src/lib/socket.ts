@@ -9,7 +9,7 @@ export const initSocket = (server: HTTPServer) => {
             origin: [
                 'http://localhost:3000',
                 'https://aiupsellengine1.vercel.app',
-                /\.vercel\.app$/,
+                /https:\/\/.*\.vercel\.app$/,
                 'https://keila-arousable-bimolecularly.ngrok-free.dev'
             ],
             methods: ["GET", "POST"]
