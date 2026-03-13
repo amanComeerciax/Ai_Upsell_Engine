@@ -18,7 +18,7 @@ import {
 import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function SettingsPage() {
-    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant, activateAI } = useMerchant()
+    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant } = useMerchant()
 
     const [timingStrategy, setTimingStrategy] = useState('purchase')
     const [delayHours, setDelayHours] = useState(48)
@@ -28,13 +28,9 @@ export default function SettingsPage() {
     // Shopify connection state
     const [shopName, setShopName] = useState('')
     const [accessToken, setAccessToken] = useState('')
-    const [connecting, setConnecting] = useState(false)
-    const [syncing, setSyncing] = useState(false)
-    const [activating, setActivating] = useState(false)
     const [connectError, setConnectError] = useState<string | null>(null)
     const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<string | null>(null)
-    const [activationResult, setActivationResult] = useState<string | null>(null)
 
     const handleConnectShopify = async () => {
         if (!shopName || !accessToken) {
