@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
-import { useClerk } from '@clerk/clerk-react'
+import { useClerk } from '@clerk/react'
 
 const navigationItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },

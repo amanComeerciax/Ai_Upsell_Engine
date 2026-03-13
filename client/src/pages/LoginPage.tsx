@@ -1,4 +1,4 @@
-import { SignIn } from '@clerk/clerk-react'
+import { SignIn } from '@clerk/react'
 import { Zap } from 'lucide-react'
 
 export default function LoginPage() {
