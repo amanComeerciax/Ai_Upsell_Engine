@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Zap, Moon, Sun, ArrowRight } from "lucide-react"
-import { useTheme } from "@/contexts/ThemeContext"
+import { useTheme } from "@/components/theme-provider"
 import { Link } from "react-router-dom"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
 

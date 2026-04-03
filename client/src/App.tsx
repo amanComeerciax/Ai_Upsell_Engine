@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ClerkProvider, SignedIn, SignedOut } from '@clerk/clerk-react'
 import { MerchantProvider } from '@/contexts/MerchantContext'
-import { ThemeProvider } from '@/contexts/ThemeContext'
+import { ThemeProvider } from '@/components/theme-provider'
 import { LandingLayout } from '@/layouts/LandingLayout'
 import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { LandingPage } from '@/pages/LandingPage'

@@ -2,7 +2,7 @@ import { Search, Bell, ChevronDown, Sun, Moon, Package, ShoppingCart, Sparkles, 
 import { UserButton, useUser } from '@clerk/clerk-react'
 import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useTheme } from '@/components/theme-provider'
 import { useNotifications, Notification } from '@/contexts/NotificationContext'
 import { cn } from '@/lib/utils'
 

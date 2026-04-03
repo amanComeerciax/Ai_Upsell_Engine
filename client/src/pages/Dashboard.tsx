@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     ResponsiveContainer,
@@ -174,27 +174,27 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
         try {
-            // Check if we have cached data to avoid immediate loading spinner
+            // Use getCached which returns data immediately from cache 
+            // OR fetches it fresh if expired. 
             const [cachedStats, cachedUpsells] = await Promise.all([
-                getCached('/analytics/stats', 60000).catch(() => null), // 1 min TTL
-                getCached('/upsells', 60000).catch(() => null)
+                getCached('/analytics/stats', 60000).catch(() => null),
+                getCached('/upsells', 60000).catch(() => ({ data: [] }))
             ]);
 
             if (cachedStats) {
                 setStats(cachedStats);
-                setUpsells(cachedUpsells?.slice?.(0, 5) || []);
+                setUpsells(Array.isArray(cachedUpsells) ? cachedUpsells.slice(0, 5) : []);
                 setLoading(false);
-                // Background update will happen inside getCached if needed
             } else {
+                // If not even in cache, we show skeleton and fetch directly
                 setLoading(true);
+                const [statsRes, upsellsRes] = await Promise.all([
+                    apiClient.get('/analytics/stats'),
+                    apiClient.get('/upsells').catch(() => ({ data: [] })),
+                ]);
+                setStats(statsRes.data);
+                setUpsells(upsellsRes.data?.slice?.(0, 5) || []);
             }
-
-            const [statsRes, upsellsRes] = await Promise.all([
-                apiClient.get('/analytics/stats'),
-                apiClient.get('/upsells').catch(() => ({ data: [] })),
-            ]);
-            setStats(statsRes.data);
-            setUpsells(upsellsRes.data?.slice?.(0, 5) || []);
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
         } finally {
@@ -249,21 +249,25 @@ export default function DashboardPage() {
         link.click();
     };
 
-    if (loading && !stats) {
-        return <DashboardSkeleton />
-    }
+    const chartData = useMemo(() => stats?.trajectory?.map((d: any) => ({ time: d.day, value: d.revenue })) || salesChartData, [stats?.trajectory]);
 
-    const chartData = stats?.trajectory?.map((d: any) => ({ time: d.day, value: d.revenue })) || salesChartData
-    const apiOrders = stats?.recentOrders?.slice(0, 4).map((o: any) => ({
+    const apiOrders = useMemo(() => stats?.recentOrders?.slice(0, 4).map((o: any) => ({
         id: `#${o.id?.toString().slice(-7) || '0000000'}`,
         product: o.customerEmail || 'Product',
         status: o.status || 'pending',
         price: `₹${o.totalAmount?.toLocaleString() || '0'}`,
         img: '📦',
-    })) || recentOrders
-    const convRates = stats?.conversionRates || {}
-    const activityFeed = stats?.activityFeed || []
-    const sparkData = chartData.map((d: any) => d.value)
+    })) || recentOrders, [stats?.recentOrders]);
+
+    const { convRates, activityFeed, sparkData } = useMemo(() => ({
+        convRates: stats?.conversionRates || {},
+        activityFeed: stats?.activityFeed || [],
+        sparkData: (stats?.trajectory?.map((d: any) => d.revenue) || chartData.map((d: any) => d.value))
+    }), [stats, chartData]);
+
+    if (loading && !stats) {
+        return <DashboardSkeleton />
+    }
 
     return (
         <div className="space-y-5 animate-fade-in pb-8">
