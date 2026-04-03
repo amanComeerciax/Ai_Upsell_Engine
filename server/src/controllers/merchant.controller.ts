@@ -325,7 +325,7 @@ export const merchantController = {
     async updateSettings(req: Request, res: Response) {
         try {
             const merchant = req.merchant!;
-            const { email_subject, email_body, discount_min, discount_max } = req.body;
+            const { email_subject, email_body, discount_min, discount_max, shipping_threshold, progress_bar_active } = req.body;
 
             const updated = await prisma.merchants.update({
                 where: { id: merchant.id },
@@ -334,6 +334,8 @@ export const merchantController = {
                     email_body: email_body !== undefined ? email_body : merchant.email_body,
                     discount_min: discount_min !== undefined ? Number(discount_min) : undefined,
                     discount_max: discount_max !== undefined ? Number(discount_max) : undefined,
+                    shipping_threshold: shipping_threshold !== undefined ? Number(shipping_threshold) : undefined,
+                    progress_bar_active: progress_bar_active !== undefined ? Boolean(progress_bar_active) : undefined,
                 }
             });
 

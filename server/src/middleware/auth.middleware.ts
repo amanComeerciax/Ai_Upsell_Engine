@@ -14,6 +14,10 @@ declare global {
                 plan: string | null;
                 email_subject: string | null;
                 email_body: string | null;
+                stripe_customer_id: string | null;
+                subscription_id: string | null;
+                email: string | null;
+                role: string;
             };
         }
     }
@@ -42,6 +46,10 @@ export async function identifyMerchant(req: Request, res: Response, next: NextFu
                     plan: merchant.plan,
                     email_subject: merchant.email_subject,
                     email_body: merchant.email_body,
+                    stripe_customer_id: (merchant as any).stripe_customer_id,
+                    subscription_id: (merchant as any).subscription_id,
+                    email: merchant.email,
+                    role: (merchant as any).role || 'user',
                 };
                 return next();
             }
@@ -63,6 +71,10 @@ export async function identifyMerchant(req: Request, res: Response, next: NextFu
                     plan: merchant.plan,
                     email_subject: merchant.email_subject,
                     email_body: merchant.email_body,
+                    stripe_customer_id: (merchant as any).stripe_customer_id,
+                    subscription_id: (merchant as any).subscription_id,
+                    email: merchant.email,
+                    role: (merchant as any).role || 'user',
                 };
                 return next();
             }
@@ -102,6 +114,10 @@ export async function optionalMerchant(req: Request, res: Response, next: NextFu
                     plan: merchant.plan,
                     email_subject: merchant.email_subject,
                     email_body: merchant.email_body,
+                    stripe_customer_id: (merchant as any).stripe_customer_id,
+                    subscription_id: (merchant as any).subscription_id,
+                    email: merchant.email,
+                    role: (merchant as any).role || 'user',
                 };
             }
         } else if (clerkUserId) {
@@ -118,6 +134,10 @@ export async function optionalMerchant(req: Request, res: Response, next: NextFu
                     plan: merchant.plan,
                     email_subject: merchant.email_subject,
                     email_body: merchant.email_body,
+                    stripe_customer_id: (merchant as any).stripe_customer_id,
+                    subscription_id: (merchant as any).subscription_id,
+                    email: merchant.email,
+                    role: (merchant as any).role || 'user',
                 };
             }
         }

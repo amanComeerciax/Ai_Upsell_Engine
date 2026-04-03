@@ -324,6 +324,77 @@ export const upsellController = {
     },
 
     /**
+     * getFillingProducts — Suggests products to bridge the gap to Free Shipping
+     * Called by the widget progress bar
+     */
+    async getFillingProducts(req: Request, res: Response) {
+        try {
+            const cartTotal = parseFloat(req.query.cart_total as string || '0');
+            const shopName = req.query.shop as string;
+            
+            if (!shopName) return res.status(400).json({ error: 'Shop domain required' });
+
+            // Find merchant settings for threshold
+            const merchant = await prisma.merchants.findFirst({
+                where: { shopify_shop_name: shopName }
+            });
+
+            if (!merchant || !merchant.progress_bar_active) {
+                return res.status(200).json({ active: false });
+            }
+
+            const threshold = Number(merchant.shipping_threshold || 1000);
+            const gap = threshold - cartTotal;
+
+            if (gap <= 0) {
+                return res.status(200).json({ active: true, unlocked: true, threshold });
+            }
+
+            // Find products priced around the gap (+/- 50% of gap) or low-cost items
+            // We want products that are easy to add to cart
+            const candidates = await prisma.products.findMany({
+                where: {
+                    merchant_id: merchant.id,
+                    price: {
+                        gte: Math.max(10, gap * 0.4), // Don't suggest 1rs items, but also not 10k items
+                        lte: gap * 1.5
+                    }
+                },
+                take: 10
+            });
+
+            // If no perfect gap fillers, just take any 3 cheap products
+            let suggestions = candidates;
+            if (candidates.length === 0) {
+                suggestions = await prisma.products.findMany({
+                    where: { merchant_id: merchant.id },
+                    orderBy: { price: 'asc' },
+                    take: 3
+                });
+            }
+
+            res.status(200).json({
+                active: true,
+                unlocked: false,
+                threshold,
+                gap,
+                suggestions: suggestions.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    image: (p as any).image_url,
+                    shopify_id: p.shopify_id?.toString(),
+                    shopify_variant_id: (p as any).shopify_variant_id?.toString()
+                }))
+            });
+
+        } catch (error) {
+            console.error('[Upsell Controller] getFillingProducts Error:', error);
+            res.status(500).json({ error: 'Failed to fetch filling products' });
+        }
+    },
+
+    /**
      * Cart Recovery — serves upsell recommendation for abandoned cart links
      * Called by the widget when customer visits ?recovery=true&cart_token=XXX
      */

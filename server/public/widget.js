@@ -236,6 +236,92 @@
         }
         .velocity-dot.active { background: #3b82f6; width: 20px; border-radius: 3px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* ── Gamified Progress Bar ────────────────────── */
+        .velocity-progress-area {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 24px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .velocity-progress-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .velocity-progress-track {
+            height: 10px;
+            background: #f1f5f9;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .velocity-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            border-radius: 5px;
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .velocity-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: velocity-shimmer 2s infinite;
+        }
+        @keyframes velocity-shimmer {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .velocity-suggestion-strip {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .velocity-suggestion-strip::-webkit-scrollbar { display: none; }
+        .velocity-mini-card {
+            min-width: 140px;
+            background: white;
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+        .velocity-mini-card:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.1); }
+        .velocity-mini-img {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #f8fafc;
+        }
+        .velocity-mini-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .velocity-mini-name {
+            font-size: 10px; font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .velocity-mini-price { font-size: 11px; font-weight: 800; color: #3b82f6; }
+        .velocity-unlocked-glow {
+            animation: velocity-glow 2s infinite;
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        @keyframes velocity-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(16,185,129,0.2); }
+            50%       { box-shadow: 0 0 20px rgba(16,185,129,0.5); }
+        }
     `;
 
     // ─── State ────────────────────────────────────────────────────────────────
@@ -357,7 +443,123 @@
         }
 
         console.log('[Velocity AI] ℹ️ No context detected on this page. Watching for cart actions...');
+        
+        // Always check for progress bar if active merchant
+        if (window.location.pathname === '/cart' || window.location.pathname.startsWith('/cart/')) {
+            checkProgressBar();
+        }
     }
+
+    // ─── Progress Bar Logic ──────────────────────────────────────────────────
+    async function checkProgressBar() {
+        const shop = window.Shopify?.shop || window.location.hostname;
+        try {
+            const cartRes = await fetch('/cart.js', FETCH_OPTS);
+            const cart = await cartRes.json();
+            const total = cart.total_price / 100; // Shopify cents to dollars/rupees
+
+            const res = await fetch(`${API_BASE}/upsells/filling-products?cart_total=${total}&shop=${shop}`, FETCH_OPTS);
+            const data = await res.json();
+
+            if (data.active) {
+                renderProgressBar(data, total);
+            }
+        } catch (e) {
+            console.warn('[Velocity AI] Progress bar check failed:', e);
+        }
+    }
+
+    function renderProgressBar(data, cartTotal) {
+        const root = document.getElementById('velocity-upsell-root') || createRootContainer();
+        const shadow = root.shadowRoot;
+        
+        // Check if progress bar already exists in shadow
+        let area = shadow.querySelector('.velocity-progress-area');
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'velocity-progress-area';
+            // Insert before the footer or claim button
+            const footer = shadow.querySelector('.velocity-footer') || shadow.querySelector('.velocity-btn');
+            shadow.querySelector('.velocity-card').insertBefore(area, footer);
+        }
+
+        const pct = Math.min((cartTotal / data.threshold) * 100, 100);
+        const remaining = Math.max(0, data.threshold - cartTotal);
+
+        let content = '';
+        if (data.unlocked || pct >= 100) {
+            content = `
+                <div class="velocity-progress-text">
+                    <span style="color:#10b981">✨ FREE SHIPPING UNLOCKED</span>
+                    <span>100%</span>
+                </div>
+                <div class="velocity-progress-track">
+                    <div class="velocity-progress-bar velocity-unlocked-glow" style="width: 100%"></div>
+                </div>
+                <p style="font-size:11px; color:#64748b; font-weight:600; text-align:center">Excellent choice! Your shipping is on us.</p>
+            `;
+        } else {
+            const suggestionsHtml = (data.suggestions || []).map(s => `
+                <div class="velocity-mini-card" onclick="window.VelocityAPI.addToCart('${s.shopify_variant_id || s.shopify_id}')">
+                    <img src="${s.image}" class="velocity-mini-img" />
+                    <div class="velocity-mini-info">
+                        <div class="velocity-mini-name">${s.name}</div>
+                        <div class="velocity-mini-price">&#8377;${Number(s.price).toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            content = `
+                <div class="velocity-progress-text">
+                    <span>Add ₹${remaining.toLocaleString()} for 🚚 FREE Shipping</span>
+                    <span>${Math.round(pct)}%</span>
+                </div>
+                <div class="velocity-progress-track">
+                    <div class="velocity-progress-bar" style="width: ${pct}%"></div>
+                </div>
+                <div style="font-size:10px; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:10px; letter-spacing:0.02em">Suggested Boosters</div>
+                <div class="velocity-suggestion-strip">
+                    ${suggestionsHtml}
+                </div>
+            `;
+        }
+
+        area.innerHTML = content;
+        
+        // Show the container if it was hidden
+        root.style.display = 'block';
+    }
+
+    function createRootContainer() {
+        const container = document.createElement('div');
+        container.id = 'velocity-upsell-root';
+        Object.assign(container.style, {
+            position: 'fixed', bottom: '30px', right: '30px',
+            width: '380px', zIndex: '2147483647', pointerEvents: 'none'
+        });
+        const shadow = container.attachShadow({ mode: 'open' });
+        shadow.innerHTML = `
+            <style>${styles}</style>
+            <div class="velocity-card">
+                <button class="velocity-close" onclick="this.closest('#velocity-upsell-root').remove()" style="position:absolute; top:14px; right:14px; opacity:0.25; cursor:pointer; background:none; border:none; padding:4px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <div class="velocity-title" style="margin-top:10px">Your Progress</div>
+                <div class="velocity-footer" style="margin-top:20px">Powered by Velocity AI Engine</div>
+            </div>`;
+        document.body.appendChild(container);
+        return container;
+    }
+
+    window.VelocityAPI = {
+        addToCart: (variantId) => {
+            fetch('/cart/add.js', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: variantId, quantity: 1 })
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    };
 
     // ─── Fetch Recommendation ─────────────────────────────────────────────────
     function fetchRecommendation(url, attempt) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import apiClient from '@/lib/api-client'
+import apiClient, { getCached } from '@/lib/api-client'
 import {
     Package, Search, Filter, ArrowUpRight, TrendingUp, AlertCircle,
     MoreHorizontal, Loader2, RefreshCcw, Pencil, BarChart2, Trash2,
@@ -47,7 +47,25 @@ export default function InventoryPage() {
 
     const fetchData = async () => {
         try {
-            setLoading(true);
+            // Check cache
+            const [cachedProducts, cachedStats] = await Promise.all([
+                getCached('/products', 60000).catch(() => null),
+                getCached('/products/stats', 60000).catch(() => null)
+            ]);
+
+            if (cachedProducts) {
+                setProducts(cachedProducts);
+                if (cachedStats) setStats({
+                    totalProducts: cachedStats.totalProducts.toLocaleString(),
+                    upsellPerformance: cachedStats.performanceIncrease,
+                    lowStockItems: "0",
+                    totalRevenue: `₹${Number(cachedStats.totalRevenue).toLocaleString()}`
+                });
+                setLoading(false);
+            } else {
+                setLoading(true);
+            }
+
             const [productsRes, statsRes] = await Promise.all([
                 apiClient.get('/products'),
                 apiClient.get('/products/stats')

@@ -15,6 +15,12 @@ interface MerchantProfile {
     email_body: string | null;
     discount_min: number;
     discount_max: number;
+    shipping_threshold: number | null;
+    progress_bar_active: boolean;
+    stripe_customer_id: string | null;
+    subscription_id: string | null;
+    subscription_status: string | null;
+    role: string;
     stats: {
         products: number;
         orders: number;
@@ -33,7 +39,16 @@ interface MerchantContextType {
     connectShopify: (shopName: string, accessToken: string) => Promise<boolean>;
     syncProducts: () => Promise<{ count: number } | null>;
     disconnectShopify: () => Promise<boolean>;
-    updateSettings: (settings: { email_subject?: string; email_body?: string; discount_min?: number; discount_max?: number }) => Promise<boolean>;
+    updateSettings: (settings: { 
+        email_subject?: string; 
+        email_body?: string; 
+        discount_min?: number; 
+        discount_max?: number;
+        shipping_threshold?: number;
+        progress_bar_active?: boolean;
+    }) => Promise<boolean>;
+    createCheckoutSession: () => Promise<void>;
+    isAdmin: boolean;
 }
 
 const MerchantContext = createContext<MerchantContextType>({
@@ -47,6 +62,8 @@ const MerchantContext = createContext<MerchantContextType>({
     syncProducts: async () => null,
     disconnectShopify: async () => false,
     updateSettings: async () => false,
+    createCheckoutSession: async () => { },
+    isAdmin: false,
 });
 
 export function MerchantProvider({ children }: { children: React.ReactNode }) {
@@ -144,7 +161,14 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const updateSettings = async (settings: { email_subject?: string; email_body?: string }): Promise<boolean> => {
+    const updateSettings = async (settings: { 
+        email_subject?: string; 
+        email_body?: string;
+        discount_min?: number;
+        discount_max?: number;
+        shipping_threshold?: number;
+        progress_bar_active?: boolean;
+    }): Promise<boolean> => {
         try {
             await apiClient.put('/merchant/settings', settings);
             await refreshMerchant();
@@ -152,6 +176,22 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         } catch (err: any) {
             console.error('[Merchant] Update settings failed:', err);
             throw new Error(err.response?.data?.error || 'Failed to update settings');
+        }
+    };
+
+    const createCheckoutSession = async () => {
+        try {
+            const res = await apiClient.post('/payments/create-checkout-session', {
+                successUrl: window.location.origin + '/dashboard?payment=success',
+                cancelUrl: window.location.origin + '/dashboard?payment=cancel',
+            });
+            
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            }
+        } catch (err: any) {
+            console.error('[Merchant] Checkout failed:', err);
+            throw new Error(err.response?.data?.error || 'Failed to start checkout');
         }
     };
 
@@ -168,6 +208,8 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
                 syncProducts,
                 disconnectShopify,
                 updateSettings,
+                createCheckoutSession,
+                isAdmin: merchant?.role === 'admin',
             }}
         >
             {children}

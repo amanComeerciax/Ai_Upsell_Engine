@@ -22,8 +22,10 @@ import {
 } from 'lucide-react'
 import { StatusBadge } from '@/components/dashboard/StatusBadge'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
-import apiClient from '@/lib/api-client'
+import apiClient, { getCached } from '@/lib/api-client'
 import { useMerchant } from '@/contexts/MerchantContext'
 
 // Fallback chart data
@@ -114,6 +116,54 @@ const BarTooltip = ({ active, payload, label }: any) => {
     return null
 }
 
+function Skeleton({ className }: { className?: string }) {
+    return <div className={cn("animate-pulse bg-gray-100 rounded-xl", className)} />
+}
+
+function DashboardSkeleton() {
+    return (
+        <div className="space-y-5 animate-fade-in pb-8">
+            <div className="flex items-center gap-3 justify-end">
+                <Skeleton className="h-9 w-32" />
+                <Skeleton className="h-9 w-32" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="glass-card p-5 space-y-3">
+                        <div className="flex justify-between items-center">
+                            <Skeleton className="h-10 w-10" />
+                            <Skeleton className="h-8 w-20" />
+                        </div>
+                        <Skeleton className="h-8 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                    </div>
+                ))}
+            </div>
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+                <div className="xl:col-span-8 glass-card p-6 h-[380px]">
+                    <Skeleton className="h-6 w-48 mb-6" />
+                    <Skeleton className="h-[280px] w-full" />
+                </div>
+                <div className="xl:col-span-4 space-y-5">
+                    <div className="glass-card p-5 h-[160px]">
+                        <Skeleton className="h-5 w-32 mb-4" />
+                        <div className="flex gap-4">
+                            <Skeleton className="h-24 w-24 rounded-full" />
+                            <div className="flex-1 space-y-4 py-2">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {[1, 2, 3, 4].map(i => <div key={i} className="glass-card p-4 h-[80px]"><Skeleton className="h-full w-full" /></div>)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export default function DashboardPage() {
     const navigate = useNavigate()
     const { merchant } = useMerchant()
@@ -124,7 +174,21 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
         try {
-            setLoading(true);
+            // Check if we have cached data to avoid immediate loading spinner
+            const [cachedStats, cachedUpsells] = await Promise.all([
+                getCached('/analytics/stats', 60000).catch(() => null), // 1 min TTL
+                getCached('/upsells', 60000).catch(() => null)
+            ]);
+
+            if (cachedStats) {
+                setStats(cachedStats);
+                setUpsells(cachedUpsells?.slice?.(0, 5) || []);
+                setLoading(false);
+                // Background update will happen inside getCached if needed
+            } else {
+                setLoading(true);
+            }
+
             const [statsRes, upsellsRes] = await Promise.all([
                 apiClient.get('/analytics/stats'),
                 apiClient.get('/upsells').catch(() => ({ data: [] })),
@@ -157,7 +221,22 @@ export default function DashboardPage() {
         finally { setSimulating(false); }
     }
 
-    useEffect(() => { fetchDashboardData(); }, []);
+    useEffect(() => { 
+        fetchDashboardData(); 
+        
+        // Handle payment redirects
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('payment') === 'success') {
+            toast.success('Subscription active! Welcome to Velocity Pro.', {
+                duration: 5000,
+            });
+            // Clean up URL
+            window.history.replaceState({}, '', '/dashboard');
+        } else if (params.get('payment') === 'cancel') {
+            toast.error('Checkout cancelled.');
+            window.history.replaceState({}, '', '/dashboard');
+        }
+    }, []);
 
     const handleExport = () => {
         if (!stats?.recentOrders?.length) { alert("No data to export"); return; }
@@ -170,15 +249,8 @@ export default function DashboardPage() {
         link.click();
     };
 
-    if (loading) {
-        return (
-            <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
-                    <Loader2 className="h-7 w-7 text-violet-500 animate-spin" />
-                </div>
-                <p className="text-sm font-medium text-gray-400">Loading dashboard...</p>
-            </div>
-        )
+    if (loading && !stats) {
+        return <DashboardSkeleton />
     }
 
     const chartData = stats?.trajectory?.map((d: any) => ({ time: d.day, value: d.revenue })) || salesChartData

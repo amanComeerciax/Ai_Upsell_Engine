@@ -10,6 +10,7 @@ router.get('/:eventId', upsellController.getUpsellById);                    // W
 router.post('/:eventId/shown', upsellController.markShown);               // Widget: impression tracking
 router.post('/:eventId/convert', upsellController.convertUpsell);         // Widget: click/conversion tracking
 router.post('/:eventId/resend', optionalMerchant, upsellController.resendUpsell); // Dashboard: retrigger campaign
+router.get('/filling-products', upsellController.getFillingProducts); // Progress Bar: bridge the gap
 router.get('/recovery/:cartToken', upsellController.getCartRecovery);      // Widget: cart recovery recommendations
 
 export default router;

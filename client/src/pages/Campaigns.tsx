@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Plus, Search, Filter, Zap, Loader2, Sparkles, Target, ArrowUpRight } from 'lucide-react'
-import apiClient from '@/lib/api-client'
+import apiClient, { getCached } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTable, Column } from '@/components/dashboard/DataTable'
@@ -27,6 +27,15 @@ export default function CampaignsPage() {
     useEffect(() => {
         const fetchCampaigns = async () => {
             try {
+                // Check if we have cached campaigns
+                const cached = await getCached('/upsells', 60000).catch(() => null);
+                if (cached) {
+                    setCampaigns(cached);
+                    setLoading(false);
+                } else {
+                    setLoading(true);
+                }
+
                 const res = await apiClient.get('/upsells');
                 setCampaigns(res.data);
             } catch (error) {

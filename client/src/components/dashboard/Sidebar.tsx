@@ -10,10 +10,13 @@ import {
     LogOut,
     ChevronLeft,
     Crown,
+    Shield,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { useClerk } from '@clerk/clerk-react'
+import { useMerchant } from '@/contexts/MerchantContext'
+import { toast } from 'sonner'
 
 const navigationItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -29,6 +32,15 @@ export function Sidebar() {
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(false)
     const { signOut } = useClerk()
+    const { merchant, createCheckoutSession, isAdmin } = useMerchant()
+
+    const handleUpgrade = async () => {
+        try {
+            await createCheckoutSession()
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to start checkout')
+        }
+    }
 
     return (
         <aside
@@ -96,13 +108,28 @@ export function Sidebar() {
                         </Link>
                     )
                 })}
+
+                {isAdmin && (
+                    <Link
+                        to="/admin"
+                        className={cn(
+                            'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group relative mt-4 border border-indigo-100 bg-indigo-50/30',
+                            location.pathname.startsWith('/admin')
+                                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/25'
+                                : 'text-indigo-600 hover:bg-indigo-50'
+                        )}
+                    >
+                        <Shield className="h-[18px] w-[18px] flex-shrink-0" />
+                        {!isCollapsed && <span>Admin Panel</span>}
+                    </Link>
+                )}
             </nav>
 
             {/* Upgrade CTA */}
-            {!isCollapsed && (
-                <div className="px-4 pb-4">
-                    <div className="px-4 py-5 rounded-2xl bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50 border border-violet-100/60 relative overflow-hidden">
-                        <div className="absolute -top-2 -right-2 opacity-10">
+            {!isCollapsed && merchant?.plan !== 'pro' && (
+                <div className="px-4 pb-4 animate-in fade-in slide-in-from-bottom-5 duration-700">
+                    <div className="px-4 py-5 rounded-2xl bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50 border border-violet-100/60 relative overflow-hidden group/cta">
+                        <div className="absolute -top-2 -right-2 opacity-10 group-hover/cta:scale-110 group-hover/cta:rotate-12 transition-transform duration-500">
                             <Crown className="h-16 w-16 text-violet-500" />
                         </div>
                         <div className="relative z-10">
@@ -110,13 +137,30 @@ export function Sidebar() {
                                 Unlock <span className="text-violet-600 font-extrabold">Pro</span> features
                             </p>
                             <p className="text-[10px] text-gray-400 mt-0.5">Advanced AI, unlimited campaigns</p>
-                            <button className="mt-3 text-xs font-bold text-violet-600 hover:text-violet-700 flex items-center gap-1 transition-colors bg-white/80 px-3 py-1.5 rounded-lg border border-violet-100 shadow-sm hover:shadow-md">
-                                Upgrade Now
+                            <button 
+                                onClick={handleUpgrade}
+                                className="mt-3 w-full flex items-center justify-between text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                            >
+                                <span>Upgrade Now</span>
                                 <span className="text-sm">→</span>
                             </button>
                         </div>
                     </div>
                 </div>
+            )}
+
+            {!isCollapsed && merchant?.plan === 'pro' && (
+                 <div className="px-4 pb-4">
+                    <div className="px-4 py-3 rounded-2xl bg-emerald-50/50 border border-emerald-100 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                            <Crown className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-emerald-700">Pro Plan Active</p>
+                            <p className="text-[9px] text-emerald-600/70">Unlimited Power</p>
+                        </div>
+                    </div>
+                 </div>
             )}
 
             {/* Logout */}

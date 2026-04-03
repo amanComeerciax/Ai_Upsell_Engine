@@ -38,6 +38,11 @@ export default function SettingsPage() {
     // Discount range
     const [discountMin, setDiscountMin] = useState(5)
     const [discountMax, setDiscountMax] = useState(25)
+    
+    // Progress Bar settings
+    const [shippingThreshold, setShippingThreshold] = useState(100)
+    const [progressBarActive, setProgressBarActive] = useState(false)
+    
     const [savingGeneral, setSavingGeneral] = useState(false)
 
     useEffect(() => {
@@ -46,6 +51,8 @@ export default function SettingsPage() {
             setEmailBody(merchant.email_body || '')
             setDiscountMin(merchant.discount_min ?? 5)
             setDiscountMax(merchant.discount_max ?? 25)
+            setShippingThreshold(Number(merchant.shipping_threshold ?? 100))
+            setProgressBarActive(merchant.progress_bar_active ?? false)
         }
     }, [merchant])
 
@@ -109,7 +116,9 @@ export default function SettingsPage() {
             setSavingGeneral(true)
             await updateSettings({
                 discount_min: discountMin,
-                discount_max: discountMax
+                discount_max: discountMax,
+                shipping_threshold: shippingThreshold,
+                progress_bar_active: progressBarActive
             })
             alert('Settings saved successfully!')
         } catch (err: any) {
@@ -470,6 +479,56 @@ export default function SettingsPage() {
                                 <div className="flex justify-between mt-1">
                                     <span className="text-[9px] text-gray-300">0%</span>
                                     <span className="text-[9px] text-gray-300">50%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Gamified Progress Bar Section */}
+                        <div className="space-y-6 pt-6 border-t border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center">
+                                        <Zap className="h-5 w-5 text-violet-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-gray-800">Gamified Progress Bar</h4>
+                                        <p className="text-[10px] text-gray-400 font-medium">Drive users to free shipping with AI-suggested impulse buys</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
+                                    <Switch checked={progressBarActive} onCheckedChange={setProgressBarActive} className="data-[state=checked]:bg-violet-500" />
+                                    <span className="text-xs font-semibold text-gray-600">
+                                        {progressBarActive ? 'Active' : 'Hidden'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Free Shipping Threshold (₹)</Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">₹</span>
+                                        <Input
+                                            type="number"
+                                            value={shippingThreshold}
+                                            onChange={(e) => setShippingThreshold(parseInt(e.target.value))}
+                                            className="h-11 rounded-xl bg-gray-50 border-gray-200 pl-8 text-sm font-bold text-gray-700"
+                                            placeholder="1000"
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
+                                        We'll suggest products that bridge the gap to this amount.
+                                    </p>
+                                </div>
+
+                                <div className="p-4 rounded-xl bg-violet-50 border border-violet-100 h-fit">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                                        <span className="text-[10px] font-bold text-violet-600 uppercase">AI Strategy</span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-600 font-medium leading-relaxed">
+                                        When enabled, our widget will automatically identify "low entropy" impulse buys (under <span className="text-violet-600 font-bold">₹{shippingThreshold}</span>) to boost your AOV.
+                                    </p>
                                 </div>
                             </div>
                         </div>
