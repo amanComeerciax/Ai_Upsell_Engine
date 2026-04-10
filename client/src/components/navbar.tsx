@@ -22,7 +22,7 @@ export function Navbar() {
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
         <a href="#" className="flex items-center gap-2.5">
           <Zap className="h-6 w-6 text-foreground" />
-          <span className="text-xl font-bold tracking-tight text-foreground">upsell<span className="text-muted-foreground/60">.ai</span></span>
+          <span className="text-xl font-bold tracking-tight text-foreground">upsell<span className="text-cyan-400">.ai</span></span>
         </a>
 
         <div className="hidden items-center gap-10 md:flex">
