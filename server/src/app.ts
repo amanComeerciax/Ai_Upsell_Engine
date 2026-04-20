@@ -15,6 +15,7 @@ import upsellRoutes from './routes/upsell.routes';
 import merchantRoutes from './routes/merchant.routes';
 import paymentRoutes from './routes/payment.routes';
 import adminRoutes from './routes/admin.routes';
+import teamRoutes from './routes/team.routes';
 import './workers/upsell.worker'; // Initialize the background worker
 import './workers/cart.worker';    // Initialize the cart abandonment worker
 
@@ -50,6 +51,7 @@ app.use('/api/v1/upsells', upsellRoutes);
 app.use('/api/v1/merchant', merchantRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/team', teamRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {

@@ -16,6 +16,7 @@ import ProductDetailPage from '@/pages/ProductDetail'
 import LoginPage from '@/pages/LoginPage'
 import SignUpPage from '@/pages/SignUpPage'
 import AdminDashboard from '@/pages/AdminDashboard'
+import TeamManagementPage from '@/pages/TeamManagement'
 import AdminMerchants from '@/pages/AdminMerchants'
 import { Toaster } from 'sonner'
 
@@ -64,6 +65,7 @@ function App() {
                                 <Route path="analytics" element={<AnalyticsPage />} />
                                 <Route path="orders" element={<OrdersPage />} />
                                 <Route path="settings" element={<SettingsPage />} />
+                                <Route path="team" element={<TeamManagementPage />} />
                             </Route>
                             
                             {/* Admin Routes */}

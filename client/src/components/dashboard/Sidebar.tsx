@@ -11,6 +11,7 @@ import {
     ChevronLeft,
     Crown,
     Shield,
+    Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -32,7 +33,7 @@ export function Sidebar() {
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(false)
     const { signOut } = useClerk()
-    const { merchant, createCheckoutSession, isAdmin } = useMerchant()
+    const { merchant, createCheckoutSession, isAdmin, isOwner } = useMerchant()
 
     const handleUpgrade = async () => {
         try {
@@ -108,6 +109,23 @@ export function Sidebar() {
                         </Link>
                     )
                 })}
+
+                {/* Team Management - Owner only */}
+                {isOwner && (
+                    <Link
+                        to="/dashboard/team"
+                        title={isCollapsed ? 'Team' : undefined}
+                        className={cn(
+                            'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group relative mt-2',
+                            location.pathname === '/dashboard/team'
+                                ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/25'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                        )}
+                    >
+                        <Users className="h-[18px] w-[18px] flex-shrink-0" />
+                        {!isCollapsed && <span>Team</span>}
+                    </Link>
+                )}
 
                 {isAdmin && (
                     <Link

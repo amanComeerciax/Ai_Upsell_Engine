@@ -21,6 +21,7 @@ interface MerchantProfile {
     subscription_id: string | null;
     subscription_status: string | null;
     role: string;
+    teamRole: string; // 'owner' | 'member'
     stats: {
         products: number;
         orders: number;
@@ -49,6 +50,9 @@ interface MerchantContextType {
     }) => Promise<boolean>;
     createCheckoutSession: () => Promise<void>;
     isAdmin: boolean;
+    isOwner: boolean;
+    isTeamMember: boolean;
+    teamRole: string;
 }
 
 const MerchantContext = createContext<MerchantContextType>({
@@ -64,6 +68,9 @@ const MerchantContext = createContext<MerchantContextType>({
     updateSettings: async () => false,
     createCheckoutSession: async () => { },
     isAdmin: false,
+    isOwner: true,
+    isTeamMember: false,
+    teamRole: 'owner',
 });
 
 export function MerchantProvider({ children }: { children: React.ReactNode }) {
@@ -89,18 +96,26 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
             setClerkUserId(user.id);
 
             // Step 1: Register (or get existing) merchant
+            // Try multiple email sources from Clerk for robustness
+            const clerkEmail = user.primaryEmailAddress?.emailAddress 
+                || user.emailAddresses?.[0]?.emailAddress 
+                || null;
+
             const registerRes = await apiClient.post('/merchant/register', {
                 clerk_user_id: user.id,
                 business_name: user.fullName || user.firstName || 'My Store',
-                email: user.primaryEmailAddress?.emailAddress || null,
+                email: clerkEmail,
             });
 
             // Enhanced register already returns full profile with stats
             const merchantData = registerRes.data.merchant;
             setMerchantId(merchantData.id);
-            setMerchant(merchantData);
+            setMerchant({
+                ...merchantData,
+                teamRole: merchantData.teamRole || 'owner',
+            });
 
-            console.log(`[Merchant] Initialized: ${merchantData.business_name} (ID: ${merchantData.id})`);
+            console.log(`[Merchant] Initialized: ${merchantData.business_name} (ID: ${merchantData.id}, teamRole: ${merchantData.teamRole || 'owner'})`);
         } catch (err: any) {
             console.error('[Merchant] Init failed:', err);
             setError(err.response?.data?.error || 'Failed to initialize merchant');
@@ -119,7 +134,10 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         if (!merchant) return;
         try {
             const res = await apiClient.get('/merchant/profile');
-            setMerchant(res.data);
+            setMerchant({
+                ...res.data,
+                teamRole: res.data.teamRole || merchant.teamRole || 'owner',
+            });
         } catch (err) {
             console.error('[Merchant] Refresh failed:', err);
         }
@@ -195,6 +213,10 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const teamRole = merchant?.teamRole || 'owner';
+    const isOwner = teamRole === 'owner';
+    const isTeamMember = teamRole === 'member';
+
     return (
         <MerchantContext.Provider
             value={{
@@ -210,6 +232,9 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
                 updateSettings,
                 createCheckoutSession,
                 isAdmin: merchant?.role === 'admin',
+                isOwner,
+                isTeamMember,
+                teamRole,
             }}
         >
             {children}

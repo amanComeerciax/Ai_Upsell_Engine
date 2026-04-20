@@ -68,7 +68,7 @@ export function Integrations() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
@@ -93,7 +93,7 @@ export function Integrations() {
         </motion.div>
 
         {/* Integration Grid */}
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -101,9 +101,9 @@ export function Integrations() {
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
         >
           {platforms.map((platform) => (
-            <motion.div 
+            <motion.div
               key={platform.name}
-              variants={itemVariants} 
+              variants={itemVariants}
               className="group p-8 rounded-[32px] border border-black/5 dark:border-white/5 bg-white dark:bg-white/[0.02] flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-black/10 dark:hover:border-white/20 hover:bg-black/[0.01] dark:hover:bg-white/[0.04] hover:shadow-xl hover:shadow-black/5"
             >
               <div className="h-16 w-16 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-300">
@@ -116,7 +116,7 @@ export function Integrations() {
         </motion.div>
 
         {/* High-Performance SDK Focus Card */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -172,10 +172,48 @@ export function Integrations() {
         </motion.div>
 
         {/* Bottom Logo Cloud - Grayed out for partners */}
-        <div className="mt-32 pt-16 border-t border-black/5 dark:border-white/5 flex flex-wrap justify-center md:justify-between items-center gap-12 grayscale opacity-20 hover:opacity-100 transition-opacity duration-1000">
+        {/* <div className="mt-32 pt-16 border-t border-black/5 dark:border-white/5 flex flex-wrap justify-center md:justify-between items-center gap-12 grayscale opacity-20 hover:opacity-100 transition-opacity duration-1000">
           {["STRIPE", "HUBSPOT", "SEGMENT", "KLAVIYO", "INTERCOM", "CHARTMOGUL"].map((p) => (
             <span key={p} className="text-lg font-black tracking-[0.3em] text-black dark:text-white">{p}</span>
           ))}
+        </div> */}
+        {/* Bottom Logo Cloud - Marquee */}
+        <div className="mt-32 pt-16 border-t border-black/5 dark:border-white/5 overflow-hidden">
+
+          {/* Inline CSS */}
+          <style>
+            {`
+      @keyframes marquee {
+        0% { transform: translateX(0%); }
+        100% { transform: translateX(-50%); }
+      }
+
+      .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: marquee 20s linear infinite;
+      }
+    `}
+          </style>
+
+          <div className="relative flex w-full overflow-hidden">
+
+            <div className="marquee-track gap-16 whitespace-nowrap">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex gap-16 items-center">
+                  {["STRIPE", "HUBSPOT", "SEGMENT", "KLAVIYO", "INTERCOM", "CHARTMOGUL"].map((p) => (
+                    <span
+                      key={p + i}
+                      className="text-lg font-black tracking-[0.3em] text-black dark:text-white opacity-30 hover:opacity-100 transition"
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+          </div>
         </div>
       </div>
     </section>
