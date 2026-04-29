@@ -1,4 +1,3 @@
-import { motion, Variants } from "framer-motion"
 import {
   Settings2,
   Command,

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
     Users, UserPlus, Trash2, Loader2, Mail, Shield, Crown, Clock,
-    CheckCircle2, AlertCircle, Search, MoreVertical, UserCog
+    CheckCircle2, AlertCircle, Search, UserCog
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useMerchant } from '@/contexts/MerchantContext'
+
 import apiClient from '@/lib/api-client'
 import { toast } from 'sonner'
 
@@ -24,7 +24,7 @@ interface TeamMember {
 }
 
 export default function TeamManagementPage() {
-    const { merchant } = useMerchant()
+
     const [team, setTeam] = useState<TeamMember[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')

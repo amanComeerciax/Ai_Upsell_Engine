@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { ArrowRight, Star, Menu, Zap, Shield, Cpu } from "lucide-react"
 import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
+
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
   return (

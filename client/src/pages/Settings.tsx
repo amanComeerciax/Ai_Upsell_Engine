@@ -571,6 +571,8 @@ export default function SettingsPage() {
                                 <div>
                                     <Label>Subject Line</Label>
                                     <Input
+                                        value={emailSubject}
+                                        onChange={(e) => setEmailSubject(e.target.value)}
                                         placeholder="Complete your purchase with {product}"
                                         className="mt-2"
                                     />
@@ -578,6 +580,8 @@ export default function SettingsPage() {
                                 <div>
                                     <Label>Email Body</Label>
                                     <Textarea
+                                        value={emailBody}
+                                        onChange={(e) => setEmailBody(e.target.value)}
                                         placeholder="Hi {name}, we noticed you purchased {product}. Based on your order, we think you'll love {recommendation}..."
                                         rows={10}
                                         className="mt-2"
@@ -588,7 +592,13 @@ export default function SettingsPage() {
                                     <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{product}'}</span>
                                     <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{'{recommendation}'}</span>
                                 </div>
-                                <Button>Save Template</Button>
+                                <Button
+                                    onClick={handleSaveTemplate}
+                                    disabled={savingTemplate}
+                                >
+                                    {savingTemplate && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                    Save Template
+                                </Button>
                             </div>
                         </div>
 
@@ -596,14 +606,10 @@ export default function SettingsPage() {
                             <h3 className="text-lg font-semibold text-foreground mb-4">Preview</h3>
                             <div className="bg-background rounded-lg p-6 border border-border/40">
                                 <p className="text-sm text-foreground mb-4">
-                                    <strong>Subject:</strong> Complete your purchase with Premium Headphones
+                                    <strong>Subject:</strong> {parsePreview(emailSubject || 'Complete your purchase with {product}')}
                                 </p>
-                                <div className="text-sm text-muted-foreground space-y-3">
-                                    <p>Hi John,</p>
-                                    <p>
-                                        We noticed you purchased Premium Headphones. Based on your order, we think you'll love our Wireless Mouse!
-                                    </p>
-                                    <p>Get 20% off with code UPSELL20</p>
+                                <div className="text-sm text-muted-foreground space-y-3 whitespace-pre-wrap">
+                                    {parsePreview(emailBody || "Hi {name}, we noticed you purchased {product}. Based on your order, we think you'll love {recommendation}!")}
                                 </div>
                             </div>
                         </div>
