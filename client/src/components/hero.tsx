@@ -1,5 +1,4 @@
-import { useState } from "react"
-import { ArrowRight, Star, Menu, Zap, Shield, Cpu } from "lucide-react"
+import { ArrowRight, Star, Zap, Shield, Cpu } from "lucide-react"
 import { Link } from "react-router-dom"
 
 
@@ -30,7 +29,6 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
 }
 
 export function Hero() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black font-['Inter',sans-serif] flex flex-col">
@@ -50,36 +48,6 @@ export function Hero() {
       {/* Content wrapper */}
       <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 flex flex-col px-6 sm:px-8 lg:px-8 py-6">
 
-        {/* Navigation Bar */}
-        <nav className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-black dark:border-white">
-              <div className="h-3 w-3 rounded-full bg-black dark:bg-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-black dark:text-white">Velocity AI</span>
-          </div>
-
-          {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-6 rounded-full border border-gray-300 dark:border-gray-700 px-6 py-2 bg-white/30 dark:bg-black/30 backdrop-blur-md">
-            {["Home", "Features", "Integrations", "Pricing", "Testimonials", "Blog"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-sm font-medium text-black/70 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors"
-              >
-                {item}
-              </a>
-            ))}
-            <a href="#contact" className="group flex items-center gap-1.5 text-sm font-medium text-black/70 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
-              Contact us <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </a>
-          </div>
-
-          {/* Mobile Menu Icon */}
-          <button className="lg:hidden p-2 text-black dark:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <Menu className="h-6 w-6" />
-          </button>
-        </nav>
 
         {/* Top Section */}
         <div className="mt-12 sm:mt-16 flex flex-col lg:flex-row lg:items-start justify-between gap-6 z-20">
