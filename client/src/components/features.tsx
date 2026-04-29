@@ -1,14 +1,11 @@
-import * as React from "react"
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import {
   Settings2,
   Command,
   Plus,
   Zap,
-  ArrowRight,
   Brain,
   Layers,
-  BarChart3,
   Cpu,
   MousePointer2,
   Share2
@@ -216,7 +213,7 @@ export function Features() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
           className="text-center max-w-4xl mx-auto mb-20 md:mb-28"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-md px-4 py-2 mb-8">

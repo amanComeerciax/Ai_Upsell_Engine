@@ -1,6 +1,5 @@
-import { Zap, Github, Twitter, Linkedin, CheckCircle2 } from "lucide-react"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import { Zap, Github, Twitter, Linkedin } from "lucide-react"
+import { motion, Variants } from "framer-motion"
 
 const footerLinks = {
   Infrastructure: ["Engine SDK", "Cloud Decisions", "Edge Delivery", "Security"],
@@ -9,7 +8,7 @@ const footerLinks = {
   Developer: ["API Reference", "Status", "Changelog", "System Health"],
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -19,7 +18,7 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,

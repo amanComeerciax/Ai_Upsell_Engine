@@ -1,5 +1,5 @@
 import { ShoppingBag, Globe, Smartphone, Layers, Database, Terminal, ArrowRight, Code2 } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
@@ -39,7 +39,7 @@ const platforms = [
   { name: "REST API", icon: Terminal, category: "Developer" },
 ]
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -49,7 +49,7 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -73,7 +73,7 @@ export function Integrations() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
           className="text-center max-w-4xl mx-auto mb-20 md:mb-28"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-md px-4 py-2 mb-8">
@@ -121,7 +121,7 @@ export function Integrations() {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const }}
           className="mt-20 p-8 md:p-12 rounded-[40px] border border-blue-500/10 bg-blue-500/[0.02] dark:bg-blue-500/[0.03] relative overflow-hidden group/sdk"
         >
           <div className="absolute top-0 right-0 p-12 text-blue-500/[0.03] dark:text-blue-500/[0.05] pointer-events-none transition-transform duration-1000 group-hover/sdk:scale-110">
