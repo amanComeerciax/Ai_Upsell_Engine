@@ -1,4 +1,34 @@
-import { Check, Star, Zap } from "lucide-react"
+import { Check, Star, Zap, ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
+
+function ShinyText({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <>
+      <style>
+        {`
+            @keyframes text-shine {
+              0% { background-position: 200% center; }
+              100% { background-position: -200% center; }
+            }
+            .animate-text-shine {
+              animation: text-shine 3s linear infinite;
+              will-change: background-position;
+            }
+          `}
+      </style>
+      <span
+        className={cn(
+          "inline-block relative from-[#0070A0] via-black to-[#0070A0] dark:from-[#64CEFB] dark:via-white dark:to-[#64CEFB] bg-[length:200%_auto] bg-clip-text text-transparent [background-image:linear-gradient(100deg,var(--tw-gradient-stops))] animate-text-shine",
+          className
+        )}
+      >
+        {text}
+      </span>
+    </>
+  )
+}
+
 
 const tiers = [
   {
@@ -48,67 +78,140 @@ const tiers = [
   },
 ]
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
 export function Pricing() {
   return (
-    <section id="pricing" className="relative py-24 md:py-40 bg-[#fafafa] dark:!bg-black overflow-hidden">
-      {/* Background visual elements */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-full max-w-[1400px] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
-      <div className="absolute top-40 right-0 h-[600px] w-[600px] bg-foreground/[0.01] rounded-full blur-[140px] pointer-events-none" />
+    <section id="pricing" className="relative py-24 md:py-40 bg-[#fafafa] dark:bg-black font-['Inter',sans-serif] overflow-hidden selection:bg-blue-500/30">
+      {/* Background Section Transition Glow */}
+      <div className="absolute top-0 inset-x-0 flex justify-center z-0">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
+        <div className="absolute top-0 w-1/2 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent blur-[1px]" />
+        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
+      </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-6">
-        <div className="text-center max-w-3xl mx-auto mb-24">
-          <div className="inline-flex items-center gap-2 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-1.5 mb-8">
-            <Star className="h-3.5 w-3.5 text-foreground/40" />
-            <span className="text-[13px] font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Pricing Models</span>
+      <div className="absolute top-40 right-0 h-[600px] w-[600px] bg-blue-500/[0.02] rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center max-w-4xl mx-auto mb-20 md:mb-28"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-md px-4 py-2 mb-8">
+            <Star className="h-3.5 w-3.5 text-blue-600 dark:text-blue-500" />
+            <span className="text-[10px] sm:text-xs font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Pricing Models</span>
           </div>
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-black dark:text-white leading-tight">
-            Built for <span className="text-black/40 dark:text-white/40">Scale</span> <br />
-            Not Just Software
+          <h2 className="flex flex-col items-center leading-[0.85] tracking-tighter w-full px-2">
+            <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium text-black dark:text-white max-w-full">
+              Built for
+            </span>
+            <span className="mt-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold pb-2 max-w-full">
+              <ShinyText text="Scale, Not Just Software." className="text-wrap sm:text-nowrap" />
+            </span>
           </h2>
-        </div>
+          <p className="mt-8 text-base md:text-lg text-black/60 dark:text-white/60 font-normal leading-relaxed max-w-2xl mx-auto">
+            Choose the infrastructure tier that fits your growth velocity. All plans include our core AI engine with deterministic attribution logic.
+          </p>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch"
+        >
           {tiers.map((tier) => (
-            <div
+            <motion.div
               key={tier.name}
-              className={`relative flex flex-col rounded-[48px] p-10 transition-all ${tier.highlighted
-                ? "bg-foreground text-background shadow-[0_40px_100px_rgba(0,0,0,0.1)] scale-105 z-10 dark:shadow-[0_40px_100px_rgba(255,255,255,0.05)]"
-                : "bg-white dark:bg-white/[0.03] border border-foreground/[0.06] hover:border-foreground/15"
-                }`}
+              variants={itemVariants}
+              className={cn(
+                "group relative flex flex-col rounded-[40px] p-8 md:p-10 transition-all duration-500",
+                tier.highlighted
+                  ? "bg-black dark:bg-white/[0.04] border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.1)] scale-[1.02] z-10"
+                  : "bg-white dark:bg-white/[0.02] border border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10"
+              )}
             >
               {tier.highlighted && (
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full bg-[#3b82f6] text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl z-20">
                   Most Advanced
                 </div>
               )}
 
-              <div className="mb-12">
+              <div className="mb-10">
                 <div className="flex items-center justify-between mb-8">
-                  <h3 className={`text-xl font-bold ${tier.highlighted ? "text-background" : "text-black dark:text-white"}`}>
+                  <h3 className={cn(
+                    "text-xl font-medium tracking-tight",
+                    tier.highlighted ? "text-white" : "text-black dark:text-white"
+                  )}>
                     {tier.name}
                   </h3>
-                  {tier.highlighted && <Zap className="h-6 w-6 text-[#3b82f6] fill-[#3b82f6]" />}
+                  {tier.highlighted ? (
+                    <Zap className="h-5 w-5 text-blue-500 fill-blue-500" />
+                  ) : (
+                    <div className="h-5 w-5 rounded-full bg-black/5 dark:bg-white/5" />
+                  )}
                 </div>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-6xl font-black tracking-tighter">{tier.price}</span>
-                  <span className={`text-sm font-bold ${tier.highlighted ? "text-background/50" : "text-black/60 dark:text-white/50"}`}>
+                  <span className={cn(
+                    "text-5xl md:text-6xl font-medium tracking-tighter",
+                    tier.highlighted ? "text-white" : "text-black dark:text-white"
+                  )}>{tier.price}</span>
+                  <span className={cn(
+                    "text-xs font-bold uppercase tracking-widest",
+                    tier.highlighted ? "text-white/40" : "text-black/40 dark:text-white/40"
+                  )}>
                     {tier.period}
                   </span>
                 </div>
-                <p className={`mt-6 text-[15px] font-medium leading-relaxed ${tier.highlighted ? "text-background/70" : "text-black/60 dark:text-white/50"}`}>
+                <p className={cn(
+                  "mt-6 text-sm md:text-base leading-relaxed font-normal",
+                  tier.highlighted ? "text-white/60" : "text-black/50 dark:text-white/50"
+                )}>
                   {tier.description}
                 </p>
               </div>
 
-              <div className={`h-px w-full ${tier.highlighted ? "bg-background/10" : "bg-foreground/5"} mb-12`} />
+              <div className={cn(
+                "h-px w-full mb-10",
+                tier.highlighted ? "bg-white/10" : "bg-black/5 dark:bg-white/5"
+              )} />
 
               <ul className="flex flex-col gap-5 flex-1 mb-12">
                 {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-4">
-                    <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${tier.highlighted ? "border-background/20 bg-background/5" : "border-foreground/15 bg-foreground/[0.02]"}`}>
-                      <Check className={`h-3 w-3 ${tier.highlighted ? "text-background" : "text-foreground"}`} />
+                  <li key={feature} className="flex items-start gap-4 group/item">
+                    <div className={cn(
+                      "mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-colors duration-300",
+                      tier.highlighted
+                        ? "bg-blue-600/20 text-blue-500 border border-blue-500/20"
+                        : "bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 border border-black/5 dark:border-white/10 group-hover/item:text-blue-500"
+                    )}>
+                      <Check className="h-2.5 w-2.5" />
                     </div>
-                    <span className={`text-[15px] font-bold tracking-tight ${tier.highlighted ? "text-background/90" : "text-foreground/80"}`}>
+                    <span className={cn(
+                      "text-sm md:text-[15px] font-medium tracking-tight transition-colors duration-300",
+                      tier.highlighted ? "text-white/80" : "text-black/60 dark:text-white/60 group-hover/item:text-black dark:group-hover/item:text-white"
+                    )}>
                       {feature}
                     </span>
                   </li>
@@ -116,23 +219,32 @@ export function Pricing() {
               </ul>
 
               <button
-                className={`h-16 rounded-3xl text-sm font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-[0.98] ${tier.highlighted
-                  ? "bg-[#3b82f6] text-white shadow-xl shadow-[#3b82f6]/20"
-                  : "bg-foreground text-background hover:bg-foreground/90"
-                  }`}
+                className={cn(
+                  "group flex items-center justify-center gap-3 h-14 md:h-16 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 shadow-lg",
+                  tier.highlighted
+                    ? "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-blue-500/25"
+                    : "bg-black dark:bg-white text-slate-50 dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
+                )}
               >
                 {tier.cta}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        <div className="mt-20 text-center">
-          <p className="text-sm font-bold text-black/60 dark:text-white/50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="mt-20 text-center"
+        >
+          <p className="text-xs md:text-sm font-medium text-black/40 dark:text-white/40">
             {"Need a custom configuration? "}
-            <a href="#" className="text-foreground border-b border-foreground/20 pb-0.5 ml-1">Connect with our infrastructure team</a>
+            <a href="#" className="text-black dark:text-white border-b border-black/20 dark:border-white/20 pb-0.5 ml-1 hover:border-black dark:hover:border-white transition-colors">Connect with our infrastructure team</a>
           </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

@@ -1,8 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 
 import aiRoutes from './routes/ai.routes';
 import productRoutes from './routes/product.routes';
@@ -11,6 +13,9 @@ import shopifyRoutes from './routes/shopify.routes';
 import orderRoutes from './routes/order.routes';
 import upsellRoutes from './routes/upsell.routes';
 import merchantRoutes from './routes/merchant.routes';
+import paymentRoutes from './routes/payment.routes';
+import adminRoutes from './routes/admin.routes';
+import teamRoutes from './routes/team.routes';
 import './workers/upsell.worker'; // Initialize the background worker
 import './workers/cart.worker';    // Initialize the cart abandonment worker
 
@@ -19,7 +24,15 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json());
+// Use raw body for stripe webhooks, json for everything else
+app.use((req, res, next) => {
+    if (req.originalUrl === '/api/v1/payments/webhook') {
+        next();
+    } else {
+        express.json()(req, res, next);
+    }
+});
+
 app.use(cors({
     origin: [
         'http://localhost:3000',
@@ -29,6 +42,7 @@ app.use(cors({
     ],
     credentials: true
 }));
+
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -45,6 +59,9 @@ app.use('/api/v1/shopify', shopifyRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/upsells', upsellRoutes);
 app.use('/api/v1/merchant', merchantRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/team', teamRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {

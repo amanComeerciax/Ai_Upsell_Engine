@@ -16,7 +16,67 @@ export const merchantController = {
                 return res.status(400).json({ error: 'clerk_user_id is required' });
             }
 
-            // Check if merchant already exists
+            const normalizedEmail = email ? email.toLowerCase().trim() : null;
+            console.log(`[Merchant Register] clerk_user_id=${clerk_user_id}, email=${normalizedEmail}`);
+
+            // ─── STEP 1: Check if this user was invited as a team member ───
+            // We check FIRST so team invites always take priority for new users
+            
+            // 1a. Check by clerk_user_id (if already pre-linked by another team)
+            let teamInvite = await prisma.team_members.findUnique({
+                where: { clerk_user_id },
+                include: { merchants: true }
+            });
+
+            // 1b. If not found by clerk_user_id, check by email
+            if (!teamInvite && normalizedEmail) {
+                teamInvite = await prisma.team_members.findFirst({
+                    where: {
+                        email: normalizedEmail,
+                        clerk_user_id: null, // Not yet linked
+                    },
+                    include: { merchants: true }
+                });
+            }
+
+            if (teamInvite && teamInvite.is_active && teamInvite.merchants) {
+                console.log(`[Merchant Register] ✅ Found team invite for ${normalizedEmail || clerk_user_id} → merchant ${teamInvite.merchants.id}`);
+                
+                // Link the Clerk user ID if not already linked
+                if (!teamInvite.clerk_user_id) {
+                    await prisma.team_members.update({
+                        where: { id: teamInvite.id },
+                        data: {
+                            clerk_user_id,
+                            name: business_name || teamInvite.name,
+                            joined_at: new Date(),
+                        }
+                    });
+                }
+
+                const parentMerchant = teamInvite.merchants;
+                const [productCount, orderCount, upsellCount] = await Promise.all([
+                    prisma.products.count({ where: { merchant_id: parentMerchant.id } }),
+                    prisma.orders.count({ where: { merchant_id: parentMerchant.id } }),
+                    prisma.upsell_events.count({ where: { merchant_id: parentMerchant.id } }),
+                ]);
+
+                console.log(`[Merchant] Team member linked: ${normalizedEmail} → merchant ${parentMerchant.id}`);
+
+                return res.status(200).json({
+                    merchant: {
+                        ...parentMerchant,
+                        stats: { products: productCount, orders: orderCount, upsells: upsellCount },
+                        shopify_connected: !!parentMerchant.shopify_shop_name && !!parentMerchant.shopify_access_token,
+                        teamRole: 'member',
+                    },
+                    message: 'Linked as team member',
+                    isNew: false,
+                    isTeamMember: true,
+                });
+            }
+
+            // ─── STEP 2: Check if merchant already exists ───
             const existing = await prisma.merchants.findUnique({
                 where: { clerk_user_id }
             });
@@ -33,18 +93,22 @@ export const merchantController = {
                     merchant: {
                         ...existing,
                         stats: { products: productCount, orders: orderCount, upsells: upsellCount },
-                        shopify_connected: !!existing.shopify_shop_name && !!existing.shopify_access_token
+                        shopify_connected: !!existing.shopify_shop_name && !!existing.shopify_access_token,
+                        teamRole: 'owner',
                     },
                     message: 'Merchant already registered',
                     isNew: false
                 });
             }
 
+            // ─── STEP 3: No team invite, no existing merchant → Create new ───
+            console.log(`[Merchant Register] No team invite or existing merchant found. Creating new merchant.`);
+            
             const merchant = await prisma.merchants.create({
                 data: {
                     clerk_user_id,
                     business_name: business_name || null,
-                    email: email || null,
+                    email: normalizedEmail || null,
                     plan: 'free'
                 }
             });
@@ -55,7 +119,8 @@ export const merchantController = {
                 merchant: {
                     ...merchant,
                     stats: { products: 0, orders: 0, upsells: 0 },
-                    shopify_connected: false
+                    shopify_connected: false,
+                    teamRole: 'owner',
                 },
                 message: 'Merchant registered successfully',
                 isNew: true
@@ -325,7 +390,7 @@ export const merchantController = {
     async updateSettings(req: Request, res: Response) {
         try {
             const merchant = req.merchant!;
-            const { email_subject, email_body, discount_min, discount_max } = req.body;
+            const { email_subject, email_body, discount_min, discount_max, shipping_threshold, progress_bar_active } = req.body;
 
             const updated = await prisma.merchants.update({
                 where: { id: merchant.id },
@@ -334,6 +399,8 @@ export const merchantController = {
                     email_body: email_body !== undefined ? email_body : merchant.email_body,
                     discount_min: discount_min !== undefined ? Number(discount_min) : undefined,
                     discount_max: discount_max !== undefined ? Number(discount_max) : undefined,
+                    shipping_threshold: shipping_threshold !== undefined ? Number(shipping_threshold) : undefined,
+                    progress_bar_active: progress_bar_active !== undefined ? Boolean(progress_bar_active) : undefined,
                 }
             });
 

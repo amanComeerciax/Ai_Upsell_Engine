@@ -1,4 +1,6 @@
-import { Zap, Github, Twitter, Linkedin } from "lucide-react"
+import { Zap, Github, Twitter, Linkedin, CheckCircle2 } from "lucide-react"
+import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 const footerLinks = {
   Infrastructure: ["Engine SDK", "Cloud Decisions", "Edge Delivery", "Security"],
@@ -7,68 +9,115 @@ const footerLinks = {
   Developer: ["API Reference", "Status", "Changelog", "System Health"],
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
 export function Footer() {
   return (
-    <footer className="bg-white dark:!bg-black border-t border-foreground/[0.05] overflow-hidden">
-      <div className="mx-auto max-w-[1400px] px-6 py-24 md:py-32">
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-12 items-start mb-24">
+    <footer className="relative bg-white dark:bg-black font-['Inter',sans-serif] overflow-hidden selection:bg-blue-500/30">
+      {/* Background Section Transition Glow from Pricing */}
+      <div className="absolute top-0 inset-x-0 flex justify-center z-0">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
+        <div className="absolute top-0 w-1/2 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent blur-[1px]" />
+        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6 lg:px-8 py-24 md:py-32 relative z-10">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8 items-start mb-24"
+        >
           {/* Brand - Span 2 */}
-          <div className="col-span-2">
-            <a href="#" className="flex items-center gap-3 mb-8">
-              <Zap className="h-8 w-8 text-foreground fill-foreground" />
-              <span className="text-2xl font-black tracking-tighter text-foreground uppercase">upsell<span className="text-muted-foreground/40">.ai</span></span>
+          <motion.div variants={itemVariants} className="col-span-2">
+            <a href="#" className="flex items-center gap-2.5 mb-8 group transition-transform active:scale-95">
+              <Zap className="h-7 w-7 text-black dark:text-white" />
+              <span className="text-2xl font-bold tracking-tight text-black dark:text-white">
+                upsell<span className="text-cyan-400">.ai</span>
+              </span>
             </a>
-            <p className="text-lg font-bold leading-relaxed text-black/60 dark:text-white/50 max-w-[320px]">
-              Architecting the next generation of post-purchase revenue infrastructure.
+            <p className="text-base md:text-lg font-normal leading-relaxed text-black/50 dark:text-white/50 max-w-[320px] mb-10">
+              Architecting the next generation of post-purchase revenue infrastructure for global e-commerce.
             </p>
 
-            <div className="flex gap-4 mt-8">
+            <div className="flex gap-4">
               {[Twitter, Linkedin, Github].map((Icon, idx) => (
-                <a key={idx} href="#" className="h-10 w-10 rounded-xl bg-foreground/5 flex items-center justify-center text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-all">
+                <a 
+                  key={idx} 
+                  href="#" 
+                  className="h-12 w-12 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center justify-center text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/10 dark:hover:border-white/20 hover:bg-white dark:hover:bg-white/10 transition-all duration-300"
+                >
                   <Icon className="h-5 w-5" />
                 </a>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category} className="col-span-1">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 dark:text-white/60 mb-8">{category}</h4>
+            <motion.div key={category} variants={itemVariants} className="col-span-1">
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-black/30 dark:text-white/30 mb-8">{category}</h4>
               <ul className="flex flex-col gap-5">
                 {links.map((link) => (
                   <li key={link}>
                     <a
                       href="#"
-                      className="text-[15px] font-bold text-black/70 dark:text-white/50 transition-colors hover:text-black dark:hover:text-white"
+                      className="text-sm md:text-[15px] font-normal text-black/50 dark:text-white/50 transition-colors duration-200 hover:text-black dark:hover:text-white"
                     >
                       {link}
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Bottom bar */}
-        <div className="pt-12 border-t border-foreground/[0.05] flex flex-col md:flex-row items-center justify-between gap-8">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="pt-12 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-8"
+        >
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <p className="text-[13px] font-bold text-black/60 dark:text-white/50">
-              {"© 2026 upsell.ai Infrastructure. All rights reserved."}
+            <p className="text-xs md:text-[13px] font-medium text-black/40 dark:text-white/40">
+              {"© 2026 upsell"}<span className="text-cyan-400">.ai</span> {"Infrastructure. All rights reserved."}
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-[13px] font-bold text-foreground/40 hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="text-[13px] font-bold text-foreground/40 hover:text-foreground transition-colors">Terms</a>
+              <a href="#" className="text-xs md:text-[13px] font-medium text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="text-xs md:text-[13px] font-medium text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors">Terms of Service</a>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 dark:text-white/60">Global Nodes Operational</span>
+          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-emerald-500/5 border border-emerald-500/10">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Global Nodes Operational</span>
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Subtle Bottom Glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[300px] w-full max-w-[1000px] bg-blue-500/5 blur-[120px] pointer-events-none" />
     </footer>
   )
 }

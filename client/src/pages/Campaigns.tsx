@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Plus, Search, Filter, Zap, Loader2, Sparkles, Target, ArrowUpRight } from 'lucide-react'
-import apiClient from '@/lib/api-client'
+import apiClient, { getCached } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTable, Column } from '@/components/dashboard/DataTable'
@@ -27,8 +27,18 @@ export default function CampaignsPage() {
     useEffect(() => {
         const fetchCampaigns = async () => {
             try {
-                const res = await apiClient.get('/upsells');
-                setCampaigns(res.data);
+                // Returns data from cache if fresh, otherwise fetches with background revalidation
+                const cached = await getCached('/upsells', 60000).catch(() => null);
+                
+                if (cached) {
+                    setCampaigns(cached);
+                    setLoading(false);
+                } else {
+                    setLoading(true);
+                    // Standard fetch if cache is empty
+                    const res = await apiClient.get('/upsells');
+                    setCampaigns(res.data);
+                }
             } catch (error) {
                 console.error("Failed to fetch campaigns:", error);
             } finally {
@@ -38,14 +48,17 @@ export default function CampaignsPage() {
         fetchCampaigns();
     }, []);
 
-    const filteredCampaigns = campaigns.filter((campaign) => {
-        const matchesSearch =
-            campaign.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            campaign.campaignId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            campaign.productName.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter
-        return matchesSearch && matchesStatus
-    })
+    const filteredCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => {
+            const searchQueryLower = searchQuery.toLowerCase();
+            const matchesSearch =
+                campaign.customerEmail.toLowerCase().includes(searchQueryLower) ||
+                campaign.campaignId.toLowerCase().includes(searchQueryLower) ||
+                campaign.productName.toLowerCase().includes(searchQueryLower)
+            const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter
+            return matchesSearch && matchesStatus
+        });
+    }, [campaigns, searchQuery, statusFilter]);
 
     const handleRowAction = async (action: string, row: Campaign) => {
         if (action === 'view') {
@@ -72,10 +85,13 @@ export default function CampaignsPage() {
     }
 
     // Summary stats
-    const totalCampaigns = campaigns.length
-    const convertedCount = campaigns.filter(c => c.status === 'converted').length
-    const activeCount = campaigns.filter(c => c.status === 'active').length
-    const totalRevenue = campaigns.reduce((acc, c) => acc + (c.revenue || 0), 0)
+    const { totalCampaigns, convertedCount, activeCount, totalRevenue } = useMemo(() => {
+        const total = campaigns.length;
+        const converted = campaigns.filter(c => c.status === 'converted').length;
+        const active = campaigns.filter(c => c.status === 'active').length;
+        const revenue = campaigns.reduce((acc, c) => acc + (c.revenue || 0), 0);
+        return { totalCampaigns: total, convertedCount: converted, activeCount: active, totalRevenue: revenue };
+    }, [campaigns]);
 
     const columns: Column<Campaign>[] = [
         {

@@ -61,30 +61,33 @@ export const analyticsController = {
                 : 0.0;
             const clickRate = totalUpsellEvents > 0 ? ((convertedOrders / totalUpsellEvents) * 100).toFixed(1) : "0.0";
 
-            // 5. Calculate Revenue Trajectory (Last 7 days)
+            // 5. Calculate Revenue Trajectory (Last 7 days) - BATCHED for performance
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+            sevenDaysAgo.setHours(0, 0, 0, 0);
+
+            const recentOrdersBatch = await prisma.orders.findMany({
+                where: {
+                    ...merchantFilter,
+                    created_at: { gte: sevenDaysAgo }
+                },
+                select: { total_amount: true, created_at: true }
+            });
+
             const trajectory = [];
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
-                const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-                const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+                const dateHeader = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dateStr = date.toDateString();
 
-                const dayRevenue = await prisma.orders.aggregate({
-                    where: {
-                        ...merchantFilter,
-                        created_at: {
-                            gte: startOfDay,
-                            lte: endOfDay
-                        }
-                    },
-                    _sum: {
-                        total_amount: true
-                    }
-                });
+                const dayRevenue = recentOrdersBatch
+                    .filter(o => o.created_at && o.created_at.toDateString() === dateStr)
+                    .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
 
                 trajectory.push({
-                    day: date.toLocaleDateString('en-US', { weekday: 'short' }),
-                    revenue: Number(dayRevenue._sum.total_amount || 0)
+                    day: dateHeader,
+                    revenue: dayRevenue
                 });
             }
 
@@ -176,40 +179,39 @@ export const analyticsController = {
             const cached = await cacheService.get(cacheKey);
             if (cached) return res.status(200).json(cached);
 
-            // ── 1. Time-series: upsells sent + converted per day ──────────────
+            // ── 1. Time-series: BATCHED REFACTOR (Reduced hits from 120+ to 2) ──
+            const windowStart = new Date();
+            windowStart.setDate(windowStart.getDate() - (days - 1));
+            windowStart.setHours(0, 0, 0, 0);
+
+            const [eventsBatch, ordersBatch] = await Promise.all([
+                prisma.upsell_events.findMany({
+                    where: { ...merchantFilter, shown_at: { gte: windowStart } },
+                    select: { shown_at: true, converted: true, impression_count: true }
+                }),
+                prisma.orders.findMany({
+                    where: { ...merchantFilter, created_at: { gte: windowStart } },
+                    select: { created_at: true, total_amount: true }
+                })
+            ]);
+
             const timeSeries = [];
             for (let i = days - 1; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const startOfDay = new Date(date); startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(date); endOfDay.setHours(23, 59, 59, 999);
+                const dateStr = startOfDay.toDateString();
 
-                const dateFilter = { gte: startOfDay, lte: endOfDay };
-
-                const [sent, converted, dayRevenue, impressed] = await Promise.all([
-                    prisma.upsell_events.count({
-                        where: { ...merchantFilter, shown_at: dateFilter }
-                    }),
-                    prisma.upsell_events.count({
-                        where: { ...merchantFilter, converted: true, shown_at: dateFilter }
-                    }),
-                    prisma.orders.aggregate({
-                        where: { ...merchantFilter, created_at: dateFilter },
-                        _sum: { total_amount: true }
-                    }),
-                    // Real impressions: events with impression_count > 0, shown on this day
-                    prisma.upsell_events.count({
-                        where: { ...merchantFilter, shown_at: dateFilter, impression_count: { gt: 0 } }
-                    })
-                ]);
+                const dayEvents = eventsBatch.filter(e => e.shown_at && e.shown_at.toDateString() === dateStr);
+                const dayOrders = ordersBatch.filter(o => o.created_at && o.created_at.toDateString() === dateStr);
 
                 timeSeries.push({
                     date: startOfDay.toISOString(),
                     label: startOfDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                    sent,
-                    impressed,   // widget actually displayed (impression_count > 0)
-                    converted,
-                    revenue: Number(dayRevenue._sum.total_amount || 0)
+                    sent: dayEvents.length,
+                    impressed: dayEvents.filter(e => e.impression_count > 0).length,
+                    converted: dayEvents.filter(e => e.converted).length,
+                    revenue: dayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0)
                 });
             }
 

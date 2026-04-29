@@ -1,109 +1,134 @@
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Play, Star, Zap, Shield, Cpu } from "lucide-react"
+import { useState } from "react"
+import { ArrowRight, Star, Menu, Zap, Shield, Cpu } from "lucide-react"
 import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+
+function ShinyText({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+          
+          @keyframes text-shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+          }
+          .animate-text-shine {
+            animation: text-shine 3s linear infinite;
+            will-change: background-position;
+          }
+        `}
+      </style>
+      <span
+        className={`inline-block relative from-[#0070A0] via-black to-[#0070A0] dark:from-[#64CEFB] dark:via-white dark:to-[#64CEFB] bg-[length:200%_auto] bg-clip-text text-transparent [background-image:linear-gradient(100deg,var(--tw-gradient-stops))] animate-text-shine ${className}`}
+      >
+        {text}
+      </span>
+    </>
+  )
+}
 
 export function Hero() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 md:pt-48 md:pb-40">
-      {/* Background visual engine */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        {/* The Grid */}
-        <div className="absolute inset-0 bg-grid-pattern text-foreground/[0.03] mask-radial-faded" />
+    <section className="relative h-screen w-full overflow-hidden bg-black font-['Inter',sans-serif] flex flex-col">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover z-0"
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_105406_16f4600d-7a92-4292-b96e-b19156c7830a.mp4"
+      />
 
-        {/* The Glows */}
-        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 h-[500px] w-full max-w-[1200px] rounded-full bg-blue-500/[0.06] blur-[120px]" />
-        <div className="absolute top-[40%] right-[10%] h-[300px] w-[300px] rounded-full bg-emerald-500/[0.04] blur-[80px]" />
+      {/* Light/Dark mode overlay (Removed backdrop-blur here for video performance) */}
+      <div className="absolute inset-0 z-0 bg-white/70 dark:bg-black/70 transition-colors duration-500" />
 
-        {/* Floating Particles/Nodes */}
-        <div className="absolute top-1/4 left-[10%] animate-float">
-          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-        </div>
-        <div className="absolute top-1/3 right-[15%] animate-float [animation-delay:3s]">
-          <div className="h-1 w-1 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-        </div>
-      </div>
+      {/* Content wrapper */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 flex flex-col px-6 sm:px-8 lg:px-8 py-6">
 
-      <div className="relative z-10 mx-auto max-w-[1400px] px-6">
-        <div className="flex flex-col items-center text-center">
-          {/* Trust Badge */}
-          <div className="mb-10 inline-flex items-center gap-3 rounded-full border border-foreground/5 bg-foreground/5 px-4 py-2 animate-fade-in-up">
-            <div className="flex -space-x-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-foreground/10" />
-              ))}
+        {/* Navigation Bar */}
+        <nav className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-black dark:border-white">
+              <div className="h-3 w-3 rounded-full bg-black dark:bg-white" />
             </div>
-            <div className="h-4 w-px bg-foreground/10 mx-1" />
-            <div className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 fill-blue-500 text-blue-500" />
-              <span className="text-[13px] font-bold text-black dark:text-white/70 tracking-tight">4.9/5 Rating</span>
-            </div>
-            <div className="h-4 w-px bg-foreground/10 mx-1" />
-            <span className="text-[11px] font-black uppercase tracking-widest text-black/60 dark:text-white/60 hidden sm:block">Trusted by 2.5k+ Merchants</span>
+            <span className="text-xl font-bold tracking-tight text-black dark:text-white">Velocity AI</span>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="mx-auto max-w-5xl text-6xl font-bold leading-[1.05] tracking-tight text-black dark:text-white md:text-8xl lg:text-9xl text-balance animate-fade-in-up [animation-delay:0.1s]">
-            High-Velocity <br className="hidden md:block" />
-            <span className="text-black/40 dark:text-white/40">
-              Upsell Infrastructure
-            </span>
-          </h1>
+          {/* Desktop Nav Links */}
+          <div className="hidden lg:flex items-center gap-6 rounded-full border border-gray-300 dark:border-gray-700 px-6 py-2 bg-white/30 dark:bg-black/30 backdrop-blur-md">
+            {["Home", "Features", "Integrations", "Pricing", "Testimonials", "Blog"].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-sm font-medium text-black/70 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors"
+              >
+                {item}
+              </a>
+            ))}
+            <a href="#contact" className="group flex items-center gap-1.5 text-sm font-medium text-black/70 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+              Contact us <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </a>
+          </div>
 
-          {/* High-Performance Subtext */}
-          <p className="mx-auto mt-10 max-w-3xl text-xl leading-relaxed text-black/70 dark:text-white/50 md:text-2xl text-pretty font-medium animate-fade-in-up [animation-delay:0.2s]">
-            Convert 35% more post-purchase revenue using our state-of-the-art AI inference engine. Architected for speed, built for scale.
+          {/* Mobile Menu Icon */}
+          <button className="lg:hidden p-2 text-black dark:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <Menu className="h-6 w-6" />
+          </button>
+        </nav>
+
+        {/* Top Section */}
+        <div className="mt-12 sm:mt-16 flex flex-col lg:flex-row lg:items-start justify-between gap-6 z-20">
+          <p className="max-w-md text-sm md:text-base text-black/60 dark:text-white/60 font-normal leading-relaxed">
+
           </p>
+          <div className="lg:text-right">
+            <p className="text-sm md:text-base text-black/60 dark:text-white/60 font-normal flex items-center lg:justify-end gap-2 bg-white/20 dark:bg-black/20 px-4 py-2 rounded-full border border-black/10 dark:border-white/10 backdrop-blur-md inline-flex">
+              <Star className="h-4 w-4 text-emerald-600 dark:text-emerald-500 fill-current" /> Trusted by 2.5k+ Merchants
+            </p>
+          </div>
+        </div>
 
-          {/* Technical Chips */}
-          <div className="mt-8 flex flex-wrap justify-center gap-4 animate-fade-in-up [animation-delay:0.25s]">
+        {/* Hero Section (Center) */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center mt-[-4vh]">
+          {/* Subtext Chips */}
+          <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:gap-4 px-4">
             {[
               { icon: Zap, label: "Sub-10ms Latency" },
               { icon: Shield, label: "Enterprise Ready" },
               { icon: Cpu, label: "Autonomous ML" },
             ].map((chip) => (
-              <div key={chip.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] border border-foreground/5">
-                <chip.icon className="h-3.5 w-3.5 text-blue-500" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-black/70 dark:text-white/50">{chip.label}</span>
-              </div>
+              <span key={chip.label} className="flex items-center gap-1.5 uppercase tracking-wider text-[10px] sm:text-xs text-black/60 dark:text-white/60 font-medium px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-black/10 dark:border-white/10 bg-white/30 dark:bg-black/30 backdrop-blur-md">
+                <chip.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-600 dark:text-blue-500" />
+                {chip.label}
+              </span>
             ))}
           </div>
 
-          {/* High-Impact Actions */}
-          <div className="mt-14 flex flex-col items-center justify-center gap-6 sm:flex-row animate-fade-in-up [animation-delay:0.3s]">
+          <h1 className="flex flex-col items-center leading-[0.85] tracking-tighter w-full px-2 max-w-5xl">
+            <span className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-medium text-black dark:text-white max-w-full">
+              High-Velocity
+            </span>
+            <span className="mt-2 sm:mt-4 text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold pb-2 max-w-full relative -translate-x-2 sm:-translate-x-3 md:-translate-x-20">
+              <ShinyText text="Upsell Infrastructure" className="text-wrap sm:text-nowrap" />
+            </span>
+          </h1>
+
+          {/* CTA Button */}
+          <div className="mt-12 sm:mt-16">
             <Link to="/signup">
-              <Button
-                size="lg"
-                className="group relative h-16 px-10 bg-foreground text-background hover:bg-foreground/90 transition-all rounded-2xl flex items-center gap-4 active:scale-95"
-              >
-                <span className="font-bold text-lg tracking-tight">Get Started Now</span>
-                <div className="h-6 w-6 rounded-full bg-background/20 flex items-center justify-center transition-transform group-hover:translate-x-1">
-                  <ArrowRight className="h-4 w-4" />
-                </div>
-              </Button>
+              <button className="group flex items-center justify-center gap-3 rounded-full bg-black hover:bg-gray-900 dark:bg-white dark:hover:bg-gray-200 px-6 py-3 md:px-8 md:py-4 transition-all duration-300">
+                <span className="text-sm md:text-base font-semibold text-slate-50 dark:text-black">
+                  Get Started Now
+                </span>
+                <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-slate-50 dark:text-black transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
             </Link>
-
-            <button className="group flex items-center gap-4 px-8 py-4 text-sm font-bold text-foreground transition-all hover:bg-foreground/5 rounded-2xl">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/10 transition-transform group-hover:scale-110">
-                <Play className="h-3.5 w-3.5 fill-current" />
-              </div>
-              See Flow in Action
-            </button>
           </div>
-        </div>
-
-        {/* Global Stats Bar */}
-        <div className="mx-auto mt-32 grid max-w-5xl grid-cols-2 lg:grid-cols-4 gap-8 animate-fade-in-up [animation-delay:0.4s]">
-          {[
-            { value: "$2.4B+", label: "Capital Processed", color: "text-blue-500" },
-            { value: "35%", label: "Avg. Conversion Lift", color: "text-emerald-500" },
-            { value: "85k+", label: "Active Integrations", color: "text-purple-500" },
-            { value: "99.99%", label: "Engine Uptime", color: "text-amber-500" },
-          ].map((stat) => (
-            <div key={stat.label} className="p-6 rounded-[24px] border border-foreground/[0.05] bg-white dark:bg-white/[0.02] text-center group hover:bg-black/[0.03] dark:hover:bg-white/[0.04] transition-colors">
-              <div className={`text-3xl font-black tracking-tighter ${stat.color} mb-1`}>{stat.value}</div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/60 dark:text-white/60">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </div>
     </section>

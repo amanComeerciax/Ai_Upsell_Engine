@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BarChart3, TrendingUp, Clock, Database, Calendar, Sparkles, Loader2, ArrowUpRight, Eye, Target } from 'lucide-react'
-import apiClient from '@/lib/api-client'
+import apiClient, { getCached } from '@/lib/api-client'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ROIStats } from '@/components/ROIStats'
 import {
@@ -43,8 +43,16 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         const fetchAnalytics = async () => {
-            setDataLoading(true)
             try {
+                // Check cache first
+                const cached = await getCached(`/analytics/detailed?days=${period}`, 60000).catch(() => null);
+                if (cached) {
+                    setData(cached);
+                    setDataLoading(false);
+                } else {
+                    setDataLoading(true);
+                }
+
                 const res = await apiClient.get(`/analytics/detailed?days=${period}`)
                 setData(res.data)
             } catch (error) {
@@ -58,8 +66,16 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         const fetchInsights = async () => {
-            setInsightsLoading(true)
             try {
+                // Check cache first
+                const cached = await getCached('/analytics/insights', 300000).catch(() => null);
+                if (cached) {
+                    setInsights(cached.insights || []);
+                    setInsightsLoading(false);
+                } else {
+                    setInsightsLoading(true);
+                }
+
                 const res = await apiClient.get('/analytics/insights')
                 setInsights(res.data.insights || [])
             } catch (error) {

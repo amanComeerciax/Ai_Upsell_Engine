@@ -15,6 +15,13 @@ interface MerchantProfile {
     email_body: string | null;
     discount_min: number;
     discount_max: number;
+    shipping_threshold: number | null;
+    progress_bar_active: boolean;
+    stripe_customer_id: string | null;
+    subscription_id: string | null;
+    subscription_status: string | null;
+    role: string;
+    teamRole: string; // 'owner' | 'member'
     stats: {
         products: number;
         orders: number;
@@ -33,7 +40,19 @@ interface MerchantContextType {
     connectShopify: (shopName: string, accessToken: string) => Promise<boolean>;
     syncProducts: () => Promise<{ count: number } | null>;
     disconnectShopify: () => Promise<boolean>;
-    updateSettings: (settings: { email_subject?: string; email_body?: string; discount_min?: number; discount_max?: number }) => Promise<boolean>;
+    updateSettings: (settings: { 
+        email_subject?: string; 
+        email_body?: string; 
+        discount_min?: number; 
+        discount_max?: number;
+        shipping_threshold?: number;
+        progress_bar_active?: boolean;
+    }) => Promise<boolean>;
+    createCheckoutSession: () => Promise<void>;
+    isAdmin: boolean;
+    isOwner: boolean;
+    isTeamMember: boolean;
+    teamRole: string;
 }
 
 const MerchantContext = createContext<MerchantContextType>({
@@ -47,6 +66,11 @@ const MerchantContext = createContext<MerchantContextType>({
     syncProducts: async () => null,
     disconnectShopify: async () => false,
     updateSettings: async () => false,
+    createCheckoutSession: async () => { },
+    isAdmin: false,
+    isOwner: true,
+    isTeamMember: false,
+    teamRole: 'owner',
 });
 
 export function MerchantProvider({ children }: { children: React.ReactNode }) {
@@ -72,18 +96,26 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
             setClerkUserId(user.id);
 
             // Step 1: Register (or get existing) merchant
+            // Try multiple email sources from Clerk for robustness
+            const clerkEmail = user.primaryEmailAddress?.emailAddress 
+                || user.emailAddresses?.[0]?.emailAddress 
+                || null;
+
             const registerRes = await apiClient.post('/merchant/register', {
                 clerk_user_id: user.id,
                 business_name: user.fullName || user.firstName || 'My Store',
-                email: user.primaryEmailAddress?.emailAddress || null,
+                email: clerkEmail,
             });
 
             // Enhanced register already returns full profile with stats
             const merchantData = registerRes.data.merchant;
             setMerchantId(merchantData.id);
-            setMerchant(merchantData);
+            setMerchant({
+                ...merchantData,
+                teamRole: merchantData.teamRole || 'owner',
+            });
 
-            console.log(`[Merchant] Initialized: ${merchantData.business_name} (ID: ${merchantData.id})`);
+            console.log(`[Merchant] Initialized: ${merchantData.business_name} (ID: ${merchantData.id}, teamRole: ${merchantData.teamRole || 'owner'})`);
         } catch (err: any) {
             console.error('[Merchant] Init failed:', err);
             setError(err.response?.data?.error || 'Failed to initialize merchant');
@@ -102,7 +134,10 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         if (!merchant) return;
         try {
             const res = await apiClient.get('/merchant/profile');
-            setMerchant(res.data);
+            setMerchant({
+                ...res.data,
+                teamRole: res.data.teamRole || merchant.teamRole || 'owner',
+            });
         } catch (err) {
             console.error('[Merchant] Refresh failed:', err);
         }
@@ -144,7 +179,14 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const updateSettings = async (settings: { email_subject?: string; email_body?: string }): Promise<boolean> => {
+    const updateSettings = async (settings: { 
+        email_subject?: string; 
+        email_body?: string;
+        discount_min?: number;
+        discount_max?: number;
+        shipping_threshold?: number;
+        progress_bar_active?: boolean;
+    }): Promise<boolean> => {
         try {
             await apiClient.put('/merchant/settings', settings);
             await refreshMerchant();
@@ -154,6 +196,26 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
             throw new Error(err.response?.data?.error || 'Failed to update settings');
         }
     };
+
+    const createCheckoutSession = async () => {
+        try {
+            const res = await apiClient.post('/payments/create-checkout-session', {
+                successUrl: window.location.origin + '/dashboard?payment=success',
+                cancelUrl: window.location.origin + '/dashboard?payment=cancel',
+            });
+            
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            }
+        } catch (err: any) {
+            console.error('[Merchant] Checkout failed:', err);
+            throw new Error(err.response?.data?.error || 'Failed to start checkout');
+        }
+    };
+
+    const teamRole = merchant?.teamRole || 'owner';
+    const isOwner = teamRole === 'owner';
+    const isTeamMember = teamRole === 'member';
 
     return (
         <MerchantContext.Provider
@@ -168,6 +230,11 @@ export function MerchantProvider({ children }: { children: React.ReactNode }) {
                 syncProducts,
                 disconnectShopify,
                 updateSettings,
+                createCheckoutSession,
+                isAdmin: merchant?.role === 'admin',
+                isOwner,
+                isTeamMember,
+                teamRole,
             }}
         >
             {children}

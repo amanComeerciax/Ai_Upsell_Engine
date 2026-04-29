@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Save, Sparkles, Store, RefreshCw, Unplug, CheckCircle2, AlertCircle, Loader2, Percent, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +18,7 @@ import {
 import { useMerchant } from '@/contexts/MerchantContext'
 
 export default function SettingsPage() {
-    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant } = useMerchant()
+    const { merchant, isShopifyConnected, connectShopify, syncProducts, disconnectShopify, refreshMerchant, updateSettings } = useMerchant()
 
     const [timingStrategy, setTimingStrategy] = useState('purchase')
     const [delayHours, setDelayHours] = useState(48)
@@ -33,6 +33,31 @@ export default function SettingsPage() {
     const [connectError, setConnectError] = useState<string | null>(null)
     const [connectSuccess, setConnectSuccess] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<string | null>(null)
+
+    const [emailSubject, setEmailSubject] = useState('')
+    const [emailBody, setEmailBody] = useState('')
+    const [savingTemplate, setSavingTemplate] = useState(false)
+
+    // Discount range
+    const [discountMin, setDiscountMin] = useState(5)
+    const [discountMax, setDiscountMax] = useState(25)
+    
+    // Progress Bar settings
+    const [shippingThreshold, setShippingThreshold] = useState(100)
+    const [progressBarActive, setProgressBarActive] = useState(false)
+    
+    const [savingGeneral, setSavingGeneral] = useState(false)
+
+    useEffect(() => {
+        if (merchant) {
+            setEmailSubject(merchant.email_subject || '')
+            setEmailBody(merchant.email_body || '')
+            setDiscountMin(merchant.discount_min ?? 5)
+            setDiscountMax(merchant.discount_max ?? 25)
+            setShippingThreshold(Number(merchant.shipping_threshold ?? 100))
+            setProgressBarActive(merchant.progress_bar_active ?? false)
+        }
+    }, [merchant])
 
     const handleConnectShopify = async () => {
         if (!shopName || !accessToken) {
@@ -77,7 +102,47 @@ export default function SettingsPage() {
         }
     }
 
-    const scriptSnippet = `<script src="https://ai-upsell-engine.onrender.com/widget.js" async></script>`;
+    const handleSaveTemplate = async () => {
+        try {
+            setSavingTemplate(true)
+            await updateSettings({
+                email_subject: emailSubject,
+                email_body: emailBody
+            })
+            alert('Template saved successfully!')
+        } catch (err: any) {
+            alert(`Failed to save template: ${err.message}`)
+        } finally {
+            setSavingTemplate(false)
+        }
+    }
+
+    const handleSaveGeneral = async () => {
+        try {
+            setSavingGeneral(true)
+            await updateSettings({
+                discount_min: discountMin,
+                discount_max: discountMax,
+                shipping_threshold: shippingThreshold,
+                progress_bar_active: progressBarActive
+            })
+            alert('Settings saved successfully!')
+        } catch (err: any) {
+            alert(`Failed to save: ${err.message}`)
+        } finally {
+            setSavingGeneral(false)
+        }
+    }
+
+    const parsePreview = (text: string) => {
+        return text
+            .replace(/{name}/g, 'John')
+            .replace(/{product}/g, 'Premium Headphones')
+            .replace(/{recommendation}/g, 'Wireless Mouse')
+    }
+
+    const scriptSnippet = `<script src="https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js" async></script>`;
+
 
     return (
         <div className="space-y-6">
@@ -359,9 +424,140 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <Button>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Changes
+                        {/* Discount Range Section */}
+                        <div className="space-y-6 pt-6 border-t border-foreground/[0.04]">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                    <Percent className="h-5 w-5 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Discount Range</h4>
+                                    <p className="text-[10px] text-muted-foreground font-medium italic">Min-Max discount the AI can apply on upsell offers</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Minimum Discount</Label>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">{discountMin}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[discountMin]}
+                                        onValueChange={(v) => {
+                                            const newMin = v[0]
+                                            setDiscountMin(newMin)
+                                            if (newMin > discountMax) setDiscountMax(newMin)
+                                        }}
+                                        min={0}
+                                        max={40}
+                                        step={5}
+                                        className="py-2"
+                                    />
+                                    <p className="text-[9px] text-muted-foreground font-medium italic">Lowest possible discount for any campaign</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Maximum Discount</Label>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-500 text-xs font-bold">{discountMax}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[discountMax]}
+                                        onValueChange={(v) => {
+                                            const newMax = v[0]
+                                            setDiscountMax(newMax)
+                                            if (newMax < discountMin) setDiscountMin(newMax)
+                                        }}
+                                        min={5}
+                                        max={50}
+                                        step={5}
+                                        className="py-2"
+                                    />
+                                    <p className="text-[9px] text-muted-foreground font-medium italic">Highest possible discount for any campaign</p>
+                                </div>
+                            </div>
+
+                            {/* Preview bar */}
+                            <div className="p-4 rounded-xl bg-foreground/[0.01] border border-foreground/[0.04]">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Active Range</span>
+                                    <span className="text-xs font-bold text-foreground">{discountMin}% — {discountMax}%</span>
+                                </div>
+                                <div className="w-full h-3 bg-foreground/[0.06] rounded-full overflow-hidden relative">
+                                    <div
+                                        className="absolute h-full bg-gradient-to-r from-emerald-400 to-blue-500 rounded-full transition-all"
+                                        style={{
+                                            left: `${(discountMin / 50) * 100}%`,
+                                            width: `${((discountMax - discountMin) / 50) * 100}%`
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                    <span className="text-[9px] text-muted-foreground">0%</span>
+                                    <span className="text-[9px] text-muted-foreground">50%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Gamified Progress Bar Section */}
+                        <div className="space-y-6 pt-6 border-t border-foreground/[0.04]">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                                        <Zap className="h-5 w-5 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Gamified Progress Bar</h4>
+                                        <p className="text-[10px] text-muted-foreground font-medium italic">Drive users to free shipping with AI-suggested impulse buys</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 bg-foreground/[0.01] px-4 py-2 rounded-xl border border-foreground/[0.04]">
+                                    <Switch checked={progressBarActive} onCheckedChange={setProgressBarActive} className="data-[state=checked]:bg-blue-500" />
+                                    <span className="text-xs font-bold text-foreground/60">
+                                        {progressBarActive ? 'Active' : 'Hidden'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Free Shipping Threshold (₹)</Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">₹</span>
+                                        <Input
+                                            type="number"
+                                            value={shippingThreshold}
+                                            onChange={(e) => setShippingThreshold(parseInt(e.target.value))}
+                                            className="h-11 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] pl-8 text-sm font-bold text-foreground"
+                                            placeholder="1000"
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-muted-foreground font-medium italic mt-1 leading-relaxed">
+                                        We'll suggest products that bridge the gap to this amount.
+                                    </p>
+                                </div>
+
+                                <div className="p-4 rounded-xl bg-blue-500/[0.02] border border-blue-500/10 h-fit">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">AI Strategy</span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground font-medium italic leading-relaxed">
+                                        When enabled, our widget will automatically identify "low entropy" impulse buys (under <span className="text-blue-500 font-bold">₹{shippingThreshold}</span>) to boost your AOV.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button
+                            onClick={handleSaveGeneral}
+                            disabled={savingGeneral}
+                            className="h-10 px-6 rounded-xl bg-foreground text-background hover:bg-foreground/90 text-xs font-black uppercase tracking-widest shadow-lg shadow-foreground/10"
+                        >
+                            {savingGeneral ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                            Save Settings
+
                         </Button>
                     </div>
                 </TabsContent>
