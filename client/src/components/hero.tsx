@@ -31,7 +31,7 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
 export function Hero() {
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black font-['Inter',sans-serif] flex flex-col">
+    <section className="relative h-screen w-full bg-black font-['Inter',sans-serif] flex flex-col">
       {/* Background Video */}
       <video
         autoPlay
