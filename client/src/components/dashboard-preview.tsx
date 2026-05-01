@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
   AreaChart,
   Area,
@@ -7,9 +8,53 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-import { motion, Variants } from "framer-motion"
+import { motion, Variants, useInView } from "framer-motion"
 import { TrendingUp, DollarSign, Activity, Zap, ArrowUpRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+
+function CountUp({ 
+  end, 
+  prefix = "", 
+  suffix = "", 
+  decimals = 0, 
+  duration = 2000,
+  separator = ""
+}: { 
+  end: number; 
+  prefix?: string; 
+  suffix?: string; 
+  decimals?: number; 
+  duration?: number;
+  separator?: string;
+}) {
+  const [count, setCount] = useState(0)
+  const ref = useRef<HTMLSpanElement>(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const hasAnimated = useRef(false)
+
+  useEffect(() => {
+    if (!isInView || hasAnimated.current) return
+    hasAnimated.current = true
+
+    const startTime = Date.now()
+    const step = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      // easeOutExpo for a snappy feel
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+      setCount(eased * end)
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [isInView, end, duration])
+
+  const formatted = count.toFixed(decimals)
+  const withSeparator = separator
+    ? formatted.replace(/\B(?=(\d{3})+(?!\d))/g, separator)
+    : formatted
+
+  return <span ref={ref}>{prefix}{withSeparator}{suffix}</span>
+}
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -53,7 +98,11 @@ const revenueData = [
 const kpis = [
   {
     label: "Conversion Lift",
-    value: "36.2%",
+    end: 36.2,
+    decimals: 1,
+    suffix: "%",
+    prefix: "",
+    separator: "",
     change: "+12.3%",
     icon: TrendingUp,
     color: "text-blue-500",
@@ -61,7 +110,11 @@ const kpis = [
   },
   {
     label: "Upsell Revenue",
-    value: "$13.4K",
+    end: 13.4,
+    decimals: 1,
+    suffix: "K",
+    prefix: "$",
+    separator: "",
     change: "+24.1%",
     icon: DollarSign,
     color: "text-emerald-500",
@@ -69,7 +122,11 @@ const kpis = [
   },
   {
     label: "AI Decisions",
-    value: "84,720",
+    end: 84720,
+    decimals: 0,
+    suffix: "",
+    prefix: "",
+    separator: ",",
     change: "+8.7%",
     icon: Zap,
     color: "text-purple-500",
@@ -77,7 +134,11 @@ const kpis = [
   },
   {
     label: "System Health",
-    value: "99.99%",
+    end: 99.99,
+    decimals: 2,
+    suffix: "%",
+    prefix: "",
+    separator: "",
     change: "Live",
     icon: Activity,
     color: "text-amber-500",
@@ -182,7 +243,9 @@ export function DashboardPreview() {
                       <ArrowUpRight className="h-2.5 w-2.5" />
                     </div>
                   </div>
-                  <div className="text-2xl md:text-3xl font-medium tracking-tight text-black dark:text-white mb-1">{kpi.value}</div>
+                  <div className="text-2xl md:text-3xl font-medium tracking-tight text-black dark:text-white mb-1">
+                    <CountUp end={kpi.end} decimals={kpi.decimals} prefix={kpi.prefix} suffix={kpi.suffix} separator={kpi.separator} duration={2500} />
+                  </div>
                   <div className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-widest">{kpi.label}</div>
                 </motion.div>
               ))}
@@ -265,7 +328,7 @@ export function DashboardPreview() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-medium tracking-tight text-black dark:text-white">75%</span>
+                    <span className="text-3xl font-medium tracking-tight text-black dark:text-white"><CountUp end={75} suffix="%" duration={2000} /></span>
                     <span className="text-[10px] font-bold text-black/30 dark:text-white/30 tracking-widest uppercase mt-[-4px]">Efficiency</span>
                   </div>
                 </div>
@@ -279,7 +342,7 @@ export function DashboardPreview() {
                 </div>
                 <div>
                   <div className="text-[10px] font-bold text-black/30 dark:text-white/30 tracking-widest uppercase">Quick Metric</div>
-                  <div className="text-xl font-medium tracking-tight text-black dark:text-white">+$2,410 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase ml-1">Today</span></div>
+                  <div className="text-xl font-medium tracking-tight text-black dark:text-white">+$<CountUp end={2410} separator="," duration={2500} /> <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase ml-1">Today</span></div>
                 </div>
               </motion.div>
             </div>

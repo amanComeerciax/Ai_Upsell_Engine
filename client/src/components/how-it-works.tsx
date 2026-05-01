@@ -1,6 +1,7 @@
 import { ShoppingCart, Cpu, Gift, BarChart3, CheckCircle2 } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
+import Stack from "@/components/ui/Stack"
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -28,6 +29,13 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
     </>
   )
 }
+
+const stackImages = [
+  "/features/ai-engine.png",
+  "/features/integrations.png",
+  "/features/workflows.png",
+  "/features/roi-lift.png",
+]
 
 const steps = [
   {
@@ -111,16 +119,50 @@ export function HowItWorks() {
                 We've engineered a four-stage engine designed to transform static transactions into dynamic revenue streams—automatically.
               </p>
 
-              <div className="space-y-4">
-                {["Native Integrations", "Sub-10ms Latency", "Deterministic Logic"].map((feat) => (
+              <div className="space-y-5 mb-12">
+                {["Native Integrations", "Sub-10ms Latency", "Deterministic Logic"].map((feat, i) => (
                   <div key={feat} className="flex items-center gap-3 group">
-                    <div className="h-6 w-6 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/10 group-hover:scale-110 transition-transform">
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    <div className="relative h-7 w-7 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform"
+                      style={{ boxShadow: '0 0 12px 4px rgba(59,130,246,0.5), 0 0 30px 8px rgba(59,130,246,0.2)' }}
+                    >
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-400" style={{ boxShadow: '0 0 8px 2px rgba(96,165,250,0.8)' }} />
+                      <div 
+                        className="absolute -inset-1 rounded-full bg-blue-400/30 animate-ping" 
+                        style={{ animationDelay: `${i * 0.5}s`, animationDuration: '1.5s' }}
+                      />
                     </div>
                     <span className="text-xs font-medium text-black/40 dark:text-white/40 tracking-widest uppercase group-hover:text-black dark:group-hover:text-white transition-colors">{feat}</span>
                   </div>
                 ))}
               </div>
+
+              {/* Stack Card Gallery */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="hidden lg:block"
+              >
+                <div style={{ width: 280, height: 280 }}>
+                  <Stack
+                    randomRotation={true}
+                    sensitivity={180}
+                    sendToBackOnClick={true}
+                    autoplay={true}
+                    autoplayDelay={3000}
+                    pauseOnHover={true}
+                    cards={stackImages.map((src, i) => (
+                      <img
+                        key={i}
+                        src={src}
+                        alt={`workflow-${i + 1}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '1rem' }}
+                      />
+                    ))}
+                  />
+                </div>
+              </motion.div>
             </motion.div>
           </div>
 

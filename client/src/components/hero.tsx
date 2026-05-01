@@ -49,17 +49,6 @@ export function Hero() {
       <div className="relative z-10 mx-auto w-full max-w-7xl flex-1 flex flex-col px-6 sm:px-8 lg:px-8 py-6">
 
 
-        {/* Top Section */}
-        <div className="mt-12 sm:mt-16 flex flex-col lg:flex-row lg:items-start justify-between gap-6 z-20">
-          <p className="max-w-md text-sm md:text-base text-black/60 dark:text-white/60 font-normal leading-relaxed">
-
-          </p>
-          <div className="lg:text-right">
-            <p className="text-sm md:text-base text-black/60 dark:text-white/60 font-normal flex items-center lg:justify-end gap-2 bg-white/20 dark:bg-black/20 px-4 py-2 rounded-full border border-black/10 dark:border-white/10 backdrop-blur-md inline-flex">
-              <Star className="h-4 w-4 text-emerald-600 dark:text-emerald-500 fill-current" /> Trusted by 2.5k+ Merchants
-            </p>
-          </div>
-        </div>
 
         {/* Hero Section (Center) */}
         <div className="flex-1 flex flex-col items-center justify-center text-center mt-[-4vh]">

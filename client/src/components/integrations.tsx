@@ -1,6 +1,7 @@
 import { ShoppingBag, Globe, Smartphone, Layers, Database, Terminal, ArrowRight, Code2 } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
+import CircularGallery from "@/components/ui/CircularGallery"
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -92,30 +93,28 @@ export function Integrations() {
             Engineered for flexibility. Whether you run a managed store or a custom-built infrastructure, our engine integrates in minutes.
           </p>
         </motion.div>
+      </div>
 
-        {/* Integration Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
-        >
-          {platforms.map((platform) => (
-            <motion.div
-              key={platform.name}
-              variants={itemVariants}
-              className="group p-8 rounded-[32px] border border-black/5 dark:border-white/5 bg-white dark:bg-white/[0.02] flex flex-col items-center justify-center text-center transition-all duration-300 hover:border-black/10 dark:hover:border-white/20 hover:bg-black/[0.01] dark:hover:bg-white/[0.04] hover:shadow-xl hover:shadow-black/5"
-            >
-              <div className="h-16 w-16 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-300">
-                <platform.icon className="h-8 w-8 text-black/40 dark:text-white/40 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors" />
-              </div>
-              <div className="text-sm font-medium text-black dark:text-white tracking-tight mb-1">{platform.name}</div>
-              <div className="text-[10px] font-bold text-black/30 dark:text-white/30 uppercase tracking-[0.2em]">{platform.category}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+      {/* Circular Gallery — Full Width */}
+      <div style={{ height: '500px', position: 'relative', width: '100%' }}>
+        <CircularGallery 
+          items={[
+            { image: '/logos/shopify.png', text: 'Shopify' },
+            { image: '/logos/woocommerce.png', text: 'WooCommerce' },
+            { image: '/logos/magento.png', text: 'Magento' },
+            { image: '/logos/bigcommerce.png', text: 'BigCommerce' },
+            { image: '/logos/stripe.png', text: 'Stripe' },
+            { image: '/logos/restapi.png', text: 'REST API' },
+          ]}
+          bend={3}
+          textColor="#22d3ee"
+          borderRadius={0.05}
+          scrollEase={0.03}
+          scrollSpeed={2}
+        />
+      </div>
 
+      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         {/* High-Performance SDK Focus Card */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}

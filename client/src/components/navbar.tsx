@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Zap, Moon, Sun, ArrowRight } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
@@ -31,8 +32,8 @@ export function Navbar() {
   return (
     <header 
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 flex justify-center px-6",
-        scrolled ? "py-4" : "py-8"
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 flex flex-col items-center px-4 sm:px-6",
+        scrolled ? "py-4" : "py-6 sm:py-8"
       )}
     >
       <motion.nav 
@@ -40,21 +41,51 @@ export function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
-          "w-full max-w-[1400px] flex items-center justify-between px-6 py-2.5 rounded-[24px] transition-all duration-500",
+          "w-full max-w-[1400px] flex items-center justify-between px-4 sm:px-6 py-2.5 rounded-[24px] transition-all duration-500 relative",
           scrolled 
             ? "bg-white/70 dark:bg-black/70 backdrop-blur-[12px] border border-black/[0.03] dark:border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
             : "bg-transparent border border-transparent"
         )}
       >
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5 group relative">
-          <div className="relative">
-            <div className="absolute inset-0 bg-cyan-400/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Zap className="h-6 w-6 text-foreground relative z-10 transition-transform group-hover:scale-110 group-active:scale-95" />
-          </div>
-          <span className="text-xl font-bold tracking-tighter text-foreground">
-            upsell<span className="text-cyan-400">.ai</span>
-          </span>
+        <a href="#" className="flex items-center gap-0 group relative">
+          <style>{`
+            @keyframes logo-wave {
+              0%, 100% { transform: translateY(0); }
+              25% { transform: translateY(-3px); }
+              75% { transform: translateY(1px); }
+            }
+            @keyframes logo-glow-wave {
+              0%, 40%, 100% { text-shadow: none; }
+              20% { text-shadow: 0 0 8px #22d3ee, 0 0 20px rgba(34,211,238,0.4); }
+            }
+            @keyframes logo-ai-glow-wave {
+              0%, 40%, 100% { text-shadow: none; filter: brightness(1); }
+              20% { text-shadow: 0 0 10px #22d3ee, 0 0 25px rgba(34,211,238,0.5); filter: brightness(1.5); }
+            }
+            .logo-wave-letter {
+              display: inline-block;
+              animation: logo-wave 2.5s ease-in-out infinite, logo-glow-wave 2.5s ease-in-out infinite;
+            }
+            .logo-wave-ai {
+              display: inline-block;
+              animation: logo-wave 2.5s ease-in-out infinite, logo-ai-glow-wave 2.5s ease-in-out infinite;
+            }
+          `}</style>
+          {['u','p','s','e','l','l'].map((ch, i) => (
+            <span
+              key={i}
+              className="logo-wave-letter text-2xl font-extrabold tracking-tight text-foreground"
+              style={{ animationDelay: `${i * 0.12}s` }}
+            >{ch}</span>
+          ))}
+          {['.','a','i'].map((ch, i) => (
+            <span
+              key={`ai-${i}`}
+              className="logo-wave-ai text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+              style={{ animationDelay: `${(6 + i) * 0.12}s` }}
+            >{ch}</span>
+          ))}
         </a>
 
         {/* Desktop Nav Links */}
@@ -134,41 +165,53 @@ export function Navbar() {
         {/* Mobile Toggle */}
         <button
           type="button"
-          className="lg:hidden text-foreground p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-          onClick={() => setMobileOpen(!mobileOpen)}
+          className="lg:hidden text-foreground p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors relative z-[60]"
+          onClick={() => setMobileOpen(prev => !prev)}
+          aria-label="Toggle mobile menu"
         >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </motion.nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute top-full left-6 right-6 mt-4 border border-black/[0.03] dark:border-white/[0.08] bg-white/90 dark:bg-black/90 backdrop-blur-xl rounded-[32px] shadow-2xl overflow-hidden lg:hidden"
-          >
-            <div className="flex flex-col gap-6 px-8 py-10">
-              {navLinks.map((link, idx) => (
-                <motion.a
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.05 }}
+      {/* Mobile Full-Screen Overlay Menu — Portaled to body */}
+      {mobileOpen && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] lg:hidden"
+        >
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          
+          {/* Menu Panel */}
+          <div className="absolute top-20 left-4 right-4 bg-white dark:bg-gray-950 rounded-[24px] shadow-2xl border border-black/10 dark:border-white/10 overflow-auto max-h-[calc(100vh-6rem)]">
+            {/* Close button inside */}
+            <div className="flex justify-end p-4 pb-0">
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="p-2 rounded-xl text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-5 px-6 pb-8 pt-2">
+              {navLinks.map((link) => (
+                <a
                   key={link.label}
                   href={link.href}
-                  className="text-2xl font-bold text-foreground/80 hover:text-foreground transition-colors tracking-tighter"
+                  className="text-xl font-bold text-foreground/80 hover:text-foreground transition-colors tracking-tighter py-1"
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
-                </motion.a>
+                </a>
               ))}
-              <div className="flex flex-col gap-4 pt-8 border-t border-black/5 dark:border-white/5">
+              <div className="flex flex-col gap-4 pt-6 border-t border-black/5 dark:border-white/5">
                 <SignedOut>
                   <Link to="/login" onClick={() => setMobileOpen(false)}>
-                    <Button variant="ghost" className="justify-start text-xl font-bold h-auto p-0 tracking-tight">
+                    <Button variant="ghost" className="justify-start text-lg font-bold h-auto p-0 tracking-tight">
                       Log In
                     </Button>
                   </Link>
@@ -207,9 +250,10 @@ export function Navbar() {
                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>,
+        document.body
+      )}
     </header>
   )
 }
