@@ -1,4 +1,4 @@
-import { Zap, Github, Twitter, Linkedin } from "lucide-react"
+import { Github, Twitter, Linkedin } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 
 const footerLinks = {

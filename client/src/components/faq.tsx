@@ -31,7 +31,7 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
   )
 }
 
-const faqItems = [
+const faqItems: { link: string; text: string; image: string }[] = [
   {
     link: '#features',
     text: 'What is upsell.ai?',

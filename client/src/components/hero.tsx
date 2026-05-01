@@ -1,4 +1,4 @@
-import { ArrowRight, Star, Zap, Shield, Cpu } from "lucide-react"
+import { ArrowRight, Zap, Shield, Cpu } from "lucide-react"
 import { Link } from "react-router-dom"
 
 

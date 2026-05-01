@@ -159,7 +159,7 @@ export function HowItWorks() {
                         alt={`workflow-${i + 1}`}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '1rem' }}
                       />
-                    ))}
+                    )) as any}
                   />
                 </div>
               </motion.div>

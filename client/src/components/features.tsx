@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Zap, Brain, Layers, Cpu, MousePointer2, Terminal } from "lucide-react"
+import { Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CardStack } from "@/components/ui/card-stack"
 
