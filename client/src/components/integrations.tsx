@@ -32,6 +32,15 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
 
 
 
+const INTEGRATION_ITEMS = [
+  { image: '/logos/shopify.png', text: 'Shopify' },
+  { image: '/logos/woocommerce.png', text: 'WooCommerce' },
+  { image: '/logos/magento.png', text: 'Magento' },
+  { image: '/logos/bigcommerce.png', text: 'BigCommerce' },
+  { image: '/logos/stripe.png', text: 'Stripe' },
+  { image: '/logos/restapi.png', text: 'REST API' },
+];
+
 export function Integrations() {
   return (
     <section id="integrations" className="relative py-24 md:py-40 bg-white dark:bg-black font-['Inter',sans-serif] overflow-hidden selection:bg-blue-500/30">
@@ -71,14 +80,7 @@ export function Integrations() {
       {/* Circular Gallery — Full Width */}
       <div style={{ height: '500px', position: 'relative', width: '100%' }}>
         <CircularGallery 
-          items={[
-            { image: '/logos/shopify.png', text: 'Shopify' },
-            { image: '/logos/woocommerce.png', text: 'WooCommerce' },
-            { image: '/logos/magento.png', text: 'Magento' },
-            { image: '/logos/bigcommerce.png', text: 'BigCommerce' },
-            { image: '/logos/stripe.png', text: 'Stripe' },
-            { image: '/logos/restapi.png', text: 'REST API' },
-          ]}
+          items={INTEGRATION_ITEMS}
           bend={3}
           textColor="#22d3ee"
           borderRadius={0.05}

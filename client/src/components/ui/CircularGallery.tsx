@@ -310,16 +310,25 @@ class App {
     this.addEventListeners();
   }
   createRenderer() {
-    this.renderer = new Renderer({
-      alpha: true,
-      antialias: true,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
-    });
-    this.gl = this.renderer.gl;
-    this.gl.clearColor(0, 0, 0, 0);
-    this.container.appendChild(this.gl.canvas);
+    try {
+      this.renderer = new Renderer({
+        alpha: true,
+        antialias: true,
+        dpr: Math.min(window.devicePixelRatio || 1, 2)
+      });
+      this.gl = this.renderer.gl;
+      if (!this.gl) {
+        console.warn('CircularGallery: WebGL context creation failed.');
+        return;
+      }
+      this.gl.clearColor(0, 0, 0, 0);
+      this.container.appendChild(this.gl.canvas);
+    } catch (e) {
+      console.warn('CircularGallery: Renderer creation failed.', e);
+    }
   }
   createCamera() {
+    if (!this.gl) return;
     this.camera = new Camera(this.gl);
     this.camera.fov = 45;
     this.camera.position.z = 20;
@@ -328,12 +337,14 @@ class App {
     this.scene = new Transform();
   }
   createGeometry() {
+    if (!this.gl) return;
     this.planeGeometry = new Plane(this.gl, {
       heightSegments: 50,
       widthSegments: 100
     });
   }
   createMedias(items, bend = 1, textColor, borderRadius, font) {
+    if (!this.gl) return;
     const defaultItems = [
       { image: `https://picsum.photos/seed/1/800/600?grayscale`, text: 'Bridge' },
       { image: `https://picsum.photos/seed/2/800/600?grayscale`, text: 'Desk Setup' },
@@ -401,6 +412,7 @@ class App {
       width: this.container.clientWidth,
       height: this.container.clientHeight
     };
+    if (!this.renderer) return;
     this.renderer.setSize(this.screen.width, this.screen.height);
     this.camera.perspective({
       aspect: this.screen.width / this.screen.height
@@ -414,6 +426,7 @@ class App {
     }
   }
   update() {
+    if (!this.renderer || !this.gl) return;
     this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
     const direction = this.scroll.current > this.scroll.last ? 'right' : 'left';
     if (this.medias) {
@@ -449,6 +462,11 @@ class App {
     }
     if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
       this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas);
+    }
+    // Explicitly lose context to free up resources
+    if (this.gl && this.gl.getExtension) {
+      const ext = this.gl.getExtension('WEBGL_lose_context');
+      if (ext) ext.loseContext();
     }
   }
 }

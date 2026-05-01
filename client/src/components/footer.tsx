@@ -47,11 +47,16 @@ export function Footer() {
         >
           {/* Brand - Span 2 */}
           <motion.div variants={itemVariants} className="col-span-2">
-            <a href="#" className="flex items-center gap-0 mb-8 group transition-transform active:scale-95">
-              <span className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
-                upsell
-              </span>
-              <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">.ai</span>
+            <a href="#" className="flex items-center gap-3 mb-8 group transition-transform active:scale-95">
+              <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-cyan-500/10">
+                <img src="/logo.png" alt="Upsell.ai" className="h-full w-full object-cover" />
+              </div>
+              <div className="flex items-center">
+                <span className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
+                  upsell
+                </span>
+                <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">.ai</span>
+              </div>
             </a>
             <p className="text-base md:text-lg font-normal leading-relaxed text-black/50 dark:text-white/50 max-w-[320px] mb-10">
               Architecting the next generation of post-purchase revenue infrastructure for global e-commerce.
