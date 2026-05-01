@@ -1,5 +1,5 @@
-import { ShoppingBag, Globe, Smartphone, Layers, Database, Terminal, ArrowRight, Code2 } from "lucide-react"
-import { motion, Variants } from "framer-motion"
+import { ArrowRight, Code2, Database, Terminal } from "lucide-react"
+import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import CircularGallery from "@/components/ui/CircularGallery"
 
@@ -31,33 +31,6 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
 }
 
 
-const platforms = [
-  { name: "Shopify", icon: ShoppingBag, category: "E-Commerce" },
-  { name: "WooCommerce", icon: Globe, category: "E-Commerce" },
-  { name: "Magento", icon: Layers, category: "E-Commerce" },
-  { name: "BigCommerce", icon: ShoppingBag, category: "E-Commerce" },
-  { name: "Custom SDK", icon: Smartphone, category: "Developer" },
-  { name: "REST API", icon: Terminal, category: "Developer" },
-]
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-}
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-  },
-}
 
 export function Integrations() {
   return (

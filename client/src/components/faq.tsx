@@ -122,7 +122,7 @@ export function FAQ() {
         style={{ height: '380px', position: 'relative', width: '100%' }}
       >
         <FlowingMenu
-          items={faqItems}
+          items={faqItems as any}
           speed={12}
           textColor={isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"}
           bgColor="transparent"
