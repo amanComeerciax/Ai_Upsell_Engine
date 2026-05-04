@@ -27,7 +27,7 @@ export const CardStack = ({
         newArray.unshift(newArray.pop()!);
         return newArray;
       });
-    }, 5000);
+    }, 1500);
 
     return () => clearInterval(interval);
   }, []);

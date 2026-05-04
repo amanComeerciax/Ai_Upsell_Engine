@@ -32,7 +32,7 @@ function FlowingMenu({
   );
 }
 
-function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marqueeTextColor, borderColor }) {
+function MenuItem({ link, text, answer, image, speed, textColor, marqueeBgColor, marqueeTextColor, borderColor }) {
   const itemRef = useRef(null);
   const marqueeRef = useRef(null);
   const marqueeInnerRef = useRef(null);
@@ -70,7 +70,7 @@ function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marquee
     calculateRepetitions();
     window.addEventListener('resize', calculateRepetitions);
     return () => window.removeEventListener('resize', calculateRepetitions);
-  }, [text, image]);
+  }, [text, answer, image]);
 
   useEffect(() => {
     const setupMarquee = () => {
@@ -102,7 +102,7 @@ function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marquee
         animationRef.current.kill();
       }
     };
-  }, [text, image, repetitions, speed]);
+  }, [text, answer, image, repetitions, speed]);
 
   const handleMouseEnter = ev => {
     if (!itemRef.current || !marqueeRef.current || !marqueeInnerRef.current) return;
@@ -135,7 +135,7 @@ function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marquee
     <div className="menu__item" ref={itemRef} style={{ borderColor }}>
       <a
         className="menu__item-link"
-        href={link}
+        href={link || '#'}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         style={{ color: textColor }}
@@ -147,7 +147,8 @@ function MenuItem({ link, text, image, speed, textColor, marqueeBgColor, marquee
           <div className="marquee__inner" ref={marqueeInnerRef} aria-hidden="true">
             {[...Array(repetitions)].map((_, idx) => (
               <div className="marquee__part" key={idx} style={{ color: marqueeTextColor }}>
-                <span>{text}</span>
+                {/* Use 'answer' here if it exists, otherwise fallback to 'text' */}
+                <span className="text-xl md:text-3xl font-medium px-8">{answer || text}</span>
                 <div className="marquee__img" style={{ backgroundImage: `url(${image})` }} />
               </div>
             ))}

@@ -1,6 +1,7 @@
 import { Check, Star, Zap, ArrowRight } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { OriginButton } from "@/components/ui/OriginButton"
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -115,19 +116,19 @@ export function Pricing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
-          className="text-center max-w-4xl mx-auto mb-20 md:mb-28"
+          className="text-center max-w-6xl mx-auto mb-20 md:mb-28"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-md px-4 py-2 mb-8">
             <Star className="h-3.5 w-3.5 text-blue-600 dark:text-blue-500" />
             <span className="text-[10px] sm:text-xs font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Pricing Models</span>
           </div>
-          <h2 className="flex flex-col items-center leading-[0.85] tracking-tighter w-full px-2">
-            <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium text-black dark:text-white max-w-full">
+          <h2 className="flex flex-col items-center justify-center text-center leading-[1.1] tracking-tighter w-full px-2">
+            <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium text-black dark:text-white max-w-full text-center">
               Built for
-            </span>
-            <span className="mt-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold pb-2 max-w-full">
+            </div>
+            <div className="mt-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold pb-2 max-w-full text-center">
               <ShinyText text="Scale, Not Just Software." className="text-wrap sm:text-nowrap" />
-            </span>
+            </div>
           </h2>
           <p className="mt-8 text-base md:text-lg text-black/60 dark:text-white/60 font-normal leading-relaxed max-w-2xl mx-auto">
             Choose the infrastructure tier that fits your growth velocity. All plans include our core AI engine with deterministic attribution logic.
@@ -218,17 +219,18 @@ export function Pricing() {
                 ))}
               </ul>
 
-              <button
+              <OriginButton
                 className={cn(
-                  "group flex items-center justify-center gap-3 h-14 md:h-16 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 shadow-lg",
+                  "group gap-3 w-full h-14 md:h-16 rounded-full text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 shadow-lg",
                   tier.highlighted
-                    ? "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-blue-500/25"
-                    : "bg-black dark:bg-white text-slate-50 dark:text-black hover:bg-black/90 dark:hover:bg-white/90"
+                    ? "bg-blue-600 text-white"
+                    : "bg-black dark:bg-white text-slate-50 dark:text-black"
                 )}
+                hoverColor={tier.highlighted ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.12)'}
               >
                 {tier.cta}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </button>
+              </OriginButton>
             </motion.div>
           ))}
         </motion.div>

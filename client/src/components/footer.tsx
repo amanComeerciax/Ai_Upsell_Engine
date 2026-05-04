@@ -49,7 +49,7 @@ export function Footer() {
           <motion.div variants={itemVariants} className="col-span-2">
             <a href="#" className="flex items-center gap-3 mb-8 group transition-transform active:scale-95">
               <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-cyan-500/10">
-                <img src="/logo.png" alt="Upsell.ai" className="h-full w-full object-cover" />
+                <img src="/logo-icon.png" alt="Upsell.ai" className="h-full w-full object-cover" />
               </div>
               <div className="flex items-center">
                 <span className="text-2xl font-extrabold tracking-tight text-black dark:text-white">

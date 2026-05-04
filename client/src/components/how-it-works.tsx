@@ -1,5 +1,6 @@
 import { ShoppingCart, Cpu, Gift, BarChart3, CheckCircle2 } from "lucide-react"
-import { motion, Variants } from "framer-motion"
+import { motion } from "framer-motion"
+import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import Stack from "@/components/ui/Stack"
 
@@ -31,10 +32,10 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
 }
 
 const stackImages = [
-  "/features/ai-engine.png",
-  "/features/integrations.png",
-  "/features/workflows.png",
-  "/features/roi-lift.png",
+  "/stack/step1.png",
+  "/stack/step2.png",
+  "/stack/step3.png",
+  "/stack/step4.png",
 ]
 
 const steps = [
@@ -68,26 +69,45 @@ const steps = [
   },
 ]
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-    },
-  },
-}
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, x: 20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-}
 
 export function HowItWorks() {
+  // Memoize cards so JSX nodes are stable — prevents Stack from resetting on every re-render
+  const stackCards = useMemo(() => steps.map((step, i) => (
+    <div key={step.number} className="relative w-full h-full rounded-[32px] overflow-hidden shadow-2xl group border border-white/10 dark:border-white/5 bg-black">
+      {/* Background Image */}
+      <img
+        src={stackImages[i]}
+        alt={step.title}
+        className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105"
+        draggable={false}
+      />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
+      {/* Content */}
+      <div className="absolute inset-x-0 bottom-0 p-6 md:p-10 flex flex-col justify-end">
+        <div className="flex items-center gap-4 mb-5 md:mb-6">
+          <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-blue-500/20 backdrop-blur-xl border border-blue-400/30 flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-inner">
+            {step.number}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {step.tags.map(tag => (
+              <span key={tag} className="text-[10px] md:text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-white border border-white/20">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mb-3 md:mb-4">
+          <step.icon className="h-6 w-6 md:h-8 md:w-8 text-blue-400" />
+          <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{step.title}</h3>
+        </div>
+        <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-2xl font-medium">
+          {step.description}
+        </p>
+      </div>
+    </div>
+  )), [])
+
   return (
     <section id="how-it-works" className="relative py-24 md:py-40 bg-[#fafafa] dark:bg-black font-['Inter',sans-serif] overflow-hidden selection:bg-blue-500/30">
       {/* Background Section Transition Glow */}
@@ -98,9 +118,9 @@ export function HowItWorks() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center lg:items-start">
           {/* Sticky Left Sidebar */}
-          <div className="lg:col-span-4 lg:sticky lg:top-40">
+          <div className="lg:col-span-5 lg:sticky lg:top-40">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -135,82 +155,29 @@ export function HowItWorks() {
                   </div>
                 ))}
               </div>
-
-              {/* Stack Card Gallery */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="hidden lg:block"
-              >
-                <div style={{ width: 280, height: 280 }}>
-                  <Stack
-                    randomRotation={true}
-                    sensitivity={180}
-                    sendToBackOnClick={true}
-                    autoplay={true}
-                    autoplayDelay={3000}
-                    pauseOnHover={true}
-                    cards={stackImages.map((src, i) => (
-                      <img
-                        key={i}
-                        src={src}
-                        alt={`workflow-${i + 1}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '1rem' }}
-                      />
-                    )) as any}
-                  />
-                </div>
-              </motion.div>
             </motion.div>
           </div>
 
-          {/* Right Process Column */}
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="lg:col-span-8 flex flex-col gap-6"
-          >
-            {steps.map((step, idx) => (
-              <motion.div 
-                key={step.number}
-                variants={itemVariants} 
-                className="group relative flex flex-col md:flex-row gap-8 p-10 rounded-[32px] md:rounded-[40px] border border-black/5 dark:border-white/5 bg-white dark:bg-white/[0.02] shadow-sm transition-all duration-500 hover:border-black/10 dark:hover:border-white/20 hover:bg-black/[0.01] dark:hover:bg-white/[0.04] hover:shadow-2xl hover:shadow-black/5 dark:hover:shadow-white/5"
-              >
-                {/* Step Number Badge */}
-                <div className="flex-shrink-0">
-                  <div className="h-16 w-16 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 flex items-center justify-center text-2xl font-medium tracking-tight text-black dark:text-white group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-all duration-300 shadow-inner">
-                    {step.number}
-                  </div>
-                </div>
-
-                <div className="flex-grow">
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {step.tags.map(tag => (
-                      <span key={tag} className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 border border-black/5 dark:border-white/5">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <step.icon className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-                    <h3 className="text-2xl font-medium tracking-tight text-black dark:text-white">{step.title}</h3>
-                  </div>
-                  <p className="text-base md:text-lg text-black/50 dark:text-white/50 leading-relaxed max-w-2xl font-normal">
-                    {step.description}
-                  </p>
-                </div>
-
-                {/* Decorative Step Joiner Line */}
-                {idx !== steps.length - 1 && (
-                  <div className="hidden lg:block absolute -bottom-6 left-1/2 -translate-x-1/2 h-6 w-px bg-gradient-to-b from-black/20 dark:from-white/20 to-transparent" />
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
+          {/* Right Process Column - Interactive Stack */}
+          <div className="lg:col-span-7 flex justify-center w-full">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="w-full max-w-[600px] h-[450px] md:h-[600px] relative perspective-1000"
+            >
+              <Stack
+                randomRotation={true}
+                sensitivity={180}
+                sendToBackOnClick={true}
+                autoplay={true}
+                autoplayDelay={4000}
+                pauseOnHover={true}
+                cards={stackCards}
+              />
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>

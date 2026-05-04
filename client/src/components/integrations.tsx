@@ -2,6 +2,7 @@ import { ArrowRight, Code2, Database, Terminal } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import CircularGallery from "@/components/ui/CircularGallery"
+import { OriginButton } from "@/components/ui/OriginButton"
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -113,13 +114,19 @@ export function Integrations() {
                 Build custom post-purchase flows with our lightweight SDK. Fully typed, platform-agnostic, and optimized for sub-10ms response times.
               </p>
               <div className="flex flex-wrap gap-4">
-                <button className="group flex items-center gap-3 px-8 py-4 bg-black dark:bg-white text-slate-50 dark:text-black rounded-full font-semibold text-sm transition-all duration-300 active:scale-95 shadow-lg hover:shadow-blue-500/20">
+                <OriginButton
+                  className="group gap-3 px-8 py-4 bg-black dark:bg-white text-slate-50 dark:text-black rounded-full font-semibold text-sm transition-all duration-300 active:scale-95 shadow-lg"
+                  hoverColor="rgba(255,255,255,0.15)"
+                >
                   Read Documentation
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </button>
-                <button className="px-8 py-4 border border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 rounded-full font-semibold text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                </OriginButton>
+                <OriginButton
+                  className="px-8 py-4 border border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 rounded-full font-semibold text-sm"
+                  hoverColor="rgba(0,0,0,0.05)"
+                >
                   Request API Key
-                </button>
+                </OriginButton>
               </div>
             </div>
 

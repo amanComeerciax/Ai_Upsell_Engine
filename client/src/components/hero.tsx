@@ -1,5 +1,6 @@
 import { ArrowRight, Zap, Shield, Cpu } from "lucide-react"
 import { Link } from "react-router-dom"
+import { OriginButton } from "@/components/ui/OriginButton"
 
 
 function ShinyText({ text, className = "" }: { text: string; className?: string }) {
@@ -78,12 +79,15 @@ export function Hero() {
           {/* CTA Button */}
           <div className="mt-12 sm:mt-16">
             <Link to="/signup">
-              <button className="group flex items-center justify-center gap-3 rounded-full bg-black hover:bg-gray-900 dark:bg-white dark:hover:bg-gray-200 px-6 py-3 md:px-8 md:py-4 transition-all duration-300">
+              <OriginButton
+                className="group gap-3 rounded-full bg-black dark:bg-white px-6 py-3 md:px-8 md:py-4 transition-all duration-300"
+                hoverColor="rgba(255,255,255,0.15)"
+              >
                 <span className="text-sm md:text-base font-semibold text-slate-50 dark:text-black">
                   Get Started Now
                 </span>
                 <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-slate-50 dark:text-black transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
+              </OriginButton>
             </Link>
           </div>
         </div>

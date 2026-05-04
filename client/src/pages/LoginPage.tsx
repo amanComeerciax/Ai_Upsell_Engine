@@ -1,9 +1,23 @@
 import { SignIn } from '@clerk/clerk-react'
 import { Zap } from 'lucide-react'
+import { useEffect } from 'react'
+
+const FONT_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
+
 
 export default function LoginPage() {
+    useEffect(() => {
+        if (!document.getElementById('login-fonts')) {
+            const link = document.createElement('link')
+            link.id = 'login-fonts'
+            link.rel = 'stylesheet'
+            link.href = FONT_URL
+            document.head.appendChild(link)
+        }
+    }, [])
+
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-[#030303] relative overflow-hidden font-sans">
+        <div className="min-h-screen w-full flex items-center justify-center bg-[#030303] relative overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
             {/* Background Aesthetics */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
@@ -11,17 +25,9 @@ export default function LoginPage() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center gap-8">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 mb-2 animate-bounce">
-                        <Zap className="h-7 w-7 text-white fill-current" />
-                    </div>
-                    <div className="text-center">
-                        <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Access Core</h1>
-                        <p className="text-white/40 font-medium uppercase tracking-[0.2em] text-[10px] mt-2">Initialize secure session</p>
-                    </div>
-                </div>
 
-                <div className="w-full max-w-[440px] glass-morphism rounded-[32px] overflow-hide border border-white/5 shadow-2xl relative">
+
+
                     <SignIn
                         routing="path"
                         path="/login"
@@ -36,12 +42,13 @@ export default function LoginPage() {
                                 colorInputBackground: 'rgba(255,255,255,0.02)',
                                 colorInputText: 'white',
                                 borderRadius: '12px',
+                                fontFamily: "'Inter', system-ui, sans-serif",
                             },
                             elements: {
                                 rootBox: 'w-full',
-                                card: 'bg-transparent shadow-none border-none p-4 sm:p-8',
-                                headerTitle: 'hidden',
-                                headerSubtitle: 'hidden',
+                                card: 'bg-[#0d0d1a] border border-white/10 shadow-2xl rounded-3xl p-6 sm:p-10',
+                                headerTitle: 'block text-white text-2xl font-bold font-inter',
+                                headerSubtitle: 'block text-white/40 text-sm font-inter',
                                 formButtonPrimary: 'bg-white text-black hover:bg-white/90 font-bold uppercase tracking-widest text-[11px] h-12 rounded-xl transition-all active:scale-95 shadow-lg shadow-white/5',
                                 socialButtonsBlockButton: 'bg-white/[0.03] border-white/[0.05] hover:bg-white/[0.08] text-white rounded-xl h-12 font-bold uppercase tracking-widest text-[10px] transition-all',
                                 socialButtonsBlockButtonText: 'text-white font-bold',
@@ -62,7 +69,6 @@ export default function LoginPage() {
                             }
                         }}
                     />
-                </div>
             </div>
 
             {/* Bottom Footer Info */}
