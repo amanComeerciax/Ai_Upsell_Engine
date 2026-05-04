@@ -70,40 +70,7 @@ const MemoizedSignUp = memo(function MemoizedSignUpWrapper(props: React.Componen
     return <SignUp {...props} />
 });
 
-const clerkAppearance = {
-    variables: {
-        colorPrimary: '#6366f1',
-        colorBackground: '#0d0d1a',
-        colorText: 'white',
-        colorTextSecondary: 'rgba(255,255,255,0.4)',
-        colorInputBackground: 'rgba(255,255,255,0.02)',
-        colorInputText: 'white',
-        borderRadius: '12px',
-        fontFamily: "'Inter', system-ui, sans-serif",
-    },
-    elements: {
-        rootBox: 'w-full',
-        card: 'bg-[#0d0d1a] border border-white/10 shadow-2xl rounded-3xl p-6 sm:p-10',
-        headerTitle: 'block text-white text-2xl font-bold font-inter',
-        headerSubtitle: 'block text-white/40 text-sm font-inter',
-        formButtonPrimary: 'bg-white text-black hover:bg-white/90 font-bold uppercase tracking-widest text-[11px] h-12 rounded-xl transition-all active:scale-95 shadow-lg shadow-white/5',
-        socialButtonsBlockButton: 'bg-white/[0.03] border-white/[0.05] hover:bg-white/[0.08] text-white rounded-xl h-12 font-bold uppercase tracking-widest text-[10px] transition-all',
-        socialButtonsBlockButtonText: 'text-white font-bold',
-        formFieldLabel: 'text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2',
-        formFieldInput: 'bg-white/[0.03] border-white/[0.05] text-white rounded-xl h-12 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all px-4',
-        footerActionText: 'text-white/40 font-bold uppercase tracking-widest text-[9px]',
-        footerActionLink: 'text-blue-500 hover:text-blue-400 font-extrabold transition-colors ml-1',
-        dividerRow: 'opacity-20',
-        dividerText: 'text-[9px] font-black uppercase tracking-[0.3em] text-white/20',
-        footer: 'bg-transparent pt-0',
-        identityPreviewText: 'text-white',
-        identityPreviewEditButtonIcon: 'text-white',
-        alternativeMethodsBlockButton: 'text-white font-bold',
-        otpCodeFieldInput: 'bg-white/[0.03] border-white/[0.05] text-white rounded-xl h-12 focus:ring-blue-500/50',
-        formResendCodeLink: 'text-blue-500 font-bold',
-        clButton: 'text-white',
-    }
-}
+
 
 /* ─── Main Page ───────────────────────────────────────────────────────────── */
 export default function SignUpPage() {
