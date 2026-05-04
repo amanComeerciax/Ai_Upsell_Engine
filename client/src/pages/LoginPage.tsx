@@ -1,5 +1,4 @@
 import { SignIn } from '@clerk/clerk-react'
-import { Zap } from 'lucide-react'
 import { useEffect } from 'react'
 
 const FONT_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
