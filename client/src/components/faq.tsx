@@ -33,37 +33,37 @@ function ShinyText({ text, className = "" }: { text: string; className?: string 
 
 const faqItems = [
   {
-    link: '#',
+    link: '#faq',
     text: 'What is upsell.ai?',
     image: '/faq/what-is.png',
     answer: 'Upsell.ai is an advanced machine learning engine that automatically analyzes customer behavior to deploy personalized, high-converting post-purchase offers in real-time. It transforms static thank-you pages into dynamic revenue streams.',
   },
   {
-    link: '#',
+    link: '#faq',
     text: 'How does the AI engine work?',
     image: '/faq/ai-engine.png',
     answer: 'Our engine processes over 200 behavioral signals—including cart contents, browsing history, and demographics—using deterministic logic and neural networks. It calculates the optimal product recommendation and price point in under 10 milliseconds.',
   },
   {
-    link: '#',
+    link: '#faq',
     text: 'Which platforms are supported?',
     image: '/faq/platforms.png',
     answer: 'We offer native, one-click integrations for Shopify, WooCommerce, Magento, and BigCommerce. We also provide a robust, low-latency REST API for custom headless commerce architectures.',
   },
   {
-    link: '#',
+    link: '#faq',
     text: 'What kind of ROI can I expect?',
     image: '/faq/roi.png',
     answer: 'On average, merchants experience a 32% lift in post-purchase revenue within the first 30 days of deployment. Our built-in attribution dashboard tracks every dollar generated with deterministic accuracy so you can verify the ROI instantly.',
   },
   {
-    link: '#',
+    link: '#faq',
     text: 'Is there a free trial?',
     image: '/faq/trial.png',
     answer: 'Yes, we offer a 14-day risk-free trial. You can fully integrate the engine, run it in production, and see the direct revenue impact on your store before making any financial commitment.',
   },
   {
-    link: '#',
+    link: '#faq',
     text: 'How fast is the setup?',
     image: '/faq/setup.png',
     answer: 'Installation takes less than 5 minutes for supported platforms. The AI begins learning immediately upon installation and typically reaches peak optimization within 48 to 72 hours of data collection.',

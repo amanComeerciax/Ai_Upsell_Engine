@@ -65,6 +65,46 @@ function Overlay({ style }: { style: React.CSSProperties }) {
     return <div style={{ position: 'absolute', pointerEvents: 'none', zIndex: 2, ...style }} />
 }
 
+/* ── Clerk appearance (shared) ── */
+const MemoizedSignUp = memo(function MemoizedSignUpWrapper(props: React.ComponentProps<typeof SignUp>) {
+    return <SignUp {...props} />
+});
+
+const clerkAppearance = {
+    variables: {
+        colorPrimary: '#6366f1',
+        colorBackground: '#0d0d1a',
+        colorText: 'white',
+        colorTextSecondary: 'rgba(255,255,255,0.4)',
+        colorInputBackground: 'rgba(255,255,255,0.02)',
+        colorInputText: 'white',
+        borderRadius: '12px',
+        fontFamily: "'Inter', system-ui, sans-serif",
+    },
+    elements: {
+        rootBox: 'w-full',
+        card: 'bg-[#0d0d1a] border border-white/10 shadow-2xl rounded-3xl p-6 sm:p-10',
+        headerTitle: 'block text-white text-2xl font-bold font-inter',
+        headerSubtitle: 'block text-white/40 text-sm font-inter',
+        formButtonPrimary: 'bg-white text-black hover:bg-white/90 font-bold uppercase tracking-widest text-[11px] h-12 rounded-xl transition-all active:scale-95 shadow-lg shadow-white/5',
+        socialButtonsBlockButton: 'bg-white/[0.03] border-white/[0.05] hover:bg-white/[0.08] text-white rounded-xl h-12 font-bold uppercase tracking-widest text-[10px] transition-all',
+        socialButtonsBlockButtonText: 'text-white font-bold',
+        formFieldLabel: 'text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2',
+        formFieldInput: 'bg-white/[0.03] border-white/[0.05] text-white rounded-xl h-12 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all px-4',
+        footerActionText: 'text-white/40 font-bold uppercase tracking-widest text-[9px]',
+        footerActionLink: 'text-blue-500 hover:text-blue-400 font-extrabold transition-colors ml-1',
+        dividerRow: 'opacity-20',
+        dividerText: 'text-[9px] font-black uppercase tracking-[0.3em] text-white/20',
+        footer: 'bg-transparent pt-0',
+        identityPreviewText: 'text-white',
+        identityPreviewEditButtonIcon: 'text-white',
+        alternativeMethodsBlockButton: 'text-white font-bold',
+        otpCodeFieldInput: 'bg-white/[0.03] border-white/[0.05] text-white rounded-xl h-12 focus:ring-blue-500/50',
+        formResendCodeLink: 'text-blue-500 font-bold',
+        clButton: 'text-white',
+    }
+}
+
 /* ─── Main Page ───────────────────────────────────────────────────────────── */
 export default function SignUpPage() {
     const isMobile = useIsMobile()
@@ -136,7 +176,7 @@ export default function SignUpPage() {
             fontFamily: "'Inter', system-ui, sans-serif",
         },
         elements: {
-            rootBox: { width: '100%', maxWidth: '100%', boxSizing: 'border-box' as const, overflow: 'hidden' },
+            rootBox: { width: '100%', maxWidth: '100%', boxSizing: 'border-box' as const },
 
             headerTitle:    { display: 'block', color: 'white', fontSize: '28px', fontWeight: 800, fontFamily: "'Inter', sans-serif" },
             headerSubtitle: { display: 'block', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: "'Inter', sans-serif" },
@@ -272,7 +312,6 @@ export default function SignUpPage() {
                     </p>
                 </div>
 
-                {/* ── BOTTOM: Form, scrollable ── */}
                 <div style={{
                     flex: 1,
                     display: 'flex',
@@ -293,22 +332,15 @@ export default function SignUpPage() {
                         pointerEvents: 'none',
                     }} />
 
-                        <SignUp
+                    <div style={{ width: '100%', maxWidth: '440px' }}>
+                        <MemoizedSignUp
                             routing="path"
                             path="/signup"
                             signInUrl="/login"
                             fallbackRedirectUrl="/dashboard"
                             appearance={clerkAppearance}
                         />
-
-                    <p style={{
-                        marginTop: '20px', color: 'rgba(255,255,255,0.1)',
-                        fontSize: '9px', fontWeight: 500,
-                        letterSpacing: '0.3em', textTransform: 'uppercase', textAlign: 'center',
-                        fontFamily: "'Inter', sans-serif",
-                    }}>
-                        Velocity Secure Node © MMXXVI
-                    </p>
+                    </div>
                 </div>
             </div>
             </>
@@ -385,13 +417,15 @@ export default function SignUpPage() {
                 <div style={{ position: 'absolute', top: '-5%', right: '-5%', width: '55%', height: '55%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
                 <div style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '45%', height: '45%', background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
 
-                <SignUp
-                    routing="path"
-                    path="/signup"
-                    signInUrl="/login"
-                    fallbackRedirectUrl="/dashboard"
-                    appearance={clerkAppearance}
-                />
+                <div style={{ width: '100%', maxWidth: '440px' }}>
+                    <MemoizedSignUp
+                        routing="path"
+                        path="/signup"
+                        signInUrl="/login"
+                        fallbackRedirectUrl="/dashboard"
+                        appearance={clerkAppearance}
+                    />
+                </div>
             </div>
         </div>
     )

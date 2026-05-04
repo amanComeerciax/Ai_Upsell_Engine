@@ -27,13 +27,13 @@ export const CardStack = ({
         newArray.unshift(newArray.pop()!);
         return newArray;
       });
-    }, 1500);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="relative h-[500px] w-full md:h-[650px] max-w-6xl mx-auto flex items-center justify-center">
+    <div className="relative h-[650px] w-full md:h-[650px] max-w-6xl mx-auto flex items-center justify-center">
       <AnimatePresence>
         {cards.map((card, index) => {
           return (
@@ -56,15 +56,15 @@ export const CardStack = ({
               }}
             >
               {/* Left Content Area */}
-              <div className="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-between relative z-10 bg-white dark:bg-black">
+              <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-between relative z-10 bg-white dark:bg-black overflow-hidden">
                 <div className="space-y-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
                     <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{card.designation}</span>
                   </div>
-                  <h3 className="text-3xl md:text-5xl font-bold text-black dark:text-white tracking-tighter leading-none">
+                  <h3 className="text-2xl md:text-5xl font-bold text-black dark:text-white tracking-tighter leading-none">
                     {card.name}
                   </h3>
-                  <div className="text-lg md:text-xl text-black/60 dark:text-white/60 font-medium leading-relaxed max-w-sm">
+                  <div className="text-base md:text-xl text-black/60 dark:text-white/60 font-medium leading-relaxed max-w-sm">
                     {card.content}
                   </div>
                 </div>
@@ -76,21 +76,16 @@ export const CardStack = ({
               </div>
 
               {/* Right Image Area */}
-              <div className="w-full md:w-1/2 h-64 md:h-full relative bg-[#0a0a0b]">
+              <div className="w-full md:w-1/2 h-80 md:h-full relative bg-[#0a0a0b] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black via-transparent to-transparent z-10" />
                 {card.image && (
                   <img 
                     src={card.image} 
                     alt={card.name} 
-                    className="w-full h-full object-cover opacity-100"
+                    className="w-full h-full object-contain md:object-cover opacity-90 md:opacity-100 p-6 md:p-0"
                   />
                 )}
-                {/* Decorative Elements */}
-                <div className="absolute bottom-10 right-10 z-20 flex gap-2">
-                   <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                   <div className="h-2 w-2 rounded-full bg-blue-500/40" />
-                   <div className="h-2 w-2 rounded-full bg-blue-500/20" />
-                </div>
+
               </div>
             </motion.div>
           );

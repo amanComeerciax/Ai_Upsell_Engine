@@ -99,10 +99,10 @@ export function Features() {
             <span className="text-[10px] sm:text-xs font-bold text-black/60 dark:text-white/60 uppercase tracking-wider">Engine Capabilities</span>
           </div>
           <h2 className="flex flex-col items-center leading-[0.85] tracking-tighter w-full px-2">
-            <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium text-black dark:text-white max-w-full">
+            <span className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-medium text-black dark:text-white max-w-full">
               Maximize Revenue
             </span>
-            <span className="mt-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold pb-2 max-w-full relative">
+            <span className="mt-2 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold pb-2 max-w-full relative">
               <ShinyText text="With Precision AI." className="text-wrap sm:text-nowrap" />
             </span>
           </h2>
