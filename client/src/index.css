@@ -50,31 +50,31 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 0 0% 0%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 6.9%;
+    --card: 0 0% 3%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 0 0% 0%;
     --popover-foreground: 210 40% 98%;
     --primary: 189 95% 43%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 0 0% 7%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 0 0% 7%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 0 0% 7%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 0 0% 10%;
+    --input: 0 0% 10%;
     --ring: 189 95% 43%;
 
-    /* Dark glassmorphism tokens - softer for deep navy */
-    --glass-bg: rgba(15, 23, 42, 0.7);
-    --glass-bg-strong: rgba(15, 23, 42, 0.9);
+    /* Dark glassmorphism tokens - pure black base */
+    --glass-bg: rgba(0, 0, 0, 0.7);
+    --glass-bg-strong: rgba(0, 0, 0, 0.9);
     --glass-border: rgba(255, 255, 255, 0.05);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -98,7 +98,7 @@
 
 /* Dark Gradient Background (kept as black but can be adjusted) */
 .dark .pastel-gradient-bg {
-  background: #020617;
+  background: #000000;
 }
 
 /* Modern Card */
@@ -324,35 +324,35 @@
 
 /* Backgrounds */
 .dark .bg-white {
-  background-color: #0f172a !important;
+  background-color: #000000 !important;
 }
 
 .dark .bg-white\/80 {
-  background-color: rgba(15, 23, 42, 0.8) !important;
+  background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
 .dark .bg-white\/60 {
-  background-color: rgba(15, 23, 42, 0.6) !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
 }
 
 .dark .bg-gray-50, .dark .bg-slate-50 {
-  background-color: rgba(30, 41, 59, 0.5) !important;
+  background-color: rgba(10, 10, 10, 0.5) !important;
 }
 
 .dark .bg-gray-50\/80, .dark .bg-slate-50\/80 {
-  background-color: rgba(30, 41, 59, 0.4) !important;
+  background-color: rgba(10, 10, 10, 0.4) !important;
 }
 
 .dark .bg-gray-50\/50, .dark .bg-slate-50\/50 {
-  background-color: rgba(30, 41, 59, 0.3) !important;
+  background-color: rgba(10, 10, 10, 0.3) !important;
 }
 
 .dark .bg-gray-100, .dark .bg-slate-100 {
-  background-color: rgba(30, 41, 59, 0.8) !important;
+  background-color: rgba(15, 15, 15, 0.8) !important;
 }
 
 .dark .bg-gray-900, .dark .bg-slate-900 {
-  background-color: #020617 !important;
+  background-color: #000000 !important;
 }
 
 /* Borders */

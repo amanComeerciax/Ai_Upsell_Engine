@@ -105,10 +105,10 @@ export function Pricing() {
       <div className="absolute top-0 inset-x-0 flex justify-center z-0">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
         <div className="absolute top-0 w-1/2 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent blur-[1px]" />
-        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-white/5 rounded-[100%] blur-[120px] pointer-events-none" />
       </div>
 
-      <div className="absolute top-40 right-0 h-[600px] w-[600px] bg-blue-500/[0.02] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-40 right-0 h-[600px] w-[600px] bg-white/[0.01] rounded-full blur-[140px] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div

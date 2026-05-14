@@ -49,7 +49,7 @@ export function Integrations() {
       <div className="absolute top-0 inset-x-0 flex justify-center z-0">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
         <div className="absolute top-0 w-1/2 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent blur-[1px]" />
-        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-white/5 rounded-[100%] blur-[120px] pointer-events-none" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
@@ -97,7 +97,7 @@ export function Integrations() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const }}
-          className="mt-20 p-8 md:p-12 rounded-[40px] border border-blue-500/10 bg-blue-500/[0.02] dark:bg-blue-500/[0.03] relative overflow-hidden group/sdk"
+          className="mt-20 p-8 md:p-12 rounded-[40px] border border-white/5 bg-white/[0.01] dark:bg-white/[0.02] relative overflow-hidden group/sdk"
         >
           <div className="absolute top-0 right-0 p-12 text-blue-500/[0.03] dark:text-blue-500/[0.05] pointer-events-none transition-transform duration-1000 group-hover/sdk:scale-110">
             <Terminal className="h-64 w-64 rotate-12" />

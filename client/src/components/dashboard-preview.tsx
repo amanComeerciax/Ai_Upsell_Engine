@@ -172,10 +172,10 @@ export function DashboardPreview() {
       <div className="absolute top-0 inset-x-0 flex justify-center z-0">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
         <div className="absolute top-0 w-1/2 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent blur-[1px]" />
-        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-200px] w-[800px] h-[400px] bg-white/5 rounded-[100%] blur-[120px] pointer-events-none" />
       </div>
 
-      <div className="absolute top-40 left-1/2 -translate-x-1/2 h-[500px] w-full max-w-[1200px] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-40 left-1/2 -translate-x-1/2 h-[500px] w-full max-w-[1200px] rounded-full bg-white/[0.02] blur-[120px] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div 
@@ -211,7 +211,7 @@ export function DashboardPreview() {
           className="relative rounded-[32px] md:rounded-[48px] border border-black/5 dark:border-white/10 bg-white dark:bg-black/40 p-4 md:p-10 shadow-2xl shadow-black/5 dark:shadow-white/5 overflow-hidden group/shell"
         >
           {/* Internal Decorative Glow */}
-          <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-blue-500/[0.03] dark:bg-blue-500/[0.05] blur-[100px] pointer-events-none" />
+          <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-white/[0.02] dark:bg-white/[0.03] blur-[100px] pointer-events-none" />
 
           {/* Top Bar / Navigation Mockup */}
           <motion.div variants={itemVariants} className="flex items-center justify-between mb-10 border-b border-black/5 dark:border-white/5 pb-6">
