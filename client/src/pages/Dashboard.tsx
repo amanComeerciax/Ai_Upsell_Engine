@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 import apiClient, { getCached } from '@/lib/api-client'
-import { useMerchant } from '@/contexts/MerchantContext'
+
 
 // Fallback chart data
 const salesChartData = [
@@ -166,7 +166,7 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
     const navigate = useNavigate()
-    const { merchant } = useMerchant()
+
     const [stats, setStats] = useState<any>(null)
     const [upsells, setUpsells] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
