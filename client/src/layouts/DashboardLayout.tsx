@@ -4,7 +4,7 @@ import { Sidebar } from '@/components/dashboard/Sidebar'
 import { DashboardHeader } from '@/components/dashboard/Header'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 import { useSocket } from '@/hooks/useSocket'
-import { cn } from '@/lib/utils'
+
 
 interface DashboardLayoutProps {
     children?: ReactNode

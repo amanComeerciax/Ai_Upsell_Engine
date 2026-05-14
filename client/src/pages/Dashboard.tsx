@@ -15,7 +15,7 @@ import {
     Cell,
 } from 'recharts'
 import {
-    ShoppingBag, Package, Loader2, Zap, Download, ChevronDown,
+    ShoppingBag, Package, Download, ChevronDown,
     MoreHorizontal, TrendingUp, ArrowUpRight, ArrowDownRight,
     Sparkles, Eye, MousePointerClick, Target, Activity,
     ExternalLink, Cpu, DollarSign, Users, ShoppingCart,
@@ -170,7 +170,7 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null)
     const [upsells, setUpsells] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-    const [simulating, setSimulating] = useState(false)
+
 
     const fetchDashboardData = async () => {
         try {
@@ -202,24 +202,7 @@ export default function DashboardPage() {
         }
     };
 
-    const handleSimulateOrder = async () => {
-        try {
-            setSimulating(true);
-            if (!merchant?.shopify_shop_name) { alert("Please connect your Shopify store in Settings first."); return; }
-            const productsRes = await apiClient.get('/products');
-            const realProduct = productsRes.data.find((p: any) => p.shopifyId);
-            if (!realProduct) { alert("Please sync products first."); return; }
-            await apiClient.post('/shopify/webhooks/orders/create', {
-                id: Math.floor(Math.random() * 1000000000),
-                email: "customer@example.com", total_price: "450.00",
-                customer: { first_name: "Aman", last_name: "Patel" },
-                line_items: [{ id: Math.floor(Math.random() * 1000000), product_id: realProduct.shopifyId, title: realProduct.name, quantity: 1, price: realProduct.price }]
-            }, { headers: { 'x-shopify-shop-domain': merchant.shopify_shop_name } });
-            await fetchDashboardData();
-            alert("Order Simulated! AI Recommendation generated.");
-        } catch (error) { console.error("Simulation failed:", error); alert("Simulation failed."); }
-        finally { setSimulating(false); }
-    }
+
 
     useEffect(() => { 
         fetchDashboardData(); 

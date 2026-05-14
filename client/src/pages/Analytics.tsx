@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react'
 import { 
-    Search, 
-    Bell, 
     BarChart3, 
     TrendingUp, 
     Sparkles, 
     Calendar, 
-    Filter, 
     ArrowUpRight, 
-    ChevronRight, 
-    ChevronLeft,
     Zap,
     Target,
     Eye,
