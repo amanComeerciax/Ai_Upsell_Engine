@@ -73,7 +73,7 @@
     /* Dark glassmorphism tokens - pure black base */
     --glass-bg: rgba(0, 0, 0, 0.7);
     --glass-bg-strong: rgba(0, 0, 0, 0.9);
-    --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.12);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
 }
@@ -311,15 +311,15 @@
 }
 
 .dark .text-slate-500, .dark .text-gray-500 {
-  color: #cbd5e1 !important; /* Slate 300 */
-}
-
-.dark .text-slate-400, .dark .text-gray-400 {
   color: #94a3b8 !important; /* Slate 400 */
 }
 
+.dark .text-slate-400, .dark .text-gray-400 {
+  color: #cbd5e1 !important; /* Slate 300 */
+}
+
 .dark .text-slate-300, .dark .text-gray-300 {
-  color: #64748b !important; /* Slate 500 */
+  color: #e2e8f0 !important; /* Slate 200 */
 }
 
 /* Backgrounds */
@@ -357,11 +357,11 @@
 
 /* Borders */
 .dark .border-gray-200, .dark .border-slate-200 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .dark .border-gray-100, .dark .border-slate-100 {
-  border-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]),

@@ -115,7 +115,7 @@ export default function CampaignsPage() {
             key: 'productName',
             header: 'Recommended',
             render: (row) => (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-cyan-50 text-[#06B6D4] text-xs font-semibold">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 text-[#06B6D4] text-xs font-semibold">
                     {row.productName}
                 </span>
             ),
@@ -124,7 +124,7 @@ export default function CampaignsPage() {
             key: 'discountPercent',
             header: 'Discount',
             render: (row) => (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-semibold">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
                     -{row.discountPercent}%
                 </span>
             ),
@@ -145,9 +145,9 @@ export default function CampaignsPage() {
             sortable: true,
             render: (row) => {
                 const colors: Record<string, string> = {
-                    active: 'bg-cyan-50 text-cyan-600',
-                    converted: 'bg-emerald-50 text-emerald-600',
-                    expired: 'bg-rose-50 text-rose-500',
+                    active: 'bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+                    converted: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+                    expired: 'bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400',
                 }
                 return (
                     <div className="flex flex-col gap-1">
@@ -182,8 +182,8 @@ export default function CampaignsPage() {
                         <Zap className="h-4 w-4 text-[#06B6D4]" />
                         <span className="text-xs font-semibold text-[#06B6D4]">Real-time Deployment</span>
                     </div>
-                    <p className="text-sm text-slate-400 mt-1 font-medium max-w-lg">
-                        Orchestrate and monitor your <span className="text-slate-700 font-semibold">AI-driven</span> upsell campaigns.
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1 font-medium max-w-lg">
+                        Orchestrate and monitor your <span className="text-slate-700 dark:text-slate-200 font-semibold">AI-driven</span> upsell campaigns.
                     </p>
                 </div>
                 <Button className="rounded-lg bg-[#06B6D4] hover:bg-[#0891B2] text-white text-xs font-semibold px-5 h-10 shadow-lg shadow-cyan-500/20">
@@ -233,12 +233,12 @@ export default function CampaignsPage() {
                             placeholder="Search by email or campaign ID..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-white border-slate-200 pl-10 h-10 rounded-lg text-sm focus-visible:ring-cyan-200"
+                            className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 pl-10 h-10 rounded-lg text-sm focus-visible:ring-cyan-200 dark:focus-visible:ring-cyan-900/30"
                         />
                     </div>
                     <div className="flex items-center gap-2">
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-36 bg-white border-slate-200 h-10 text-xs font-semibold rounded-lg">
+                            <SelectTrigger className="w-36 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 h-10 text-xs font-semibold rounded-lg">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent className="rounded-lg border-slate-200 bg-white shadow-lg">
@@ -248,8 +248,8 @@ export default function CampaignsPage() {
                                 <SelectItem value="expired" className="text-xs font-medium">Expired</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" className="h-10 w-10 border-slate-200 rounded-lg flex items-center justify-center p-0 hover:bg-cyan-50">
-                            <Filter className="h-4 w-4 text-slate-400" />
+                        <Button variant="outline" className="h-10 w-10 border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center p-0 hover:bg-cyan-50 dark:hover:bg-cyan-900/20">
+                            <Filter className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                         </Button>
                     </div>
                 </div>

@@ -185,14 +185,14 @@ export default function SettingsPage() {
 
             {/* Settings Tabs */}
             <Tabs defaultValue="integration" className="space-y-6">
-                <TabsList className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
-                    <TabsTrigger value="integration" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">
+                <TabsList className="bg-slate-100 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 p-1 rounded-xl">
+                    <TabsTrigger value="integration" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20 text-slate-600 dark:text-slate-400">
                         <Store className="h-3.5 w-3.5 mr-2" />
                         Shopify
                     </TabsTrigger>
-                    <TabsTrigger value="general" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">General</TabsTrigger>
-                    <TabsTrigger value="templates" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">Email Templates</TabsTrigger>
-                    <TabsTrigger value="ai" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">AI Configuration</TabsTrigger>
+                    <TabsTrigger value="general" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20 text-slate-600 dark:text-slate-400">General</TabsTrigger>
+                    <TabsTrigger value="templates" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20 text-slate-600 dark:text-slate-400">Email Templates</TabsTrigger>
+                    <TabsTrigger value="ai" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20 text-slate-600 dark:text-slate-400">AI Configuration</TabsTrigger>
                 </TabsList>
 
                 {/* Integration Tab — NOW WITH REAL FUNCTIONALITY */}
@@ -200,21 +200,21 @@ export default function SettingsPage() {
                     {isShopifyConnected ? (
                         /* Connected State */
                         <div className="space-y-6">
-                            <div className="rounded-lg border border-cyan-100 bg-cyan-50/20 p-8 space-y-6">
+                            <div className="rounded-lg border border-cyan-100 dark:border-cyan-900/30 bg-cyan-50/20 dark:bg-cyan-900/10 p-8 space-y-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center">
+                                        <div className="h-12 w-12 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
                                             <CheckCircle2 className="h-6 w-6 text-[#06B6D4]" />
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Shopify Connected</h3>
-                                            <p className="text-sm text-cyan-600 dark:text-[#06B6D4] font-bold">{merchant?.shopify_shop_name}</p>
+                                            <p className="text-sm text-cyan-600 dark:text-cyan-400 font-bold">{merchant?.shopify_shop_name}</p>
                                         </div>
                                     </div>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="border-rose-100 text-rose-500 hover:bg-rose-50 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+                                        className="border-rose-100 dark:border-rose-900/30 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-[10px] font-bold uppercase tracking-widest"
                                         onClick={handleDisconnect}
                                     >
                                         <Unplug className="h-3 w-3 mr-2" />
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                                     </Button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100 dark:border-slate-800">
                                     <div className="space-y-4">
                                         <div>
                                             <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Manual Installation</h4>
@@ -247,12 +247,12 @@ export default function SettingsPage() {
                                         </Button>
                                     </div>
 
-                                    <div className="p-6 rounded-2xl bg-foreground/[0.02] border border-foreground/[0.04] flex flex-col justify-center space-y-4">
+                                    <div className="p-6 rounded-2xl bg-white/[0.02] dark:bg-white/[0.03] border border-white/5 dark:border-white/10 flex flex-col justify-center space-y-4">
                                         <div className="flex items-center gap-2">
                                             <div className="h-2 w-2 rounded-full bg-blue-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Instructions</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Instructions</span>
                                         </div>
-                                        <ul className="text-[11px] text-muted-foreground font-medium leading-relaxed italic space-y-2">
+                                        <ul className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed italic space-y-2">
                                             <li>1. Go to Shopify Admin &rarr; Online Store &rarr; Themes.</li>
                                             <li>2. Click **Actions** &rarr; **Edit Code**.</li>
                                             <li>3. Find `theme.liquid` and paste the code at the very bottom.</li>
@@ -262,17 +262,17 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/10">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Products Synced</p>
-                                        <p className="text-2xl font-black text-slate-900">{merchant?.stats.products || 0}</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white">{merchant?.stats.products || 0}</p>
                                     </div>
-                                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/10">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Orders Tracked</p>
-                                        <p className="text-2xl font-black text-slate-900">{merchant?.stats.orders || 0}</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white">{merchant?.stats.orders || 0}</p>
                                     </div>
-                                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/10">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Upsell Events</p>
-                                        <p className="text-2xl font-black text-slate-900">{merchant?.stats.upsells || 0}</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-white">{merchant?.stats.upsells || 0}</p>
                                     </div>
                                 </div>
 
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                                     <Button
                                         onClick={handleSyncProducts}
                                         disabled={syncing}
-                                        className="bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                        className="bg-slate-900 dark:bg-white dark:text-black text-white hover:bg-slate-800 rounded-xl font-bold uppercase tracking-widest text-[10px]"
                                     >
                                         {syncing ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-2" />}
                                         Re-Sync Products
@@ -288,7 +288,7 @@ export default function SettingsPage() {
                                     <Button
                                         variant="outline"
                                         onClick={() => refreshMerchant()}
-                                        className="rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                        className="rounded-xl font-bold uppercase tracking-widest text-[10px] dark:border-slate-700"
                                     >
                                         <RefreshCw className="h-3 w-3 mr-2" />
                                         Refresh Stats
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                         </div>
                     ) : (
                         /* Not Connected State */
-                        <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-8 space-y-8">
+                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 p-8 space-y-8">
                             <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center">
                                     <Store className="h-6 w-6 text-[#06B6D4]" />
@@ -619,7 +619,7 @@ export default function SettingsPage() {
                 <TabsContent value="ai" className="space-y-6 animate-fade-in">
                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-7 space-y-6">
-                            <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-8 space-y-8 shadow-sm">
+                            <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/10 p-8 space-y-8 shadow-sm">
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Ollama Inference Core</h3>
                                     <p className="text-sm text-slate-400 mt-1 font-medium">
@@ -712,7 +712,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="xl:col-span-5 space-y-6">
-                            <Card className="border-cyan-100 bg-cyan-50/20 rounded-lg overflow-hidden">
+                            <Card className="border-cyan-100 dark:border-cyan-900/30 bg-cyan-50/20 dark:bg-cyan-900/10 rounded-lg overflow-hidden">
                                 <CardHeader className="border-b border-cyan-100/50 dark:border-cyan-900/30">
                                     <div className="flex items-center gap-2">
                                         <Sparkles className="h-4 w-4 text-[#06B6D4]" />

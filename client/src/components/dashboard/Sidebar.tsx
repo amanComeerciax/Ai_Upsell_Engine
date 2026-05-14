@@ -181,13 +181,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
 
             {!isCollapsed && merchant?.plan === 'pro' && (
                  <div className="px-4 pb-4">
-                    <div className="px-4 py-3 rounded-lg bg-emerald-50/50 border border-emerald-100 flex items-center gap-3">
+                    <div className="px-4 py-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                             <Crown className="h-4 w-4 text-white" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-emerald-700">Pro Plan Active</p>
-                            <p className="text-[9px] text-emerald-600/70">Unlimited Power</p>
+                            <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Pro Plan Active</p>
+                            <p className="text-[9px] text-emerald-600/70 dark:text-emerald-500/60">Unlimited Power</p>
                         </div>
                     </div>
                  </div>

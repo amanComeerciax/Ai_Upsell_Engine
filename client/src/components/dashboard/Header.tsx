@@ -38,18 +38,18 @@ function NotificationItem({ n }: { n: Notification }) {
     const Icon = config.icon
     return (
         <div className={cn(
-            "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-slate-50/80",
-            !n.read && "bg-cyan-50/30"
+            "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40",
+            !n.read && "bg-cyan-50/30 dark:bg-cyan-900/20"
         )}>
-            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5", config.bg)}>
+            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5", config.bg, "dark:bg-white/5")}>
                 <Icon className={cn("h-4 w-4", config.color)} />
             </div>
             <div className="flex-1 min-w-0">
-                <p className={cn("text-xs font-semibold text-slate-700 truncate", !n.read && "text-slate-900")}>
+                <p className={cn("text-xs font-semibold text-slate-700 dark:text-slate-200 truncate", !n.read && "text-slate-900 dark:text-white")}>
                     {n.title}
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5 truncate">{n.description}</p>
-                <p className="text-[10px] text-slate-300 mt-1">{timeAgo(n.timestamp)}</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">{n.description}</p>
+                <p className="text-[10px] text-slate-300 dark:text-slate-600 mt-1">{timeAgo(n.timestamp)}</p>
             </div>
             {!n.read && (
                 <div className="h-2 w-2 rounded-full bg-[#06B6D4] mt-2 flex-shrink-0" />
@@ -122,7 +122,7 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                 {/* Dark Mode Toggle */}
                 <button
                     onClick={toggleTheme}
-                    className="relative h-10 w-10 rounded-lg bg-white/80 border border-slate-200/80 flex items-center justify-center hover:bg-cyan-50 transition-all duration-300 group overflow-hidden"
+                    className="relative h-10 w-10 rounded-lg bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 flex items-center justify-center hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all duration-300 group overflow-hidden"
                     title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 >
                     <Sun className={`h-4 w-4 text-amber-500 absolute transition-all duration-300 ${isDark ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'}`} />
@@ -134,11 +134,11 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                     <button
                         onClick={handleBellClick}
                         className={cn(
-                            "relative h-10 w-10 rounded-lg bg-white/80 border border-slate-200/80 flex items-center justify-center hover:bg-cyan-50 transition-colors",
-                            showNotifs && "bg-cyan-50 border-cyan-200"
+                            "relative h-10 w-10 rounded-lg bg-white/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/50 flex items-center justify-center hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors",
+                            showNotifs && "bg-cyan-50 dark:bg-cyan-900/40 border-cyan-200 dark:border-cyan-800"
                         )}
                     >
-                        <Bell className={cn("h-4 w-4", showNotifs ? "text-[#06B6D4]" : "text-slate-500")} />
+                        <Bell className={cn("h-4 w-4", showNotifs ? "text-[#06B6D4]" : "text-slate-500 dark:text-slate-400")} />
                         {unreadCount > 0 && (
                             <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center">
                                 <span className="text-[9px] font-bold text-white leading-none">{unreadCount > 9 ? '9+' : unreadCount}</span>
@@ -151,13 +151,13 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
 
                     {/* Notification Dropdown */}
                     {showNotifs && (
-                        <div className="absolute right-0 top-12 w-80 bg-white border border-slate-200 rounded-lg shadow-2xl shadow-slate-200/50 overflow-hidden z-50 animate-fade-in">
+                        <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden z-50 animate-fade-in">
                             {/* Header */}
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="text-xs font-bold text-slate-700">Notifications</h3>
+                                    <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200">Notifications</h3>
                                     {unreadCount > 0 && (
-                                        <span className="text-[10px] font-bold text-cyan-600 bg-cyan-50 px-1.5 py-0.5 rounded-md">
+                                        <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-1.5 py-0.5 rounded-md">
                                             {unreadCount} new
                                         </span>
                                     )}
@@ -167,7 +167,7 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                                         <>
                                             <button
                                                 onClick={markAllRead}
-                                                className="h-7 px-2 rounded-lg hover:bg-gray-100 flex items-center gap-1 transition-colors"
+                                                className="h-7 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-1 transition-colors"
                                                 title="Mark all read"
                                             >
                                                 <CheckCheck className="h-3 w-3 text-gray-400" />
@@ -185,7 +185,7 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                             </div>
 
                             {/* Notification List */}
-                            <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                            <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800/50">
                                 {notifications.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-10 px-4">
                                         <Bell className="h-8 w-8 text-slate-200 mb-2" />
@@ -203,8 +203,8 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
 
                 {/* User Profile */}
-                <div className="flex items-center gap-3 pl-3 border-l border-slate-200/50">
-                    <div className="p-0.5 rounded-full border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center gap-3 pl-3 border-l border-slate-200/50 dark:border-slate-700/50">
+                    <div className="p-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
                         <UserButton
                             appearance={{
                                 elements: {

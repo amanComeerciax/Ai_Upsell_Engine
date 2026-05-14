@@ -139,14 +139,14 @@ export default function AIModelsPage() {
                                     <span className="text-xs font-medium text-slate-400">{model.status}</span>
                                 </div>
                             </div>
-                            <h3 className="text-base font-bold text-slate-800 truncate">{model.name}</h3>
+                            <h3 className="text-base font-bold text-slate-800 dark:text-white truncate">{model.name}</h3>
                             <p className="text-xs font-medium text-[#06B6D4] mt-0.5">{model.type}</p>
                             <div className="grid grid-cols-2 gap-3 mt-4">
-                                <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-100">
+                                <div className="p-3 rounded-lg bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/10">
                                     <p className="text-[10px] font-medium text-slate-400 mb-0.5">Latency</p>
                                     <p className="text-sm font-bold text-slate-800">{model.latency}</p>
                                 </div>
-                                <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-100">
+                                <div className="p-3 rounded-lg bg-slate-50/80 dark:bg-white/[0.03] border border-slate-100 dark:border-white/10">
                                     <p className="text-[10px] font-medium text-slate-400 mb-0.5">Accuracy</p>
                                     <p className="text-sm font-bold text-slate-800">{model.accuracy.toFixed(1)}%</p>
                                 </div>
@@ -154,7 +154,7 @@ export default function AIModelsPage() {
                             <div className="mt-4 space-y-1.5">
                                 <div className="flex items-center justify-between text-xs">
                                     <span className="font-medium text-slate-400">Load</span>
-                                    <span className="font-bold text-slate-600">{model.load}%</span>
+                                    <span className="font-bold text-slate-600 dark:text-slate-300">{model.load}%</span>
                                 </div>
                                 <Progress value={model.load} className="h-1 bg-slate-100 dark:bg-slate-800" />
                             </div>
