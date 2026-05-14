@@ -98,7 +98,7 @@ export default function CampaignsPage() {
             key: 'campaignId',
             header: 'ID',
             sortable: true,
-            render: (row) => <span className="font-mono text-xs font-semibold text-violet-500">{row.campaignId}</span>
+            render: (row) => <span className="font-mono text-xs font-semibold text-[#06B6D4]">{row.campaignId}</span>
         },
         {
             key: 'customerEmail',
@@ -106,8 +106,8 @@ export default function CampaignsPage() {
             sortable: true,
             render: (row) => (
                 <div className="flex flex-col gap-0.5">
-                    <div className="font-semibold text-sm text-gray-700">{row.customerEmail}</div>
-                    <div className="text-xs text-gray-400">{row.customerName}</div>
+                    <div className="font-semibold text-sm text-slate-700">{row.customerEmail}</div>
+                    <div className="text-xs text-slate-400">{row.customerName}</div>
                 </div>
             )
         },
@@ -115,7 +115,7 @@ export default function CampaignsPage() {
             key: 'productName',
             header: 'Recommended',
             render: (row) => (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-violet-50 text-violet-600 text-xs font-semibold">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-cyan-50 text-[#06B6D4] text-xs font-semibold">
                     {row.productName}
                 </span>
             ),
@@ -134,7 +134,7 @@ export default function CampaignsPage() {
             header: 'Views',
             sortable: true,
             render: (row: any) => (
-                <span className={cn("text-xs font-semibold", row.impressionCount > 0 ? 'text-blue-500' : 'text-gray-300')}>
+                <span className={cn("text-xs font-semibold", row.impressionCount > 0 ? 'text-[#06B6D4]' : 'text-slate-300')}>
                     {row.impressionCount > 0 ? `👁 ${row.impressionCount}` : '—'}
                 </span>
             ),
@@ -145,9 +145,9 @@ export default function CampaignsPage() {
             sortable: true,
             render: (row) => {
                 const colors: Record<string, string> = {
-                    active: 'bg-blue-50 text-blue-600',
+                    active: 'bg-cyan-50 text-cyan-600',
                     converted: 'bg-emerald-50 text-emerald-600',
-                    expired: 'bg-red-50 text-red-500',
+                    expired: 'bg-rose-50 text-rose-500',
                 }
                 return (
                     <div className="flex flex-col gap-1">
@@ -179,14 +179,14 @@ export default function CampaignsPage() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1.5">
-                        <Zap className="h-4 w-4 text-violet-500" />
-                        <span className="text-xs font-semibold text-violet-500">Real-time Deployment</span>
+                        <Zap className="h-4 w-4 text-[#06B6D4]" />
+                        <span className="text-xs font-semibold text-[#06B6D4]">Real-time Deployment</span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1 font-medium max-w-lg">
-                        Orchestrate and monitor your <span className="text-gray-700 font-semibold">AI-driven</span> upsell campaigns.
+                    <p className="text-sm text-slate-400 mt-1 font-medium max-w-lg">
+                        Orchestrate and monitor your <span className="text-slate-700 font-semibold">AI-driven</span> upsell campaigns.
                     </p>
                 </div>
-                <Button className="rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold px-5 h-10 shadow-lg shadow-violet-500/20">
+                <Button className="rounded-lg bg-[#06B6D4] hover:bg-[#0891B2] text-white text-xs font-semibold px-5 h-10 shadow-lg shadow-cyan-500/20">
                     <Plus className="h-4 w-4 mr-2" />
                     New Integration
                 </Button>
@@ -196,29 +196,29 @@ export default function CampaignsPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Total</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{totalCampaigns}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Total</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">{totalCampaigns}</p>
                     </div>
-                    <Sparkles className="h-4 w-4 text-violet-400" />
+                    <Sparkles className="h-4 w-4 text-[#06B6D4]" />
                 </div>
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Active</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{activeCount}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Active</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">{activeCount}</p>
                     </div>
-                    <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                    <div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse" />
                 </div>
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Converted</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{convertedCount}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Converted</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">{convertedCount}</p>
                     </div>
                     <Target className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Revenue</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">₹{totalRevenue.toLocaleString()}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Revenue</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">₹{totalRevenue.toLocaleString()}</p>
                     </div>
                     <ArrowUpRight className="h-4 w-4 text-emerald-400" />
                 </div>
@@ -228,28 +228,28 @@ export default function CampaignsPage() {
                 {/* Filters */}
                 <div className="glass-card p-4 flex flex-col md:flex-row gap-3">
                     <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input
                             placeholder="Search by email or campaign ID..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-white/60 border-gray-200 pl-10 h-10 rounded-xl text-sm focus-visible:ring-violet-200"
+                            className="bg-white border-slate-200 pl-10 h-10 rounded-lg text-sm focus-visible:ring-cyan-200"
                         />
                     </div>
                     <div className="flex items-center gap-2">
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-36 bg-white/60 border-gray-200 h-10 text-xs font-semibold rounded-xl">
+                            <SelectTrigger className="w-36 bg-white border-slate-200 h-10 text-xs font-semibold rounded-lg">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-gray-200 bg-white shadow-lg">
+                            <SelectContent className="rounded-lg border-slate-200 bg-white shadow-lg">
                                 <SelectItem value="all" className="text-xs font-medium">All States</SelectItem>
                                 <SelectItem value="active" className="text-xs font-medium">Active</SelectItem>
                                 <SelectItem value="converted" className="text-xs font-medium">Converted</SelectItem>
                                 <SelectItem value="expired" className="text-xs font-medium">Expired</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" className="h-10 w-10 border-gray-200 rounded-xl flex items-center justify-center p-0 hover:bg-violet-50">
-                            <Filter className="h-4 w-4 text-gray-400" />
+                        <Button variant="outline" className="h-10 w-10 border-slate-200 rounded-lg flex items-center justify-center p-0 hover:bg-cyan-50">
+                            <Filter className="h-4 w-4 text-slate-400" />
                         </Button>
                     </div>
                 </div>

@@ -29,7 +29,7 @@ const navigationItems = [
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
 ]
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () => void }) {
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(false)
     const { signOut } = useClerk()
@@ -46,23 +46,35 @@ export function Sidebar() {
     return (
         <aside
             className={cn(
-                'glass-sidebar relative h-screen flex flex-col transition-all duration-500 ease-in-out z-50',
-                isCollapsed ? 'w-20' : 'w-[260px]'
+                'glass-sidebar fixed lg:relative h-screen flex flex-col transition-all duration-500 ease-in-out z-50',
+                isCollapsed ? 'w-20' : 'w-[260px]',
+                'lg:translate-x-0', // Always show on desktop
+                isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0' // Slide on mobile
             )}
         >
+            {/* Close button for mobile */}
+            <button 
+                onClick={onClose}
+                className="lg:hidden absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            >
+                <ChevronLeft className="h-6 w-6" />
+            </button>
+
             {/* Logo Section */}
-            <div className="h-20 flex items-center px-6 flex-shrink-0">
+            <div className={cn(
+                "h-20 flex items-center flex-shrink-0 transition-all duration-500",
+                isCollapsed ? "justify-center" : "px-6"
+            )}>
                 <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-500/25">
-                        <span className="text-white font-extrabold text-lg leading-none">U</span>
+                    <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                        <img src="/logo-icon.png" alt="Upsell.ai Logo" className="h-full w-full object-cover" />
                     </div>
                     {!isCollapsed && (
                         <div className="animate-fade-in overflow-hidden">
-                            <h2 className="text-lg font-extrabold tracking-tight leading-none">
-                                <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Upsell</span>
-                                <span className="text-gray-800">AI</span>
+                            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+                                Upsell<span className="text-cyan-500">.ai</span>
                             </h2>
-                            <p className="text-[9px] font-semibold text-gray-400 mt-0.5 tracking-wider uppercase">Smart Commerce Engine</p>
+                            <p className="text-[9px] font-semibold text-slate-400 mt-0.5 tracking-wider uppercase">Smart Commerce Engine</p>
                         </div>
                     )}
                 </div>
@@ -71,11 +83,11 @@ export function Sidebar() {
             {/* Collapse toggle */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-24 h-6 w-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-violet-50 hover:border-violet-300 transition-all duration-300 shadow-md z-20 group"
+                className="absolute -right-3 top-24 h-6 w-6 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-cyan-50 hover:border-cyan-300 transition-all duration-300 shadow-md z-20 group"
             >
                 <ChevronLeft
                     className={cn(
-                        'h-3 w-3 text-gray-400 group-hover:text-violet-500 transition-transform duration-500',
+                        'h-3 w-3 text-slate-400 group-hover:text-[#06B6D4] transition-transform duration-500',
                         isCollapsed && 'rotate-180'
                     )}
                 />
@@ -93,15 +105,15 @@ export function Sidebar() {
                             to={item.path}
                             title={isCollapsed ? item.name : undefined}
                             className={cn(
-                                'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group relative',
+                                'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 group relative',
                                 isActive
-                                    ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/25'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                                    ? 'bg-[#06B6D4]/10 text-[#06B6D4] border-l-2 border-[#06B6D4]'
+                                    : 'text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
                             )}
                         >
                             <Icon className={cn(
                                 "h-[18px] w-[18px] flex-shrink-0 transition-transform duration-300",
-                                isActive ? "text-white" : "group-hover:scale-110"
+                                isActive ? "text-[#06B6D4]" : "group-hover:scale-110"
                             )} />
                             {!isCollapsed && (
                                 <span>{item.name}</span>
@@ -116,10 +128,10 @@ export function Sidebar() {
                         to="/dashboard/team"
                         title={isCollapsed ? 'Team' : undefined}
                         className={cn(
-                            'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group relative mt-2',
+                            'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 group relative mt-2',
                             location.pathname === '/dashboard/team'
-                                ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/25'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                                ? 'bg-[#06B6D4]/10 text-[#06B6D4] border-l-2 border-[#06B6D4]'
+                                : 'text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
                         )}
                     >
                         <Users className="h-[18px] w-[18px] flex-shrink-0" />
@@ -131,10 +143,10 @@ export function Sidebar() {
                     <Link
                         to="/admin"
                         className={cn(
-                            'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group relative mt-4 border border-indigo-100 bg-indigo-50/30',
+                            'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 group relative mt-4 border border-cyan-100 dark:border-cyan-900/30 bg-cyan-50/30 dark:bg-cyan-900/10',
                             location.pathname.startsWith('/admin')
-                                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/25'
-                                : 'text-indigo-600 hover:bg-indigo-50'
+                                ? 'bg-[#06B6D4] text-white shadow-lg shadow-cyan-500/25'
+                                : 'text-[#06B6D4] hover:bg-cyan-50 dark:hover:bg-cyan-900/20'
                         )}
                     >
                         <Shield className="h-[18px] w-[18px] flex-shrink-0" />
@@ -146,18 +158,18 @@ export function Sidebar() {
             {/* Upgrade CTA */}
             {!isCollapsed && merchant?.plan !== 'pro' && (
                 <div className="px-4 pb-4 animate-in fade-in slide-in-from-bottom-5 duration-700">
-                    <div className="px-4 py-5 rounded-2xl bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50 border border-violet-100/60 relative overflow-hidden group/cta">
+                    <div className="px-4 py-5 rounded-lg bg-cyan-50 dark:bg-cyan-900/10 border border-cyan-100 dark:border-cyan-900/30 relative overflow-hidden group/cta">
                         <div className="absolute -top-2 -right-2 opacity-10 group-hover/cta:scale-110 group-hover/cta:rotate-12 transition-transform duration-500">
-                            <Crown className="h-16 w-16 text-violet-500" />
+                            <Crown className="h-16 w-16 text-[#06B6D4]" />
                         </div>
                         <div className="relative z-10">
-                            <p className="text-xs font-bold text-gray-700 leading-snug">
-                                Unlock <span className="text-violet-600 font-extrabold">Pro</span> features
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-snug">
+                                Unlock <span className="text-[#06B6D4] font-extrabold">Pro</span> features
                             </p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Advanced AI, unlimited campaigns</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Advanced AI, unlimited campaigns</p>
                             <button 
                                 onClick={handleUpgrade}
-                                className="mt-3 w-full flex items-center justify-between text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                                className="mt-3 w-full flex items-center justify-between text-xs font-bold text-white bg-[#06B6D4] px-4 py-2 rounded-lg shadow-lg shadow-cyan-500/20 hover:bg-[#0891B2] hover:-translate-y-0.5 transition-all duration-300"
                             >
                                 <span>Upgrade Now</span>
                                 <span className="text-sm">→</span>
@@ -169,7 +181,7 @@ export function Sidebar() {
 
             {!isCollapsed && merchant?.plan === 'pro' && (
                  <div className="px-4 pb-4">
-                    <div className="px-4 py-3 rounded-2xl bg-emerald-50/50 border border-emerald-100 flex items-center gap-3">
+                    <div className="px-4 py-3 rounded-lg bg-emerald-50/50 border border-emerald-100 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                             <Crown className="h-4 w-4 text-white" />
                         </div>
@@ -182,11 +194,11 @@ export function Sidebar() {
             )}
 
             {/* Logout */}
-            <div className="px-4 pb-6 flex-shrink-0 border-t border-gray-100/80 pt-4">
+            <div className="px-4 pb-6 flex-shrink-0 border-t border-slate-100 pt-4">
                 <button
                     onClick={() => signOut({ redirectUrl: '/' })}
                     className={cn(
-                        'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all duration-300 group',
+                        'flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all duration-300 group',
                         isCollapsed && 'justify-center px-0'
                     )}
                     title={isCollapsed ? 'Log Out' : undefined}

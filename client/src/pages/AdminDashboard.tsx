@@ -63,11 +63,11 @@ export default function AdminDashboard() {
         <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-3">
-                    <Shield className="h-8 w-8 text-indigo-600" />
+                <h1 className="text-3xl font-bold tracking-tight text-slate-800 flex items-center gap-3">
+                    <Shield className="h-8 w-8 text-[#06B6D4]" />
                     SaaS Control Center
                 </h1>
-                <p className="text-gray-500 mt-1 font-medium italic">Global overview of system health and revenue.</p>
+                <p className="text-slate-500 mt-1 font-medium">Global overview of system health and revenue.</p>
             </div>
 
             {/* Stats Grid */}
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
                     title="Total Merchants" 
                     value={stats?.merchants.total || 0} 
                     icon={Users} 
-                    color="blue"
+                    color="cyan"
                     description={`${stats?.merchants.pro} Pro / ${stats?.merchants.free} Free`}
                 />
                 <StatCard 
@@ -90,14 +90,14 @@ export default function AdminDashboard() {
                     title="Global Conversion" 
                     value={`${stats?.performance.conversionRate}%`} 
                     icon={TrendingUp} 
-                    color="violet"
+                    color="cyan"
                     description={`${stats?.performance.convertedUpsells} converted upsells`}
                 />
                 <StatCard 
                     title="Active Subscriptions" 
                     value={stats?.merchants.pro || 0} 
                     icon={ArrowUpRight} 
-                    color="indigo"
+                    color="cyan"
                     description="Merchants on Pro Plan"
                 />
             </div>
@@ -123,13 +123,13 @@ export default function AdminDashboard() {
                         <CardTitle className="text-xl font-bold">Administrative Actions</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <Link to="/admin/merchants" className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-all font-semibold text-gray-700">
-                           Manage Merchants <ArrowUpRight className="h-4 w-4" />
+                        <Link to="/admin/merchants" className="w-full flex items-center justify-between p-4 rounded-lg border border-slate-100 bg-white hover:bg-slate-50 transition-all font-semibold text-slate-700">
+                           Manage Merchants <ArrowUpRight className="h-4 w-4 text-cyan-500" />
                         </Link>
-                        <button className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-all font-semibold text-gray-700">
-                           Stripe Dashboard <ExternalLink className="h-4 w-4" />
+                        <button className="w-full flex items-center justify-between p-4 rounded-lg border border-slate-100 bg-white hover:bg-slate-50 transition-all font-semibold text-slate-700">
+                           Stripe Dashboard <ExternalLink className="h-4 w-4 text-cyan-500" />
                         </button>
-                        <button className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition-all font-semibold text-gray-700 text-red-500">
+                        <button className="w-full flex items-center justify-between p-4 rounded-lg border border-slate-100 bg-white hover:bg-rose-50 transition-all font-semibold text-rose-500">
                            System Health Log
                         </button>
                     </CardContent>
@@ -141,25 +141,23 @@ export default function AdminDashboard() {
 
 function StatCard({ title, value, icon: Icon, color, description }: any) {
     const colors: any = {
-        blue: 'from-blue-500/10 to-blue-600/10 text-blue-600 border-blue-100',
+        cyan: 'from-cyan-500/10 to-cyan-600/10 text-cyan-600 border-cyan-100',
         emerald: 'from-emerald-500/10 to-emerald-600/10 text-emerald-600 border-emerald-100',
-        violet: 'from-violet-500/10 to-violet-600/10 text-violet-600 border-violet-100',
-        indigo: 'from-indigo-500/10 to-indigo-600/10 text-indigo-600 border-indigo-100',
     }
 
     return (
         <Card className={`glass-card border bg-gradient-to-br ${colors[color]}`}>
             <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                    <p className="text-xs font-extrabold uppercase tracking-widest opacity-80">{title}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{title}</p>
                     <div className="h-8 w-8 rounded-lg bg-white/50 backdrop-blur-sm flex items-center justify-center shadow-sm">
                         <Icon className="h-4 w-4" />
                     </div>
                 </div>
                 <div className="mt-4">
-                    <h3 className="text-2xl font-black text-gray-900">{value}</h3>
+                    <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
                     {description && (
-                        <p className="text-[10px] font-bold mt-1 opacity-60 italic">{description}</p>
+                        <p className="text-[10px] font-semibold mt-1 opacity-60 uppercase tracking-tight">{description}</p>
                     )}
                 </div>
             </CardContent>
@@ -169,11 +167,11 @@ function StatCard({ title, value, icon: Icon, color, description }: any) {
 
 function PerformanceMetric({ label, value, highlight }: any) {
     return (
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100 last:border-0">
-            <span className="text-sm font-semibold text-gray-400">{label}</span>
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 last:border-0">
+            <span className="text-sm font-semibold text-slate-500">{label}</span>
             <span className={cn(
-                "font-black",
-                highlight ? "text-indigo-600 text-lg" : "text-gray-900"
+                "font-bold",
+                highlight ? "text-[#06B6D4] text-lg" : "text-slate-800"
             )}>{value}</span>
         </div>
     )

@@ -38,7 +38,8 @@ app.use(cors({
         'http://localhost:3000',
         'https://aiupsellengine1.vercel.app',
         /\.vercel\.app$/, // Allow all Vercel subdomains
-        'https://keila-arousable-bimolecularly.ngrok-free.dev'
+        'https://keila-arousable-bimolecularly.ngrok-free.dev',
+        /\.myshopify\.com$/ // Allow all Shopify storefronts
     ],
     credentials: true
 }));

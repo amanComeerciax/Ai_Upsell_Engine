@@ -70,7 +70,10 @@ export const aiController = {
                 }
             } else {
                 console.warn(`[AI Controller] ❌ No shop identifier in request. Referer: ${referer}`);
-                return res.status(401).json({ error: 'Unidentified Merchant', message: 'No shop identifier found in request.' });
+                return res.status(401).json({ 
+                    error: 'Unidentified Merchant', 
+                    message: 'No shop identifier found in request. Please ensure the ?shop= query parameter or Referer header is present.' 
+                });
             }
 
             // 2. Fetch available products from DB
@@ -79,12 +82,13 @@ export const aiController = {
                 orderBy: { created_at: 'desc' }
             });
 
-            console.log(`[AI Controller] Found ${allProducts.length} products for merchant filter`);
+            console.log(`[AI Controller] 📦 Found ${allProducts.length} products for merchant (ID: ${merchantFilter.merchant_id})`);
 
             if (allProducts.length < 2) {
+                console.warn(`[AI Controller] ⚠️ Insufficient inventory for cross-sells: ${allProducts.length} products.`);
                 return res.status(400).json({
                     error: 'Insufficient Inventory',
-                    message: 'At least 2 products are required for cross-sells. Count: ' + allProducts.length
+                    message: 'At least 2 products are required for cross-sells. Current count: ' + allProducts.length
                 });
             }
 
@@ -96,9 +100,11 @@ export const aiController = {
             }
 
             const candidates = allProducts.filter(p => p.id !== triggerProduct.id);
+            console.log(`[AI Controller] 🎯 Trigger Product: "${triggerProduct.name}" (ID: ${triggerProduct.id}). Candidates: ${candidates.length}`);
 
             // 4. Get top 3 recommendations for the carousel (instant — smart fallback + background AI)
             const topRecs = await aiService.getTopRecommendations(triggerProduct, candidates);
+            console.log(`[AI Controller] ✨ Generated ${topRecs.length} recommendations.`);
 
             // 5. Build full product details for each recommendation
             const shopDomain = shopName

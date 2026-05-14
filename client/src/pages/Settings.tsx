@@ -149,50 +149,50 @@ export default function SettingsPage() {
             {/* Page Header */}
             <div>
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="h-6 w-[2px] bg-blue-600" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">
+                    <div className="h-6 w-[2px] bg-[#06B6D4]" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#06B6D4]">
                         {merchant?.business_name || 'My Store'}
                     </span>
                 </div>
-                <h1 className="text-3xl font-black tracking-tight text-foreground uppercase italic">Settings</h1>
-                <p className="text-sm text-muted-foreground mt-1 font-medium italic">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
+                <p className="text-sm text-slate-400 mt-1 font-medium">
                     Configure your AI upsell engine & Shopify integration
                 </p>
             </div>
 
             {/* Merchant Info Strip */}
             {merchant && (
-                <div className="flex items-center gap-6 p-4 rounded-2xl border border-foreground/[0.04] bg-foreground/[0.01]">
+                <div className="flex items-center gap-6 p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/10">
                     <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Merchant ID</span>
-                        <span className="text-xs font-bold text-foreground">{merchant.id}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Merchant ID</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">{merchant.id}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Plan</span>
-                        <span className="text-xs font-bold text-blue-500 uppercase">{merchant.plan}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Plan</span>
+                        <span className="text-xs font-bold text-[#06B6D4] uppercase">{merchant.plan}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Products</span>
-                        <span className="text-xs font-bold text-foreground">{merchant.stats.products}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Products</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">{merchant.stats.products}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Orders</span>
-                        <span className="text-xs font-bold text-foreground">{merchant.stats.orders}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Orders</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">{merchant.stats.orders}</span>
                     </div>
                 </div>
             )}
 
             {/* Settings Tabs */}
             <Tabs defaultValue="integration" className="space-y-6">
-                <TabsList>
-                    <TabsTrigger value="integration">
+                <TabsList className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+                    <TabsTrigger value="integration" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">
                         <Store className="h-3.5 w-3.5 mr-2" />
                         Shopify
                     </TabsTrigger>
-                    <TabsTrigger value="general">General</TabsTrigger>
-                    <TabsTrigger value="templates">Email Templates</TabsTrigger>
-                    <TabsTrigger value="ai">AI Configuration</TabsTrigger>
+                    <TabsTrigger value="general" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">General</TabsTrigger>
+                    <TabsTrigger value="templates" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">Email Templates</TabsTrigger>
+                    <TabsTrigger value="ai" className="rounded-lg px-4 py-2 text-xs font-bold transition-all data-[state=active]:bg-[#06B6D4] data-[state=active]:text-white data-[state=active]:shadow-lg shadow-cyan-500/20">AI Configuration</TabsTrigger>
                 </TabsList>
 
                 {/* Integration Tab — NOW WITH REAL FUNCTIONALITY */}
@@ -200,21 +200,21 @@ export default function SettingsPage() {
                     {isShopifyConnected ? (
                         /* Connected State */
                         <div className="space-y-6">
-                            <div className="rounded-[2rem] border border-emerald-500/20 bg-emerald-500/[0.02] p-8 space-y-6">
+                            <div className="rounded-lg border border-cyan-100 bg-cyan-50/20 p-8 space-y-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                                            <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                                        <div className="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center">
+                                            <CheckCircle2 className="h-6 w-6 text-[#06B6D4]" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-black text-foreground uppercase tracking-tight">Shopify Connected</h3>
-                                            <p className="text-sm text-emerald-500 font-bold">{merchant?.shopify_shop_name}</p>
+                                            <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Shopify Connected</h3>
+                                            <p className="text-sm text-cyan-600 dark:text-[#06B6D4] font-bold">{merchant?.shopify_shop_name}</p>
                                         </div>
                                     </div>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl text-[10px] font-bold uppercase tracking-widest"
+                                        className="border-rose-100 text-rose-500 hover:bg-rose-50 rounded-lg text-[10px] font-bold uppercase tracking-widest"
                                         onClick={handleDisconnect}
                                     >
                                         <Unplug className="h-3 w-3 mr-2" />
@@ -222,17 +222,17 @@ export default function SettingsPage() {
                                     </Button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-foreground/[0.04]">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
                                     <div className="space-y-4">
                                         <div>
-                                            <h4 className="text-sm font-black text-foreground uppercase tracking-tight italic">Manual Installation</h4>
-                                            <p className="text-[11px] text-muted-foreground font-medium italic mt-1 leading-relaxed">
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Manual Installation</h4>
+                                            <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
                                                 Copy the snippet below and paste it before the closing <code>&lt;/body&gt;</code> tag in your theme's <code>theme.liquid</code> file.
                                             </p>
                                         </div>
                                         <div className="relative group">
-                                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                                            <div className="relative p-4 rounded-xl bg-[#0c0e14] border border-foreground/[0.06] font-mono text-[10px] text-blue-400 break-all select-all">
+                                            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                                            <div className="relative p-4 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[10px] text-cyan-400 break-all select-all">
                                                 {scriptSnippet}
                                             </div>
                                         </div>
@@ -241,7 +241,7 @@ export default function SettingsPage() {
                                                 navigator.clipboard.writeText(scriptSnippet);
                                                 alert('Snippet copied to clipboard!');
                                             }}
-                                            className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-xl font-bold uppercase tracking-widest text-[10px] h-11"
+                                            className="w-full bg-[#06B6D4] text-white hover:bg-[#0891B2] rounded-lg font-bold uppercase tracking-widest text-[10px] h-11"
                                         >
                                             Copy Snippet
                                         </Button>
@@ -262,17 +262,17 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Products Synced</p>
-                                        <p className="text-2xl font-black">{merchant?.stats.products || 0}</p>
+                                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Products Synced</p>
+                                        <p className="text-2xl font-black text-slate-900">{merchant?.stats.products || 0}</p>
                                     </div>
-                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Orders Tracked</p>
-                                        <p className="text-2xl font-black">{merchant?.stats.orders || 0}</p>
+                                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Orders Tracked</p>
+                                        <p className="text-2xl font-black text-slate-900">{merchant?.stats.orders || 0}</p>
                                     </div>
-                                    <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">Upsell Events</p>
-                                        <p className="text-2xl font-black">{merchant?.stats.upsells || 0}</p>
+                                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Upsell Events</p>
+                                        <p className="text-2xl font-black text-slate-900">{merchant?.stats.upsells || 0}</p>
                                     </div>
                                 </div>
 
@@ -302,14 +302,14 @@ export default function SettingsPage() {
                         </div>
                     ) : (
                         /* Not Connected State */
-                        <div className="rounded-[2rem] border border-foreground/[0.04] bg-foreground/[0.01] p-8 space-y-8">
+                        <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-8 space-y-8">
                             <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                                    <Store className="h-6 w-6 text-blue-500" />
+                                <div className="h-12 w-12 rounded-lg bg-cyan-100 flex items-center justify-center">
+                                    <Store className="h-6 w-6 text-[#06B6D4]" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight italic">Connect Your Shopify Store</h3>
-                                    <p className="text-sm text-muted-foreground font-medium italic">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Connect Your Shopify Store</h3>
+                                    <p className="text-sm text-slate-400 font-medium">
                                         Enter your store name and access token to get started
                                     </p>
                                 </div>
@@ -318,57 +318,57 @@ export default function SettingsPage() {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Shop Name</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Shop Name</Label>
                                         <div className="flex items-center">
                                             <Input
                                                 value={shopName}
                                                 onChange={(e) => setShopName(e.target.value)}
                                                 placeholder="my-store"
-                                                className="h-12 rounded-l-xl rounded-r-none bg-foreground/[0.02] border-foreground/[0.06] font-bold"
+                                                className="h-12 rounded-l-lg rounded-r-none bg-white border-slate-200 font-bold focus-visible:ring-cyan-200"
                                             />
-                                            <span className="h-12 px-3 flex items-center bg-foreground/[0.04] border border-l-0 border-foreground/[0.06] rounded-r-xl text-xs text-muted-foreground font-mono">
+                                            <span className="h-12 px-3 flex items-center bg-slate-100 border border-l-0 border-slate-200 rounded-r-lg text-xs text-slate-500 font-mono">
                                                 .myshopify.com
                                             </span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Access Token</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Access Token</Label>
                                         <Input
                                             type="password"
                                             value={accessToken}
                                             onChange={(e) => setAccessToken(e.target.value)}
                                             placeholder="shpat_xxxxxxxxxxxx"
-                                            className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-mono font-bold"
+                                            className="h-12 rounded-lg bg-white border-slate-200 font-mono font-bold focus-visible:ring-cyan-200"
                                         />
                                     </div>
                                 </div>
 
                                 {connectError && (
-                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                                        <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
-                                        <p className="text-sm text-red-500 font-bold">{connectError}</p>
+                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-50 border border-rose-100">
+                                        <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+                                        <p className="text-sm text-rose-500 font-bold">{connectError}</p>
                                     </div>
                                 )}
 
                                 {connectSuccess && (
-                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                                        <p className="text-sm text-emerald-500 font-bold">{connectSuccess}</p>
+                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-cyan-50 border border-cyan-100">
+                                        <CheckCircle2 className="h-4 w-4 text-[#06B6D4] shrink-0" />
+                                        <p className="text-sm text-cyan-600 font-bold">{connectSuccess}</p>
                                     </div>
                                 )}
 
                                 <Button
                                     onClick={handleConnectShopify}
                                     disabled={connecting}
-                                    className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-foreground/10 group"
+                                    className="w-full h-14 bg-[#06B6D4] text-white hover:bg-[#0891B2] rounded-lg font-bold uppercase tracking-widest text-[11px] shadow-xl shadow-cyan-500/10 group"
                                 >
                                     {connecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Store className="h-4 w-4 mr-2" />}
                                     Connect Shopify Store
                                 </Button>
 
-                                <div className="p-6 rounded-2xl border border-blue-500/10 bg-blue-500/[0.02] space-y-3">
-                                    <h4 className="text-sm font-black uppercase tracking-widest text-blue-500">How to get your Access Token</h4>
-                                    <ol className="text-xs text-muted-foreground font-medium leading-relaxed space-y-2 list-decimal pl-4">
+                                <div className="p-6 rounded-lg border border-cyan-100 bg-cyan-50/20 space-y-3">
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-cyan-600 dark:text-[#06B6D4]">How to get your Access Token</h4>
+                                    <ol className="text-xs text-slate-500 font-medium leading-relaxed space-y-2 list-decimal pl-4">
                                         <li>Go to your Shopify Admin → <strong>Settings → Apps → Develop apps</strong></li>
                                         <li>Create a new app or open an existing one</li>
                                         <li>Configure <strong>Admin API scopes</strong>: read_products, read_orders, write_orders, <strong>write_script_tags, read_script_tags</strong></li>
@@ -425,22 +425,22 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Discount Range Section */}
-                        <div className="space-y-6 pt-6 border-t border-foreground/[0.04]">
+                        <div className="space-y-6 pt-6 border-t border-slate-100">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                    <Percent className="h-5 w-5 text-emerald-500" />
+                                <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                                    <Percent className="h-5 w-5 text-[#06B6D4]" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Discount Range</h4>
-                                    <p className="text-[10px] text-muted-foreground font-medium italic">Min-Max discount the AI can apply on upsell offers</p>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Discount Range</h4>
+                                    <p className="text-[10px] text-slate-400 font-medium italic">Min-Max discount the AI can apply on upsell offers</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Minimum Discount</Label>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">{discountMin}%</span>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Minimum Discount</Label>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-cyan-50 text-[#06B6D4] text-xs font-bold">{discountMin}%</span>
                                     </div>
                                     <Slider
                                         value={[discountMin]}
@@ -454,13 +454,13 @@ export default function SettingsPage() {
                                         step={5}
                                         className="py-2"
                                     />
-                                    <p className="text-[9px] text-muted-foreground font-medium italic">Lowest possible discount for any campaign</p>
+                                    <p className="text-[9px] text-slate-400 font-medium italic">Lowest possible discount for any campaign</p>
                                 </div>
 
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Maximum Discount</Label>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-500 text-xs font-bold">{discountMax}%</span>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Maximum Discount</Label>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-cyan-50 text-[#06B6D4] text-xs font-bold">{discountMax}%</span>
                                     </div>
                                     <Slider
                                         value={[discountMax]}
@@ -474,19 +474,19 @@ export default function SettingsPage() {
                                         step={5}
                                         className="py-2"
                                     />
-                                    <p className="text-[9px] text-muted-foreground font-medium italic">Highest possible discount for any campaign</p>
+                                    <p className="text-[9px] text-slate-400 font-medium italic">Highest possible discount for any campaign</p>
                                 </div>
                             </div>
 
                             {/* Preview bar */}
-                            <div className="p-4 rounded-xl bg-foreground/[0.01] border border-foreground/[0.04]">
+                            <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Active Range</span>
-                                    <span className="text-xs font-bold text-foreground">{discountMin}% — {discountMax}%</span>
+                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Active Range</span>
+                                    <span className="text-xs font-bold text-slate-900">{discountMin}% — {discountMax}%</span>
                                 </div>
-                                <div className="w-full h-3 bg-foreground/[0.06] rounded-full overflow-hidden relative">
+                                <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden relative">
                                     <div
-                                        className="absolute h-full bg-gradient-to-r from-emerald-400 to-blue-500 rounded-full transition-all"
+                                        className="absolute h-full bg-gradient-to-r from-cyan-400 to-[#06B6D4] rounded-full transition-all"
                                         style={{
                                             left: `${(discountMin / 50) * 100}%`,
                                             width: `${((discountMax - discountMin) / 50) * 100}%`
@@ -494,27 +494,27 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div className="flex justify-between mt-1">
-                                    <span className="text-[9px] text-muted-foreground">0%</span>
-                                    <span className="text-[9px] text-muted-foreground">50%</span>
+                                    <span className="text-[9px] text-slate-400">0%</span>
+                                    <span className="text-[9px] text-slate-400">50%</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Gamified Progress Bar Section */}
-                        <div className="space-y-6 pt-6 border-t border-foreground/[0.04]">
+                        <div className="space-y-6 pt-6 border-t border-slate-100">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                                        <Zap className="h-5 w-5 text-blue-500" />
+                                    <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                                        <Zap className="h-5 w-5 text-[#06B6D4]" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-black text-foreground uppercase tracking-tight">Gamified Progress Bar</h4>
-                                        <p className="text-[10px] text-muted-foreground font-medium italic">Drive users to free shipping with AI-suggested impulse buys</p>
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Gamified Progress Bar</h4>
+                                        <p className="text-[10px] text-slate-400 font-medium italic">Drive users to free shipping with AI-suggested impulse buys</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 bg-foreground/[0.01] px-4 py-2 rounded-xl border border-foreground/[0.04]">
-                                    <Switch checked={progressBarActive} onCheckedChange={setProgressBarActive} className="data-[state=checked]:bg-blue-500" />
-                                    <span className="text-xs font-bold text-foreground/60">
+                                <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-lg border border-slate-100">
+                                    <Switch checked={progressBarActive} onCheckedChange={setProgressBarActive} className="data-[state=checked]:bg-[#06B6D4]" />
+                                    <span className="text-xs font-bold text-slate-500">
                                         {progressBarActive ? 'Active' : 'Hidden'}
                                     </span>
                                 </div>
@@ -553,11 +553,10 @@ export default function SettingsPage() {
                         <Button
                             onClick={handleSaveGeneral}
                             disabled={savingGeneral}
-                            className="h-10 px-6 rounded-xl bg-foreground text-background hover:bg-foreground/90 text-xs font-black uppercase tracking-widest shadow-lg shadow-foreground/10"
+                            className="h-10 px-6 rounded-lg bg-[#06B6D4] text-white hover:bg-[#0891B2] text-xs font-black uppercase tracking-widest shadow-lg shadow-cyan-500/10"
                         >
                             {savingGeneral ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                             Save Settings
-
                         </Button>
                     </div>
                 </TabsContent>
@@ -620,10 +619,10 @@ export default function SettingsPage() {
                 <TabsContent value="ai" className="space-y-6 animate-fade-in">
                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-7 space-y-6">
-                            <div className="rounded-[2rem] border border-foreground/[0.04] bg-foreground/[0.01] p-8 space-y-8 shadow-sm">
+                            <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-8 space-y-8 shadow-sm">
                                 <div>
-                                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight italic">Ollama Inference Core</h3>
-                                    <p className="text-sm text-muted-foreground mt-1 font-medium italic underline decoration-blue-500/30 underline-offset-4">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Ollama Inference Core</h3>
+                                    <p className="text-sm text-slate-400 mt-1 font-medium">
                                         Fine-tune the local brain of your upsell engine.
                                     </p>
                                 </div>
@@ -631,7 +630,7 @@ export default function SettingsPage() {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Active Inference Model</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Active Inference Model</Label>
                                             <Select defaultValue="dolphin-llama3:latest">
                                                 <SelectTrigger className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-bold">
                                                     <SelectValue />
@@ -644,7 +643,7 @@ export default function SettingsPage() {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Repetition Penalty</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Repetition Penalty</Label>
                                             <Input
                                                 type="number"
                                                 defaultValue={1.1}
@@ -654,11 +653,11 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-6 pt-4 border-t border-foreground/[0.04]">
+                                    <div className="space-y-6 pt-4 border-t border-slate-100">
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Creativity (Temperature)</Label>
-                                                <span className="text-xs font-black text-blue-500">{temperature[0]}</span>
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Creativity (Temperature)</Label>
+                                                <span className="text-xs font-bold text-[#06B6D4]">{temperature[0]}</span>
                                             </div>
                                             <Slider
                                                 value={temperature}
@@ -674,8 +673,8 @@ export default function SettingsPage() {
 
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Diversity (Top P)</Label>
-                                                <span className="text-xs font-black text-purple-500">0.9</span>
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Diversity (Top P)</Label>
+                                                <span className="text-xs font-bold text-emerald-500">0.9</span>
                                             </div>
                                             <Slider
                                                 defaultValue={[0.9]}
@@ -686,9 +685,9 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 pt-4 border-t border-foreground/[0.04]">
+                                    <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                                         <div className="flex-1 space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Max Reasoning Tokens</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Max Reasoning Tokens</Label>
                                             <Input
                                                 type="number"
                                                 defaultValue={512}
@@ -696,7 +695,7 @@ export default function SettingsPage() {
                                             />
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-foreground">Stop Sequence</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Stop Sequence</Label>
                                             <Input
                                                 defaultValue='"JSON_END"'
                                                 className="h-12 rounded-xl bg-foreground/[0.02] border-foreground/[0.06] font-mono font-bold"
@@ -705,7 +704,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
 
-                                <Button className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-foreground/10 group">
+                                <Button className="w-full h-14 bg-[#06B6D4] text-white hover:bg-[#0891B2] rounded-lg font-bold uppercase tracking-widest text-[11px] shadow-xl shadow-cyan-500/20 group">
                                     <Save className="h-4 w-4 mr-2 transition-transform group-hover:scale-110" />
                                     Synchronize Neural Engine
                                 </Button>
@@ -713,21 +712,21 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="xl:col-span-5 space-y-6">
-                            <Card className="border-blue-500/20 bg-blue-500/[0.02] rounded-[2rem] overflow-hidden">
-                                <CardHeader className="border-b border-blue-500/10">
+                            <Card className="border-cyan-100 bg-cyan-50/20 rounded-lg overflow-hidden">
+                                <CardHeader className="border-b border-cyan-100/50 dark:border-cyan-900/30">
                                     <div className="flex items-center gap-2">
-                                        <Sparkles className="h-4 w-4 text-blue-500" />
-                                        <CardTitle className="text-sm font-black uppercase tracking-widest">Logic Preview</CardTitle>
+                                        <Sparkles className="h-4 w-4 text-[#06B6D4]" />
+                                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">Logic Preview</CardTitle>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-8">
-                                    <div className="rounded-2xl bg-[#0c0e14] border border-foreground/[0.06] p-6 font-mono text-[11px] leading-relaxed text-blue-400 opacity-60">
-                                        <span className="text-muted-foreground">// System Instruction Fragment</span><br />
+                                    <div className="rounded-lg bg-slate-950 border border-slate-800 p-6 font-mono text-[11px] leading-relaxed text-cyan-400">
+                                        <span className="text-slate-500">// System Instruction Fragment</span><br />
                                         "role": "system",<br />
-                                        "content": "You are Velocity AI. Temperature is set to <span className="text-blue-500 font-bold">{temperature[0]}</span>.
+                                        "content": "You are Velocity AI. Temperature is set to <span className="text-cyan-500 font-bold">{temperature[0]}</span>.
                                         Format output as 100% valid JSON. Ensure logic matches high-velocity ecommerce patterns."<br /><br />
 
-                                        <span className="text-muted-foreground">// Inference Parameters</span><br />
+                                        <span className="text-slate-500">// Inference Parameters</span><br />
                                         "num_predict": 512,<br />
                                         "top_p": 0.9,<br />
                                         "repeat_penalty": 1.1
@@ -735,19 +734,19 @@ export default function SettingsPage() {
 
                                     <div className="mt-8 space-y-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Real-time Connection: Stable</span>
+                                            <div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Real-time Connection: Stable</span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground font-medium leading-relaxed italic border-l-2 border-blue-500/30 pl-4">
+                                        <p className="text-xs text-slate-400 font-medium leading-relaxed border-l-2 border-cyan-500/30 pl-4">
                                             "Changes made here affect the prompt engineering and response behavior of your local models instantly."
                                         </p>
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <div className="p-8 rounded-[2rem] border border-orange-500/20 bg-orange-500/[0.02] space-y-4">
-                                <h4 className="text-sm font-black uppercase tracking-widest text-orange-500">Localhost Optimization</h4>
-                                <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
+                            <div className="p-8 rounded-lg border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 space-y-4">
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-orange-500">Localhost Optimization</h4>
+                                <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
                                     Running models locally on Ollama requires minimum **16GB RAM** for 8B models to ensure latency stays under 500ms.
                                 </p>
                             </div>

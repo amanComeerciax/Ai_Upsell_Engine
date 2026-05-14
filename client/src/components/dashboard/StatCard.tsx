@@ -13,7 +13,7 @@ interface StatCardProps {
     progressColor?: string
 }
 
-function CircularProgress({ value, color = '#3B82F6', size = 44 }: { value: number; color?: string; size?: number }) {
+function CircularProgress({ value, color = '#06B6D4', size = 44 }: { value: number; color?: string; size?: number }) {
     const strokeWidth = 3.5
     const radius = (size - strokeWidth) / 2
     const circumference = 2 * Math.PI * radius
@@ -61,11 +61,11 @@ export function StatCard({
     value,
     change: _change,
     icon: Icon,
-    iconBg = 'bg-blue-50',
-    iconColor = 'text-blue-500',
+    iconBg = 'bg-cyan-50',
+    iconColor = 'text-[#06B6D4]',
     trend: _trend = 'neutral',
     progress = 0,
-    progressColor = '#3B82F6',
+    progressColor = '#06B6D4',
 }: StatCardProps) {
     return (
         <div className="glass-card p-5 group">
@@ -73,7 +73,7 @@ export function StatCard({
                 <div className="flex items-start gap-4">
                     {/* Icon */}
                     <div className={cn(
-                        'h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105',
+                        'h-12 w-12 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-105',
                         iconBg
                     )}>
                         <Icon className={cn('h-5 w-5', iconColor)} />
@@ -81,10 +81,10 @@ export function StatCard({
 
                     {/* Value & Label */}
                     <div className="pt-0.5">
-                        <p className="text-2xl font-bold text-gray-800 tracking-tight leading-none">
+                        <p className="text-2xl font-bold text-slate-800 tracking-tight leading-none">
                             {value}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1.5 font-medium">
+                        <p className="text-xs text-slate-400 mt-1.5 font-medium">
                             {label}
                         </p>
                     </div>

@@ -132,14 +132,14 @@ export default function SignUpPage() {
     /* ── Clerk appearance (shared) ── */
     const clerkAppearance = {
         variables: {
-            colorPrimary: '#6366f1',
+            colorPrimary: '#06B6D4',
             colorBackground: '#0d0d1a',
             colorText: 'white',
             colorTextSecondary: 'rgba(255,255,255,0.4)',
             colorInputBackground: 'rgba(255,255,255,0.04)',
             colorInputText: 'white',
             colorNeutral: 'rgba(255,255,255,0.1)',
-            borderRadius: '14px',
+            borderRadius: '8px',
             fontFamily: "'Inter', system-ui, sans-serif",
         },
         elements: {
@@ -158,16 +158,16 @@ export default function SignUpPage() {
                 fontFamily: "'Inter', sans-serif",
             },
             formButtonPrimary: {
-                background:  'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+                background:  'linear-gradient(135deg, #06B6D4 0%, #3b82f6 100%)',
                 color:       'white',
                 fontWeight:   700,
                 fontSize:   '14px',
                 fontFamily: "'Inter', sans-serif",
                 letterSpacing: '0.04em',
                 height:     '46px',
-                borderRadius: '12px',
+                borderRadius: '8px',
                 border:      'none',
-                boxShadow:   '0 8px 24px rgba(99,102,241,0.35)',
+                boxShadow:   '0 8px 24px rgba(6,182,212,0.35)',
             },
             formFieldLabel: {
                 fontSize:     '11px',
@@ -182,7 +182,7 @@ export default function SignUpPage() {
                 background:  'rgba(255,255,255,0.04)',
                 border:      '1px solid rgba(255,255,255,0.08)',
                 color:       'white',
-                borderRadius:'12px',
+                borderRadius:'8px',
                 height:      '46px',
                 fontSize:    '14px',
                 padding:     '0 14px',
@@ -194,7 +194,7 @@ export default function SignUpPage() {
                 fontSize:     '13px',
                 fontFamily: "'Inter', sans-serif",
             },
-            footerActionLink:   { color: '#818cf8', fontWeight: 700, marginLeft: '4px' },
+            footerActionLink:   { color: '#06B6D4', fontWeight: 700, marginLeft: '4px' },
             dividerRow:         { opacity: '0.15' },
             dividerText:        { fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const },
             footer:             { background: 'transparent', paddingTop: 0 },
@@ -208,7 +208,7 @@ export default function SignUpPage() {
                 borderRadius:'12px',
                 height:      '46px',
             },
-            formResendCodeLink: { color: '#818cf8', fontWeight: 700 },
+            formResendCodeLink: { color: '#06B6D4', fontWeight: 700 },
             internal__footer:   { display: 'none' },
         },
     }
@@ -295,7 +295,7 @@ export default function SignUpPage() {
                     <div style={{
                         position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
                         width: '80%', height: '200px',
-                        background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)',
+                        background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)',
                         pointerEvents: 'none',
                     }} />
 
@@ -381,8 +381,8 @@ export default function SignUpPage() {
                 padding: '40px 32px 40px 200px', // Pushed further right per user request
             }}>
                 {/* Ambient glows */}
-                <div style={{ position: 'absolute', top: '-5%', right: '-5%', width: '55%', height: '55%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '45%', height: '45%', background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '-5%', right: '-5%', width: '55%', height: '55%', background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '-5%', left: '-5%', width: '45%', height: '45%', background: 'radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
 
                 <div style={{ width: '100%', maxWidth: '440px' }}>
                     <MemoizedSignUp

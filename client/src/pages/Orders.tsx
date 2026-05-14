@@ -60,7 +60,7 @@ export default function OrdersPage() {
             key: 'id',
             header: 'Order ID',
             sortable: true,
-            render: (row) => <span className="font-mono text-xs font-semibold text-violet-500">{row.id}</span>
+            render: (row) => <span className="font-mono text-xs font-semibold text-[#06B6D4]">{row.id}</span>
         },
         {
             key: 'customerName',
@@ -79,7 +79,7 @@ export default function OrdersPage() {
             render: (row) => (
                 <div className="flex gap-1.5 flex-wrap">
                     {row.products.slice(0, 2).map((product, i) => (
-                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-xs font-medium">
+                        <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-lg bg-cyan-50 text-cyan-600 text-xs font-medium">
                             {product}
                         </span>
                     ))}
@@ -119,42 +119,42 @@ export default function OrdersPage() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1.5">
-                        <ShoppingBag className="h-4 w-4 text-violet-500" />
-                        <span className="text-xs font-semibold text-violet-500">Transaction Ledger</span>
+                        <ShoppingBag className="h-4 w-4 text-[#06B6D4]" />
+                        <span className="text-xs font-semibold text-[#06B6D4]">Transaction Ledger</span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1 font-medium max-w-lg">
-                        Manage transactions and <span className="text-gray-700 font-semibold">orchestrate</span> upsell recovery strategies.
+                    <p className="text-sm text-slate-400 mt-1 font-medium max-w-lg">
+                        Manage transactions and <span className="text-slate-700 font-semibold">orchestrate</span> upsell recovery strategies.
                     </p>
                 </div>
             </div>
 
             {/* Summary Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between group hover:shadow-lg transition-all">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Total Orders</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{totalOrders}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Total Orders</p>
+                        <p className="text-lg font-bold text-slate-800 mt-0.5">{totalOrders}</p>
                     </div>
-                    <ShoppingBag className="h-4 w-4 text-violet-400" />
+                    <ShoppingBag className="h-4 w-4 text-cyan-400" />
                 </div>
-                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between group hover:shadow-lg transition-all">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Revenue</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">₹{totalRevenue.toLocaleString()}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Revenue</p>
+                        <p className="text-lg font-bold text-slate-800 mt-0.5">₹{totalRevenue.toLocaleString()}</p>
                     </div>
                     <TrendingUp className="h-4 w-4 text-emerald-400" />
                 </div>
-                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between group hover:shadow-lg transition-all">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">With Upsell</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{scheduledCount}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">With Upsell</p>
+                        <p className="text-lg font-bold text-slate-800 mt-0.5">{scheduledCount}</p>
                     </div>
-                    <ArrowUpRight className="h-4 w-4 text-blue-400" />
+                    <ArrowUpRight className="h-4 w-4 text-cyan-400" />
                 </div>
-                <div className="glass-card px-4 py-3.5 flex items-center justify-between">
+                <div className="glass-card px-4 py-3.5 flex items-center justify-between group hover:shadow-lg transition-all">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Products</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{orders.reduce((acc, o) => acc + o.products.length, 0)}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Products</p>
+                        <p className="text-lg font-bold text-slate-800 mt-0.5">{orders.reduce((acc, o) => acc + o.products.length, 0)}</p>
                     </div>
                     <Package className="h-4 w-4 text-amber-400" />
                 </div>
@@ -164,28 +164,28 @@ export default function OrdersPage() {
                 {/* Filters */}
                 <div className="glass-card p-4 flex flex-col md:flex-row gap-3">
                     <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input
                             placeholder="Search by customer or order ID..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-white/60 border-gray-200 pl-10 h-10 rounded-xl text-sm focus-visible:ring-violet-200"
+                            className="bg-white border-slate-200 pl-10 h-10 rounded-lg text-sm focus-visible:ring-cyan-200"
                         />
                     </div>
                     <div className="flex items-center gap-2">
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-40 bg-white/60 border-gray-200 h-10 text-xs font-semibold rounded-xl">
+                            <SelectTrigger className="w-40 bg-white border-slate-200 h-10 text-xs font-semibold rounded-lg">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-gray-200 bg-white shadow-lg">
+                            <SelectContent className="rounded-lg border-slate-200 bg-white shadow-lg">
                                 <SelectItem value="all" className="text-xs font-medium">All Statuses</SelectItem>
                                 <SelectItem value="scheduled" className="text-xs font-medium">Scheduled</SelectItem>
                                 <SelectItem value="sent" className="text-xs font-medium">Sent</SelectItem>
                                 <SelectItem value="none" className="text-xs font-medium">No Upsell</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" className="h-10 w-10 border-gray-200 rounded-xl flex items-center justify-center p-0 hover:bg-violet-50">
-                            <Filter className="h-4 w-4 text-gray-400" />
+                        <Button variant="outline" className="h-10 w-10 border-slate-200 rounded-lg flex items-center justify-center p-0 hover:bg-cyan-50">
+                            <Filter className="h-4 w-4 text-slate-400" />
                         </Button>
                     </div>
                 </div>
@@ -215,47 +215,47 @@ export default function OrdersPage() {
             {/* Order Details Modal */}
             {viewingOrder && (
                 <div
-                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in"
                     onClick={(e) => { if (e.target === e.currentTarget) setViewingOrder(null) }}
                 >
-                    <div className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-xl space-y-6 shadow-glass-xl relative overflow-hidden">
+                    <div className="bg-white border border-slate-200 rounded-lg p-8 w-full max-w-xl space-y-6 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-6 opacity-5">
-                            <ShoppingBag className="h-24 w-24 text-gray-400" />
+                            <ShoppingBag className="h-24 w-24 text-slate-400" />
                         </div>
 
                         <div className="flex items-start justify-between relative z-10">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-800">Order Details</h2>
-                                <p className="text-xs font-medium text-gray-400 mt-1 font-mono">ID: {viewingOrder.id}</p>
+                                <h2 className="text-xl font-bold text-slate-900">Order Details</h2>
+                                <p className="text-xs font-medium text-slate-400 mt-1 font-mono">ID: {viewingOrder.id}</p>
                             </div>
                             <StatusBadge status={viewingOrder.upsellStatus} />
                         </div>
 
                         <div className="grid grid-cols-2 gap-6 relative z-10">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Customer</p>
-                                <p className="font-semibold text-gray-800">{viewingOrder.customerName}</p>
-                                <p className="text-sm text-gray-500">{viewingOrder.customerEmail}</p>
+                                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Customer</p>
+                                <p className="font-semibold text-slate-800">{viewingOrder.customerName}</p>
+                                <p className="text-sm text-slate-500">{viewingOrder.customerEmail}</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Date</p>
-                                <p className="font-semibold text-gray-800">{new Date(viewingOrder.orderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Date</p>
+                                <p className="font-semibold text-slate-800">{new Date(viewingOrder.orderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Amount</p>
+                                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Amount</p>
                                 <p className="font-bold text-2xl text-emerald-500">₹{viewingOrder.amount.toLocaleString()}</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Upsell Status</p>
+                                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Upsell Status</p>
                                 <StatusBadge status={viewingOrder.upsellStatus} />
                             </div>
                         </div>
 
                         <div className="space-y-3 relative z-10">
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Products</p>
+                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Products</p>
                             <div className="flex flex-wrap gap-2">
                                 {viewingOrder.products.map((p, i) => (
-                                    <span key={i} className="inline-flex items-center px-3 py-1.5 rounded-xl bg-violet-50 text-violet-600 text-xs font-medium border border-violet-100">
+                                    <span key={i} className="inline-flex items-center px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-600 text-xs font-medium border border-cyan-100">
                                         {p}
                                     </span>
                                 ))}
@@ -265,7 +265,7 @@ export default function OrdersPage() {
                         <div className="flex gap-3 pt-2 relative z-10">
                             {viewingOrder.upsellStatus === 'none' && (
                                 <Button
-                                    className="flex-1 h-11 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
+                                    className="flex-1 h-11 rounded-lg bg-[#06B6D4] hover:bg-[#0891B2] text-white text-xs font-semibold shadow-lg shadow-cyan-500/20"
                                     onClick={() => {
                                         setViewingOrder(null)
                                         alert(`🚀 Manual upsell scheduling for ${viewingOrder.customerName} — coming soon!`)
@@ -278,7 +278,7 @@ export default function OrdersPage() {
                             <Button
                                 variant="outline"
                                 onClick={() => setViewingOrder(null)}
-                                className="flex-1 h-11 rounded-xl border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                                className="flex-1 h-11 rounded-lg border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
                             >
                                 Close
                             </Button>

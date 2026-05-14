@@ -12,26 +12,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 263 70% 50%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 189 95% 43%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 270 60% 90%;
-    --secondary-foreground: 270 30% 30%;
-    --muted: 220 20% 95%;
-    --muted-foreground: 220 15% 40%;
-    --accent: 270 50% 92%;
-    --accent-foreground: 270 30% 25%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 92%;
-    --input: 220 20% 92%;
-    --ring: 263 70% 50%;
-    --radius: 0.75rem;
+    --secondary: 189 95% 95%;
+    --secondary-foreground: 189 95% 20%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 189 95% 95%;
+    --accent-foreground: 189 95% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 189 95% 43%;
+    --radius: 0.5rem;
 
     /* Glassmorphism tokens */
     --glass-bg: rgba(255, 255, 255, 0.65);
@@ -50,31 +50,31 @@
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 263 70% 58%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 80%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 85%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 263 70% 58%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 6.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 189 95% 43%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 189 95% 43%;
 
-    /* Dark glassmorphism tokens */
-    --glass-bg: rgba(0, 0, 0, 0.65);
-    --glass-bg-strong: rgba(0, 0, 0, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    /* Dark glassmorphism tokens - softer for deep navy */
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-bg-strong: rgba(15, 23, 42, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -84,8 +84,7 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'SF Pro Rounded', 'Helvetica Neue', 'Segoe UI', sans-serif;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -93,62 +92,61 @@
 
 /* Pastel Gradient Background — Light */
 .pastel-gradient-bg {
-  background: #ffffff;
+  background: #F7F9FB;
   min-height: 100vh;
-  transition: background 0.5s ease;
 }
 
-/* Dark Gradient Background */
+/* Dark Gradient Background (kept as black but can be adjusted) */
 .dark .pastel-gradient-bg {
-  background: #000000;
+  background: #020617;
 }
 
-/* Glassmorphism Card */
+/* Modern Card */
 .glass-card {
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  box-shadow: var(--glass-shadow);
-  transition: all 0.3s ease;
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
 }
 
 .glass-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.dark .glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 .dark .glass-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  background: var(--glass-bg-strong);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* Glassmorphism Sidebar */
+/* Sidebar */
 .glass-sidebar {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  transition: background 0.4s ease, border-color 0.4s ease;
+  background: #ffffff;
+  border-right: 1px solid #E2E8F0;
 }
 
 .dark .glass-sidebar {
-  background: rgba(0, 0, 0, 0.85);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg-strong);
+  border-right: 1px solid var(--glass-border);
 }
 
-/* Glassmorphism Header */
+/* Header */
 .glass-header {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-  transition: background 0.4s ease, border-color 0.4s ease;
+  background: #ffffff;
+  border-bottom: 1px solid #E2E8F0;
 }
 
 .dark .glass-header {
-  background: rgba(0, 0, 0, 0.7);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
 }
 
 /* Premium card (kept for backward compat) */
@@ -299,74 +297,76 @@
 /* ===== DARK MODE OVERRIDES ===== */
 
 /* Text colors */
-.dark .text-gray-800 {
-  color: #e2e8f0 !important;
+/* Text colors - Lightened for visibility on deep navy */
+.dark .text-slate-900, .dark .text-slate-800, .dark .text-gray-900, .dark .text-gray-800 {
+  color: #f8fafc !important; /* Slate 50 */
 }
 
-.dark .text-gray-700 {
-  color: #cbd5e1 !important;
+.dark .text-slate-700, .dark .text-gray-700 {
+  color: #f1f5f9 !important; /* Slate 100 */
 }
 
-.dark .text-gray-600 {
-  color: #94a3b8 !important;
+.dark .text-slate-600, .dark .text-gray-600 {
+  color: #e2e8f0 !important; /* Slate 200 */
 }
 
-.dark .text-gray-500 {
-  color: #64748b !important;
+.dark .text-slate-500, .dark .text-gray-500 {
+  color: #cbd5e1 !important; /* Slate 300 */
 }
 
-.dark .text-gray-400 {
-  color: #64748b !important;
+.dark .text-slate-400, .dark .text-gray-400 {
+  color: #94a3b8 !important; /* Slate 400 */
 }
 
-.dark .text-gray-300 {
-  color: #475569 !important;
+.dark .text-slate-300, .dark .text-gray-300 {
+  color: #64748b !important; /* Slate 500 */
 }
 
 /* Backgrounds */
 .dark .bg-white {
-  background-color: rgba(10, 10, 10, 0.8) !important;
+  background-color: #0f172a !important;
 }
 
 .dark .bg-white\/80 {
-  background-color: rgba(10, 10, 10, 0.6) !important;
+  background-color: rgba(15, 23, 42, 0.8) !important;
 }
 
 .dark .bg-white\/60 {
-  background-color: rgba(10, 10, 10, 0.4) !important;
+  background-color: rgba(15, 23, 42, 0.6) !important;
 }
 
-.dark .bg-gray-50 {
-  background-color: rgba(10, 10, 10, 0.5) !important;
+.dark .bg-gray-50, .dark .bg-slate-50 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
 }
 
-.dark .bg-gray-50\/80 {
-  background-color: rgba(10, 10, 10, 0.4) !important;
+.dark .bg-gray-50\/80, .dark .bg-slate-50\/80 {
+  background-color: rgba(30, 41, 59, 0.4) !important;
 }
 
-.dark .bg-gray-50\/50 {
-  background-color: rgba(10, 10, 10, 0.3) !important;
+.dark .bg-gray-50\/50, .dark .bg-slate-50\/50 {
+  background-color: rgba(30, 41, 59, 0.3) !important;
 }
 
-.dark .bg-gray-100 {
-  background-color: rgba(18, 18, 18, 0.6) !important;
+.dark .bg-gray-100, .dark .bg-slate-100 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
 }
 
-.dark .bg-gray-900 {
-  background-color: #000000 !important;
+.dark .bg-gray-900, .dark .bg-slate-900 {
+  background-color: #020617 !important;
 }
 
 /* Borders */
-.dark .border-gray-200 {
+.dark .border-gray-200, .dark .border-slate-200 {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-.dark .border-gray-200\/80 {
-  border-color: rgba(255, 255, 255, 0.06) !important;
+.dark .border-gray-100, .dark .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
-.dark .border-gray-100 {
-  border-color: rgba(255, 255, 255, 0.06) !important;
+.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 .dark .border-gray-100\/80 {
@@ -387,27 +387,19 @@
 
 /* Hover states */
 .dark .hover\:bg-gray-50:hover {
-  background-color: rgba(18, 18, 18, 0.5) !important;
+  background-color: rgba(30, 41, 59, 0.5) !important;
 }
 
-.dark .hover\:bg-violet-50:hover {
-  background-color: rgba(124, 58, 237, 0.12) !important;
+.dark .hover\:bg-cyan-50:hover, .dark .hover\:bg-cyan-50\/30:hover, .dark .hover\:bg-cyan-50\/50:hover {
+  background-color: rgba(6, 182, 212, 0.1) !important;
 }
 
-.dark .hover\:bg-violet-50\/30:hover {
-  background-color: rgba(124, 58, 237, 0.08) !important;
-}
-
-.dark .hover\:bg-blue-50:hover {
-  background-color: rgba(59, 130, 246, 0.12) !important;
-}
-
-.dark .hover\:bg-blue-50\/30:hover {
-  background-color: rgba(59, 130, 246, 0.08) !important;
+.dark .hover\:bg-blue-50:hover, .dark .hover\:bg-blue-50\/30:hover, .dark .hover\:bg-blue-50\/50:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
 }
 
 .dark .hover\:bg-red-50:hover {
-  background-color: rgba(239, 68, 68, 0.12) !important;
+  background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 .dark .hover\:bg-white\/60:hover {
@@ -419,8 +411,8 @@
 }
 
 /* Pastel bg overrides for dark */
-.dark .bg-violet-50 {
-  background-color: rgba(124, 58, 237, 0.15) !important;
+.dark .bg-cyan-50 {
+  background-color: rgba(6, 182, 212, 0.15) !important;
 }
 
 .dark .bg-blue-50 {
@@ -439,37 +431,62 @@
   background-color: rgba(239, 68, 68, 0.15) !important;
 }
 
-.dark .bg-purple-50 {
-  background-color: rgba(147, 51, 234, 0.15) !important;
+.dark .bg-cyan-50\/30 {
+  background-color: rgba(6, 182, 212, 0.06) !important;
 }
 
 .dark .bg-red-50 {
   background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
+/* Recharts Dark Mode Fixes */
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #94a3b8 !important;
+  font-size: 10px;
+}
+
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .recharts-tooltip-wrapper .glass-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark .recharts-default-tooltip {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+}
+
+.dark .recharts-tooltip-label {
+  color: #f1f5f9 !important;
+}
+
 /* Insight card overrides */
-.dark .from-violet-50\/80 {
-  --tw-gradient-from: rgba(124, 58, 237, 0.1) !important;
+.dark .from-cyan-50\/80 {
+  --tw-gradient-from: rgba(6, 182, 212, 0.1) !important;
 }
 
-.dark .to-indigo-50\/50 {
-  --tw-gradient-to: rgba(99, 102, 241, 0.08) !important;
+.dark .to-blue-50\/50 {
+  --tw-gradient-to: rgba(59, 130, 246, 0.08) !important;
 }
 
-.dark .border-violet-100\/50 {
-  border-color: rgba(124, 58, 237, 0.15) !important;
+.dark .border-cyan-100\/50 {
+  border-color: rgba(6, 182, 212, 0.15) !important;
 }
 
-.dark .border-violet-100\/60 {
-  border-color: rgba(124, 58, 237, 0.15) !important;
+.dark .border-cyan-100\/60 {
+  border-color: rgba(6, 182, 212, 0.15) !important;
 }
 
-.dark .border-violet-100 {
-  border-color: rgba(124, 58, 237, 0.2) !important;
+.dark .border-cyan-100 {
+  border-color: rgba(6, 182, 212, 0.2) !important;
 }
 
-.dark .border-violet-200 {
-  border-color: rgba(124, 58, 237, 0.25) !important;
+.dark .border-cyan-200 {
+  border-color: rgba(6, 182, 212, 0.25) !important;
 }
 
 .dark .border-blue-100 {
@@ -485,33 +502,33 @@
 }
 
 /* Focus ring */
-.dark .focus\:ring-violet-200:focus {
-  --tw-ring-color: rgba(124, 58, 237, 0.3) !important;
+.dark .focus\:ring-cyan-200:focus {
+  --tw-ring-color: rgba(6, 182, 212, 0.3) !important;
 }
 
-.dark .focus\:border-violet-300:focus {
-  border-color: rgba(124, 58, 237, 0.4) !important;
+.dark .focus\:border-cyan-300:focus {
+  border-color: rgba(6, 182, 212, 0.4) !important;
 }
 
-.dark .focus-visible\:ring-violet-200:focus-visible {
-  --tw-ring-color: rgba(124, 58, 237, 0.3) !important;
+.dark .focus-visible\:ring-cyan-200:focus-visible {
+  --tw-ring-color: rgba(6, 182, 212, 0.3) !important;
 }
 
 /* Gradient bg overrides */
-.dark .from-violet-50 {
-  --tw-gradient-from: rgba(124, 58, 237, 0.1) !important;
+.dark .from-cyan-50 {
+  --tw-gradient-from: rgba(6, 182, 212, 0.1) !important;
 }
 
-.dark .via-indigo-50 {
-  --tw-gradient-stops: var(--tw-gradient-from), rgba(99, 102, 241, 0.08), var(--tw-gradient-to) !important;
+.dark .via-blue-50 {
+  --tw-gradient-stops: var(--tw-gradient-from), rgba(59, 130, 246, 0.08), var(--tw-gradient-to) !important;
 }
 
-.dark .to-purple-50 {
-  --tw-gradient-to: rgba(147, 51, 234, 0.08) !important;
+.dark .to-cyan-50 {
+  --tw-gradient-to: rgba(6, 182, 212, 0.08) !important;
 }
 
-.dark .from-indigo-50 {
-  --tw-gradient-from: rgba(99, 102, 241, 0.1) !important;
+.dark .from-blue-50 {
+  --tw-gradient-from: rgba(59, 130, 246, 0.1) !important;
 }
 
 /* Placeholder text */
@@ -543,7 +560,7 @@
 
 .dark [role="option"]:hover,
 .dark [role="option"][data-highlighted] {
-  background-color: rgba(124, 58, 237, 0.12) !important;
+  background-color: rgba(6, 182, 212, 0.12) !important;
   color: #e2e8f0 !important;
 }
 
@@ -562,7 +579,7 @@
 
 .dark input:focus,
 .dark textarea:focus {
-  border-color: rgba(124, 58, 237, 0.4) !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
 }
 
 /* Labels */
@@ -581,8 +598,8 @@
 
 /* Slider track */
 .dark [role="slider"] {
-  background-color: #7C3AED !important;
-  border-color: #7C3AED !important;
+  background-color: #06B6D4 !important;
+  border-color: #06B6D4 !important;
 }
 
 /* Switch */
@@ -591,7 +608,7 @@
 }
 
 .dark [role="switch"][data-state="checked"] {
-  background-color: #7C3AED !important;
+  background-color: #06B6D4 !important;
 }
 
 /* TabsList */
@@ -606,7 +623,7 @@
 }
 
 .dark [role="tab"][data-state="active"] {
-  background-color: #7C3AED !important;
+  background-color: #06B6D4 !important;
   color: #ffffff !important;
 }
 
@@ -625,7 +642,7 @@
 
 /* Code elements in dark */
 .dark code {
-  color: #a78bfa !important;
+  color: #22d3ee !important;
 }
 
 /* Border-white in dark (notification dots etc) */
@@ -638,8 +655,8 @@
   background-color: rgba(59, 130, 246, 0.2) !important;
 }
 
-.dark .hover\:bg-violet-100:hover {
-  background-color: rgba(124, 58, 237, 0.2) !important;
+.dark .hover\:bg-cyan-100:hover {
+  background-color: rgba(6, 182, 212, 0.2) !important;
 }
 
 /* focus-visible ring for blue inputs */
@@ -679,19 +696,19 @@
   border-color: rgba(59, 130, 246, 0.3) !important;
 }
 
-.dark .border-l-2.border-violet-200 {
-  border-color: rgba(124, 58, 237, 0.3) !important;
+.dark .border-l-2.border-cyan-200 {
+  border-color: rgba(6, 182, 212, 0.3) !important;
 }
 
 /* ===== ADDITIONAL DARK MODE OVERRIDES ===== */
 
-/* Violet/indigo pastel bg variants */
-.dark .bg-violet-50\/50 {
-  background-color: rgba(124, 58, 237, 0.08) !important;
+/* Cyan/blue pastel bg variants */
+.dark .bg-cyan-50\/50 {
+  background-color: rgba(6, 182, 212, 0.08) !important;
 }
 
-.dark .bg-violet-50\/30 {
-  background-color: rgba(124, 58, 237, 0.06) !important;
+.dark .bg-cyan-50\/30 {
+  background-color: rgba(6, 182, 212, 0.06) !important;
 }
 
 .dark .bg-indigo-50 {
@@ -703,12 +720,12 @@
 }
 
 /* Gradient `to` endpoints for dark */
-.dark .to-indigo-50 {
-  --tw-gradient-to: rgba(99, 102, 241, 0.08) !important;
+.dark .to-blue-50 {
+  --tw-gradient-to: rgba(59, 130, 246, 0.08) !important;
 }
 
-.dark .to-indigo-50\/50 {
-  --tw-gradient-to: rgba(99, 102, 241, 0.06) !important;
+.dark .to-blue-50\/50 {
+  --tw-gradient-to: rgba(59, 130, 246, 0.06) !important;
 }
 
 .dark .to-green-500\/15 {
@@ -724,20 +741,20 @@
 }
 
 /* Gradient icon backgrounds (from-xxx/15 to-xxx/15) */
-.dark .from-violet-500\/15 {
-  --tw-gradient-from: rgba(124, 58, 237, 0.12) !important;
+.dark .from-cyan-500\/15 {
+  --tw-gradient-from: rgba(6, 182, 212, 0.12) !important;
 }
 
-.dark .to-indigo-500\/15 {
-  --tw-gradient-to: rgba(99, 102, 241, 0.12) !important;
+.dark .to-blue-500\/15 {
+  --tw-gradient-to: rgba(59, 130, 246, 0.12) !important;
 }
 
 .dark .from-emerald-500\/15 {
   --tw-gradient-from: rgba(16, 185, 129, 0.12) !important;
 }
 
-.dark .from-purple-500\/15 {
-  --tw-gradient-from: rgba(147, 51, 234, 0.12) !important;
+.dark .from-cyan-500\/15 {
+  --tw-gradient-from: rgba(6, 182, 212, 0.12) !important;
 }
 
 .dark .from-amber-500\/15 {
@@ -778,8 +795,8 @@
 }
 
 /* Pagination active button */
-.dark .bg-violet-500.text-white {
-  background-color: #7C3AED !important;
+.dark .bg-cyan-500.text-white {
+  background-color: #06B6D4 !important;
   color: #ffffff !important;
 }
 
@@ -789,25 +806,25 @@
   color: #64748b !important;
 }
 
-/* Hover states for hover:bg-violet-50/30 on table rows */
-.dark .hover\:bg-violet-50\/30:hover {
-  background-color: rgba(124, 58, 237, 0.08) !important;
+/* Hover states for hover:bg-cyan-50/30 on table rows */
+.dark .hover\:bg-cyan-50\/30:hover {
+  background-color: rgba(6, 182, 212, 0.08) !important;
 }
 
-/* Settings instruction panel — bg-violet-50/50 border-violet-100 */
-.dark .bg-violet-50\/50 {
-  background-color: rgba(124, 58, 237, 0.08) !important;
+/* Settings instruction panel — bg-cyan-50/50 border-cyan-100 */
+.dark .bg-cyan-50\/50 {
+  background-color: rgba(6, 182, 212, 0.08) !important;
 }
 
 /* Info panel helper */
-.dark .bg-violet-50\/80 {
-  background-color: rgba(124, 58, 237, 0.12) !important;
+.dark .bg-cyan-50\/80 {
+  background-color: rgba(6, 182, 212, 0.12) !important;
 }
 
 /* Template tags */
-.dark .bg-violet-50.text-violet-600 {
-  background-color: rgba(124, 58, 237, 0.15) !important;
-  color: #a78bfa !important;
+.dark .bg-cyan-50.text-cyan-600 {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+  color: #22d3ee !important;
 }
 
 .dark .hover\:bg-violet-100:hover {

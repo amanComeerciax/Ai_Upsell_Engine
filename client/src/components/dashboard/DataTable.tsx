@@ -70,15 +70,17 @@ export function DataTable<T extends Record<string, any>>({
 
     return (
         <div className="space-y-4">
-            <div className="rounded-xl border border-border/40 overflow-hidden bg-card/30 backdrop-blur-sm">
-                <Table>
-                    <TableHeader className="bg-muted/30">
-                        <TableRow>
+            <div className="rounded-lg border border-slate-100 overflow-hidden bg-white">
+                <div className="overflow-x-auto custom-scrollbar">
+                    <Table>
+                    <TableHeader className="bg-slate-50/50">
+                        <TableRow className="border-slate-100">
                             {columns.map((column) => (
                                 <TableHead
                                     key={column.key}
                                     className={cn(
-                                        column.sortable && 'cursor-pointer hover:text-foreground transition-colors'
+                                        "text-[10px] font-bold uppercase tracking-wider text-slate-400 py-3",
+                                        column.sortable && 'cursor-pointer hover:text-slate-600 transition-colors'
                                     )}
                                     onClick={() => column.sortable && handleSort(column.key)}
                                 >
@@ -86,39 +88,41 @@ export function DataTable<T extends Record<string, any>>({
                                         {column.header}
                                         {column.sortable && sortKey === column.key && (
                                             sortDirection === 'asc' ? (
-                                                <ChevronUp className="h-3 w-3" />
+                                                <ChevronUp className="h-3 w-3 text-[#06B6D4]" />
                                             ) : (
-                                                <ChevronDown className="h-3 w-3" />
+                                                <ChevronDown className="h-3 w-3 text-[#06B6D4]" />
                                             )
                                         )}
                                     </div>
                                 </TableHead>
                             ))}
-                            {rowActions && <TableHead className="text-right">Actions</TableHead>}
+                            {rowActions && <TableHead className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-right px-6">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {paginatedData.map((row, rowIndex) => (
-                            <TableRow key={rowIndex}>
+                            <TableRow key={rowIndex} className="border-slate-50 hover:bg-cyan-50/30 transition-colors">
                                 {columns.map((column) => (
-                                    <TableCell key={column.key}>
-                                        {column.render ? column.render(row) : row[column.key]}
+                                    <TableCell key={column.key} className="py-3.5">
+                                        <div className="text-sm font-medium text-slate-700">
+                                            {column.render ? column.render(row) : row[column.key]}
+                                        </div>
                                     </TableCell>
                                 ))}
                                 {rowActions && (
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right px-6">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/60">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48">
+                                            <DropdownMenuContent align="end" className="w-48 rounded-lg p-2">
                                                 {rowActions.map((action) => (
                                                     <DropdownMenuItem
                                                         key={action.value}
                                                         onClick={() => onRowAction?.(action.value, row)}
-                                                        className="text-xs font-medium"
+                                                        className="text-xs font-semibold rounded-md"
                                                     >
                                                         {action.label}
                                                     </DropdownMenuItem>
@@ -131,31 +135,32 @@ export function DataTable<T extends Record<string, any>>({
                         ))}
                     </TableBody>
                 </Table>
+                </div>
             </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-between px-2">
-                    <p className="text-[11px] font-medium text-muted-foreground">
-                        Showing {startIndex + 1}nd to {Math.min(endIndex, data.length)}nd of {data.length}nd campaigns
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                        Showing {startIndex + 1}-{Math.min(endIndex, data.length)} of {data.length} records
                     </p>
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 px-4 text-[11px] font-bold uppercase tracking-tight rounded-lg"
+                            className="h-8 px-4 text-[10px] font-bold uppercase tracking-tight rounded-lg border-slate-200 hover:bg-slate-50 text-slate-600"
                             onClick={() => setCurrentPage(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
                             Previous
                         </Button>
-                        <span className="text-[11px] font-black tracking-widest text-muted-foreground">
+                        <span className="text-[10px] font-black tracking-widest text-slate-400">
                             {currentPage} / {totalPages}
                         </span>
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 px-4 text-[11px] font-bold uppercase tracking-tight rounded-lg"
+                            className="h-8 px-4 text-[10px] font-bold uppercase tracking-tight rounded-lg border-slate-200 hover:bg-slate-50 text-slate-600"
                             onClick={() => setCurrentPage(currentPage + 1)}
                             disabled={currentPage === totalPages}
                         >

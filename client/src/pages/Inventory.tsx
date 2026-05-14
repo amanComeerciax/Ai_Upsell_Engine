@@ -175,11 +175,11 @@ export default function InventoryPage() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1.5">
-                        <Package className="h-4 w-4 text-violet-500" />
-                        <span className="text-xs font-semibold text-violet-500">Inventory Control</span>
+                        <Package className="h-4 w-4 text-[#06B6D4]" />
+                        <span className="text-xs font-semibold text-[#06B6D4]">Inventory Control</span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1 font-medium max-w-lg">
-                        Manage your catalog and monitor <span className="text-gray-700 font-semibold">performance</span> per SKU.
+                    <p className="text-sm text-slate-400 mt-1 font-medium max-w-lg">
+                        Manage your catalog and monitor <span className="text-slate-700 font-semibold">performance</span> per SKU.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -187,12 +187,12 @@ export default function InventoryPage() {
                         onClick={handleSync}
                         disabled={syncing}
                         variant="outline"
-                        className="h-10 border-violet-200 bg-violet-50/50 text-violet-600 hover:bg-violet-100/50 rounded-xl text-xs font-semibold px-5"
+                        className="h-10 border-cyan-100 bg-cyan-50 text-cyan-600 hover:bg-cyan-100 rounded-lg text-xs font-semibold px-5"
                     >
                         {syncing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
                         Sync Shopify
                     </Button>
-                    <Button className="h-10 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold px-5 shadow-lg shadow-violet-500/20">
+                    <Button className="h-10 rounded-lg bg-[#06B6D4] hover:bg-[#0891B2] text-white text-xs font-bold px-5 shadow-lg shadow-cyan-500/30 transition-all">
                         Add Product
                     </Button>
                 </div>
@@ -200,42 +200,42 @@ export default function InventoryPage() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-violet-500/5 transition-all">
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-cyan-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center">
-                            <Package className="h-5 w-5 text-violet-500" />
+                        <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-[#06B6D4]" />
                         </div>
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.totalProducts}</p>
-                    <p className="text-xs font-medium text-gray-400 mt-1">Total Products</p>
+                    <p className="text-2xl font-bold text-slate-800 tracking-tight">{stats.totalProducts}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">Total Products</p>
                 </div>
                 <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center">
                             <TrendingUp className="h-5 w-5 text-emerald-500" />
                         </div>
                         <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-lg">{stats.upsellPerformance}</span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.upsellPerformance}</p>
-                    <p className="text-xs font-medium text-gray-400 mt-1">AI Lift</p>
+                    <p className="text-2xl font-bold text-slate-800 tracking-tight">{stats.upsellPerformance}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">AI Lift</p>
                 </div>
                 <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-amber-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/15 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-lg bg-amber-50 flex items-center justify-center">
                             <AlertCircle className="h-5 w-5 text-amber-500" />
                         </div>
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.lowStockItems}</p>
-                    <p className="text-xs font-medium text-gray-400 mt-1">Stock Alerts</p>
+                    <p className="text-2xl font-bold text-slate-800 tracking-tight">{stats.lowStockItems}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">Stock Alerts</p>
                 </div>
-                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-purple-500/5 transition-all">
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-cyan-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500/15 to-pink-500/15 flex items-center justify-center">
-                            <ArrowUpRight className="h-5 w-5 text-purple-500" />
+                        <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <ArrowUpRight className="h-5 w-5 text-[#06B6D4]" />
                         </div>
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats.totalRevenue}</p>
-                    <p className="text-xs font-medium text-gray-400 mt-1">Total Revenue</p>
+                    <p className="text-2xl font-bold text-slate-800 tracking-tight">{stats.totalRevenue}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">Total Revenue</p>
                 </div>
             </div>
 
@@ -243,20 +243,20 @@ export default function InventoryPage() {
                 {/* Filters */}
                 <div className="glass-card p-4 flex flex-col md:flex-row gap-3">
                     <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input
                             placeholder="Search by name or category..."
                             value={searchQuery}
                             onChange={handleSearchChange}
-                            className="bg-white/60 border-gray-200 pl-10 h-10 rounded-xl text-sm focus-visible:ring-violet-200"
+                            className="bg-white border-slate-200 pl-10 h-10 rounded-lg text-sm focus-visible:ring-cyan-200"
                         />
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" className="h-10 border-gray-200 rounded-xl px-4 text-xs font-semibold text-gray-600 hover:bg-violet-50">
+                        <Button variant="outline" className="h-10 border-slate-200 rounded-lg px-4 text-xs font-semibold text-slate-600 hover:bg-cyan-50">
                             <Filter className="h-4 w-4 mr-2" />
                             Filters
                         </Button>
-                        <span className="text-xs font-medium text-gray-400 px-3">
+                        <span className="text-xs font-medium text-slate-400 px-3">
                             {filteredProducts.length} results
                         </span>
                     </div>
@@ -266,18 +266,18 @@ export default function InventoryPage() {
                 <div className="glass-card overflow-hidden p-0">
                     {loading ? (
                         <div className="flex items-center justify-center py-24 gap-3">
-                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                            <span className="text-sm font-medium text-gray-400">Loading products...</span>
+                            <Loader2 className="h-6 w-6 animate-spin text-[#06B6D4]" />
+                            <span className="text-sm font-medium text-slate-400">Loading products...</span>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
-                                <TableHeader className="bg-gray-50/80">
-                                    <TableRow className="border-gray-100 hover:bg-transparent">
-                                        <TableHead className="text-[10px] font-semibold text-gray-400 py-3 px-6 uppercase tracking-wider">Product</TableHead>
-                                        <TableHead className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Category</TableHead>
-                                        <TableHead className="text-[10px] font-semibold text-gray-400 text-right px-6 uppercase tracking-wider">Price</TableHead>
-                                        <TableHead className="text-[10px] font-semibold text-gray-400 text-right px-6 uppercase tracking-wider">Revenue</TableHead>
+                                <TableHeader className="bg-slate-50/80">
+                                    <TableRow className="border-slate-100 hover:bg-transparent">
+                                        <TableHead className="text-[10px] font-semibold text-slate-400 py-3 px-6 uppercase tracking-wider">Product</TableHead>
+                                        <TableHead className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Category</TableHead>
+                                        <TableHead className="text-[10px] font-semibold text-slate-400 text-right px-6 uppercase tracking-wider">Price</TableHead>
+                                        <TableHead className="text-[10px] font-semibold text-slate-400 text-right px-6 uppercase tracking-wider">Revenue</TableHead>
                                         <TableHead className="w-[60px] px-6"></TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -285,45 +285,45 @@ export default function InventoryPage() {
                                     {paginatedProducts.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={5} className="text-center py-20">
-                                                <p className="text-sm font-medium text-gray-400">
+                                                <p className="text-sm font-medium text-slate-400">
                                                     {searchQuery ? `No matches for "${searchQuery}"` : 'No products. Sync your catalog.'}
                                                 </p>
                                             </TableCell>
                                         </TableRow>
                                     ) : paginatedProducts.map((product) => (
-                                        <TableRow key={product.id} className="border-gray-50 hover:bg-violet-50/30 transition-colors group">
+                                        <TableRow key={product.id} className="border-slate-50 hover:bg-cyan-50/30 transition-colors group">
                                             <TableCell className="py-4 px-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0 group-hover:scale-105 transition-transform">
+                                                    <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0 group-hover:scale-105 transition-transform">
                                                         {product.imageURL ? (
                                                             <img src={product.imageURL} alt={product.name} className="h-full w-full object-contain p-1.5" />
                                                         ) : (
                                                             <div className="h-full w-full flex items-center justify-center">
-                                                                <Package className="h-5 w-5 text-gray-300" />
+                                                                <Package className="h-5 w-5 text-slate-300" />
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-sm text-gray-700 group-hover:text-violet-600 transition-colors">{product.name}</p>
-                                                        <p className="text-[10px] text-gray-400 mt-0.5">SKU_{product.shopifyId || product.id}</p>
+                                                        <p className="font-semibold text-sm text-slate-700 group-hover:text-[#06B6D4] transition-colors">{product.name}</p>
+                                                        <p className="text-[10px] text-slate-400 mt-0.5">SKU_{product.shopifyId || product.id}</p>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-violet-50/50 text-gray-500 text-xs font-medium">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-cyan-50 text-cyan-600 text-xs font-medium">
                                                     {product.category}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="text-right px-6 font-semibold text-sm text-gray-700">
+                                            <TableCell className="text-right px-6 font-semibold text-sm text-slate-700">
                                                 ₹{Number(product.price).toLocaleString()}
                                             </TableCell>
                                             <TableCell className="text-right px-6">
                                                 <div className="flex flex-col items-end gap-1">
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs font-bold text-emerald-500">₹{Number(product.revenueGenerated || 0).toLocaleString()}</span>
-                                                        <span className="text-[10px] text-gray-400">({product.conversionRate || 0}%)</span>
+                                                        <span className="text-[10px] text-slate-400">({product.conversionRate || 0}%)</span>
                                                     </div>
-                                                    <div className="w-20 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div className="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
                                                         <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${product.conversionRate || 0}%` }} />
                                                     </div>
                                                 </div>
@@ -331,29 +331,29 @@ export default function InventoryPage() {
                                             <TableCell className="px-6">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-gray-100"
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-slate-100"
                                                             disabled={deletingId === product.id}>
                                                             {deletingId === product.id
                                                                 ? <Loader2 className="h-4 w-4 animate-spin" />
-                                                                : <MoreHorizontal className="h-4 w-4 text-gray-400" />}
+                                                                : <MoreHorizontal className="h-4 w-4 text-slate-400" />}
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="rounded-xl border-gray-200 bg-white shadow-lg p-1.5 w-48">
+                                                    <DropdownMenuContent align="end" className="rounded-lg border-slate-200 bg-white shadow-lg p-1.5 w-48">
                                                         <DropdownMenuItem
                                                             className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer"
                                                             onClick={() => openEditModal(product)}
                                                         >
-                                                            <Pencil className="h-3.5 w-3.5 text-violet-500" /> Edit Product
+                                                            <Pencil className="h-3.5 w-3.5 text-[#06B6D4]" /> Edit Product
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer"
                                                             onClick={() => navigate(`/dashboard/inventory/${product.id}`)}
                                                         >
-                                                            <BarChart2 className="h-3.5 w-3.5 text-purple-500" /> View Analytics
+                                                            <BarChart2 className="h-3.5 w-3.5 text-emerald-500" /> View Analytics
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuSeparator className="my-1 bg-gray-100" />
+                                                        <DropdownMenuSeparator className="my-1 bg-slate-100" />
                                                         <DropdownMenuItem
-                                                            className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer text-red-500 focus:text-red-500"
+                                                            className="gap-2 text-xs font-medium py-2.5 rounded-lg cursor-pointer text-rose-500 focus:text-rose-500"
                                                             onClick={() => handleDelete(product)}
                                                         >
                                                             <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -370,8 +370,8 @@ export default function InventoryPage() {
 
                     {/* Pagination */}
                     {!loading && totalPages > 1 && (
-                        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-                            <p className="text-xs font-medium text-gray-400">
+                        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                            <p className="text-xs font-medium text-slate-400">
                                 Page {currentPage} of {totalPages}
                             </p>
                             <div className="flex items-center gap-1.5">
@@ -392,8 +392,8 @@ export default function InventoryPage() {
                                         className={cn(
                                             "h-8 w-8 rounded-lg text-xs font-semibold",
                                             page === currentPage
-                                                ? "bg-violet-500 text-white shadow-md shadow-violet-500/20"
-                                                : "hover:bg-white text-gray-500"
+                                                ? "bg-[#06B6D4] text-white shadow-md shadow-cyan-500/20"
+                                                : "hover:bg-white text-slate-500"
                                         )}
                                         onClick={() => setCurrentPage(page)}
                                     >
@@ -417,39 +417,39 @@ export default function InventoryPage() {
 
             {/* Edit Modal */}
             {editingProduct && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in"
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in"
                     onClick={(e) => { if (e.target === e.currentTarget) setEditingProduct(null) }}>
-                    <div className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-lg space-y-6 shadow-glass-xl">
+                    <div className="bg-white border border-slate-200 rounded-lg p-8 w-full max-w-lg space-y-6 shadow-2xl">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-800">Edit Product</h2>
-                            <p className="text-xs font-medium text-gray-400 mt-1 font-mono">ID: {editingProduct.id}</p>
+                            <h2 className="text-xl font-bold text-slate-900">Edit Product</h2>
+                            <p className="text-xs font-medium text-slate-400 mt-1 font-mono">ID: {editingProduct.id}</p>
                         </div>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Product Name</label>
+                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Product Name</label>
                                 <Input
                                     value={editForm.name}
                                     onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                                    className="rounded-xl h-11 bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm"
+                                    className="rounded-lg h-11 bg-slate-50 border-slate-200 focus-visible:ring-cyan-200 text-sm"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Category</label>
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Category</label>
                                     <Input
                                         value={editForm.category}
                                         onChange={e => setEditForm(f => ({ ...f, category: e.target.value }))}
-                                        className="rounded-xl h-11 bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm"
+                                        className="rounded-lg h-11 bg-slate-50 border-slate-200 focus-visible:ring-cyan-200 text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Price (₹)</label>
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Price (₹)</label>
                                     <Input
                                         type="number"
                                         value={editForm.price}
                                         onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
-                                        className="rounded-xl h-11 bg-gray-50 border-gray-200 focus-visible:ring-violet-200 text-sm font-bold text-emerald-500"
+                                        className="rounded-lg h-11 bg-slate-50 border-slate-200 focus-visible:ring-cyan-200 text-sm font-bold text-emerald-500"
                                     />
                                 </div>
                             </div>
@@ -459,7 +459,7 @@ export default function InventoryPage() {
                             <Button
                                 onClick={handleSaveEdit}
                                 disabled={saving}
-                                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-violet-500/20"
+                                className="flex-1 h-11 rounded-lg bg-[#06B6D4] hover:bg-[#0891B2] text-white text-xs font-semibold shadow-lg shadow-cyan-500/20"
                             >
                                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                 Save Changes
@@ -468,7 +468,7 @@ export default function InventoryPage() {
                                 variant="outline"
                                 onClick={() => setEditingProduct(null)}
                                 disabled={saving}
-                                className="flex-1 h-11 rounded-xl border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                                className="flex-1 h-11 rounded-lg border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
                             >
                                 Cancel
                             </Button>

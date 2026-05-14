@@ -37,13 +37,13 @@ const statusConfig: Record<string, { bg: string; text: string; label: string }> 
         label: 'Cancelled',
     },
     active: {
-        bg: 'bg-blue-50',
-        text: 'text-blue-600',
+        bg: 'bg-cyan-50',
+        text: 'text-[#06B6D4]',
         label: 'Active',
     },
     sent: {
-        bg: 'bg-blue-50',
-        text: 'text-blue-600',
+        bg: 'bg-cyan-50',
+        text: 'text-[#06B6D4]',
         label: 'Sent',
     },
     in_stock: {
@@ -66,15 +66,15 @@ const statusConfig: Record<string, { bg: string; text: string; label: string }> 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
     const normalizedStatus = status?.toLowerCase()?.replace(/\s+/g, '_')
     const config = statusConfig[normalizedStatus] || {
-        bg: 'bg-gray-50',
-        text: 'text-gray-500',
+        bg: 'bg-slate-50',
+        text: 'text-slate-500',
         label: status,
     }
 
     return (
         <span
             className={cn(
-                'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold',
+                'inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider',
                 config.bg,
                 config.text,
                 className

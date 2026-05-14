@@ -43,9 +43,9 @@ const salesChartData = [
 ]
 
 const donutData = [
-    { name: 'Converted', value: 45, color: '#7C3AED' },
-    { name: 'Active', value: 35, color: '#34D399' },
-    { name: 'Expired', value: 20, color: '#F87171' },
+    { name: 'Converted', value: 45, color: '#06B6D4' },
+    { name: 'Active', value: 35, color: '#22D3EE' },
+    { name: 'Expired', value: 20, color: '#94A3B8' },
 ]
 
 const analyticsBarData = [
@@ -59,10 +59,10 @@ const analyticsBarData = [
 ]
 
 const recentOrders = [
-    { id: '#9812567', product: 'Air Vapomax', status: 'complete', price: '$22.78', img: '👟' },
-    { id: '#9812411', product: 'Canon EOS 1500D', status: 'pending', price: '$122.8', img: '📷' },
-    { id: '#9812556', product: 'MI Backpack Black', status: 'cancelled', price: '$15.99', img: '🎒' },
-    { id: '#9812619', product: 'iPhone 12 128GB', status: 'complete', price: '$4022', img: '📱' },
+    { id: '#9812567', product: 'Air Vapomax', status: 'complete', price: '$22.78', img: <Package className="h-4 w-4" /> },
+    { id: '#9812411', product: 'Canon EOS 1500D', status: 'pending', price: '$122.8', img: <Package className="h-4 w-4" /> },
+    { id: '#9812556', product: 'MI Backpack Black', status: 'cancelled', price: '$15.99', img: <Package className="h-4 w-4" /> },
+    { id: '#9812619', product: 'iPhone 12 128GB', status: 'complete', price: '$4022', img: <Package className="h-4 w-4" /> },
 ]
 
 // Mini sparkline component for stat cards
@@ -84,8 +84,8 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
 const SalesTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-gray-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl border border-gray-700/50">
-                <p className="text-gray-400 text-[10px] font-medium mb-0.5">Revenue</p>
+            <div className="bg-[#0c1220]/95 backdrop-blur-md text-white px-4 py-2.5 rounded-lg text-xs font-semibold shadow-xl border border-slate-700/30">
+                <p className="text-slate-400 text-[10px] font-medium mb-0.5">Revenue</p>
                 <p className="text-white font-bold text-sm">₹{payload[0].value.toLocaleString()}</p>
             </div>
         )
@@ -96,17 +96,17 @@ const SalesTooltip = ({ active, payload }: any) => {
 const BarTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-gray-900 text-white px-4 py-3 rounded-xl text-xs shadow-xl border border-gray-700/50">
-                <p className="text-gray-400 text-[10px] font-medium mb-1.5">{label}</p>
+            <div className="bg-[#0c1220]/95 backdrop-blur-md text-white px-4 py-3 rounded-lg text-xs shadow-xl border border-slate-700/30">
+                <p className="text-slate-400 text-[10px] font-medium mb-1.5">{label}</p>
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-violet-500" />
-                        <span className="text-gray-300">Upsells:</span>
+                        <div className="h-2 w-2 rounded-full bg-cyan-500" />
+                        <span className="text-slate-300">Upsells:</span>
                         <span className="font-bold">{payload[0]?.value}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-violet-300" />
-                        <span className="text-gray-300">Orders:</span>
+                        <div className="h-2 w-2 rounded-full bg-cyan-300" />
+                        <span className="text-slate-300">Orders:</span>
                         <span className="font-bold">{payload[1]?.value}</span>
                     </div>
                 </div>
@@ -273,12 +273,14 @@ export default function DashboardPage() {
         <div className="space-y-5 animate-fade-in pb-8">
             {/* ──── Top Bar: Actions ──── */}
             <div className="flex items-center gap-3 justify-end">
+                {/* 
                 <Button onClick={handleSimulateOrder} disabled={simulating || !merchant?.shopify_connected}
-                    className="h-9 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold px-5 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all">
+                    className="h-9 rounded-lg bg-[#06B6D4] hover:bg-[#0891B2] disabled:bg-[#06B6D4] disabled:opacity-100 text-white text-xs font-bold px-5 shadow-lg shadow-cyan-500/30 transition-all disabled:cursor-not-allowed">
                     {simulating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Zap className="h-3.5 w-3.5 mr-2" />}
                     Simulate Order
                 </Button>
-                <Button onClick={handleExport} variant="outline" className="h-9 rounded-xl border-gray-200 text-xs font-semibold px-5 text-gray-600 hover:bg-white/60">
+                */}
+                <Button onClick={handleExport} variant="outline" className="h-9 rounded-lg border-slate-200 bg-white text-xs font-semibold px-5 text-slate-600 hover:bg-slate-50">
                     <Download className="h-3.5 w-3.5 mr-2" /> Export
                 </Button>
             </div>
@@ -286,16 +288,16 @@ export default function DashboardPage() {
             {/* ──── ROW 1: 4 Stat Cards with Sparklines (no height mismatch) ──── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Total Revenue */}
-                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-violet-500/5 transition-all">
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-cyan-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center">
-                            <DollarSign className="h-5 w-5 text-violet-500" />
+                        <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <DollarSign className="h-5 w-5 text-[#06B6D4]" />
                         </div>
-                        <MiniSparkline data={sparkData.length ? sparkData : [10, 20, 15, 30, 25, 35]} color="#7C3AED" />
+                        <MiniSparkline data={sparkData.length ? sparkData : [10, 20, 15, 30, 25, 35]} color="#06B6D4" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">₹{(stats?.counts?.totalRevenue || 0).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-slate-900 tracking-tight">₹{(stats?.counts?.totalRevenue || 0).toLocaleString()}</p>
                     <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs font-medium text-gray-400">Total Revenue</p>
+                        <p className="text-xs font-medium text-slate-400">Total Revenue</p>
                         <div className="flex items-center gap-0.5 text-emerald-500">
                             <ArrowUpRight className="h-3 w-3" />
                             <span className="text-[10px] font-bold">+12.5%</span>
@@ -304,16 +306,16 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Total Orders */}
-                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-cyan-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/15 flex items-center justify-center">
-                            <ShoppingCart className="h-5 w-5 text-blue-500" />
+                        <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <ShoppingCart className="h-5 w-5 text-[#06B6D4]" />
                         </div>
-                        <MiniSparkline data={[20, 35, 28, 40, 45, 38, 50]} color="#3B82F6" />
+                        <MiniSparkline data={[20, 35, 28, 40, 45, 38, 50]} color="#06B6D4" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats?.counts?.totalOrders || 0}</p>
+                    <p className="text-2xl font-bold text-slate-900 tracking-tight">{stats?.counts?.totalOrders || 0}</p>
                     <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs font-medium text-gray-400">Total Orders</p>
+                        <p className="text-xs font-medium text-slate-400">Total Orders</p>
                         <div className="flex items-center gap-0.5 text-emerald-500">
                             <ArrowUpRight className="h-3 w-3" />
                             <span className="text-[10px] font-bold">+8.3%</span>
@@ -321,34 +323,34 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* AI Upsell Events */}
-                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-emerald-500/5 transition-all">
+                {/* AI Upsell Events (Insights Card - High Impact) */}
+                <div className="bg-[#06B6D4] p-5 rounded-lg group cursor-pointer shadow-lg shadow-cyan-500/20 hover:-translate-y-0.5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/15 to-green-500/15 flex items-center justify-center">
-                            <Sparkles className="h-5 w-5 text-emerald-500" />
+                        <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
+                            <Sparkles className="h-5 w-5 text-white" />
                         </div>
-                        <div className="flex items-center gap-1 text-violet-500 bg-violet-50 px-2 py-0.5 rounded-lg">
-                            <Activity className="h-3 w-3" /><span className="text-[10px] font-bold">LIVE</span>
+                        <div className="flex items-center gap-1 text-[#06B6D4] bg-white px-2 py-0.5 rounded-md">
+                            <Activity className="h-3 w-3" /><span className="text-[10px] font-black">LIVE</span>
                         </div>
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats?.counts?.totalUpsellEvents || 0}</p>
+                    <p className="text-2xl font-bold text-white tracking-tight">{stats?.counts?.totalUpsellEvents || 0}</p>
                     <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs font-medium text-gray-400">AI Upsells Triggered</p>
-                        <span className="text-[10px] font-bold text-violet-500">{convRates.conversionRate || '0'}% CVR</span>
+                        <p className="text-xs font-medium text-white/80">AI Upsells Triggered</p>
+                        <span className="text-[10px] font-bold text-white">{convRates.conversionRate || '0'}% CVR</span>
                     </div>
                 </div>
 
                 {/* Products Synced */}
-                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-amber-500/5 transition-all">
+                <div className="glass-card p-5 group cursor-pointer hover:shadow-lg hover:shadow-cyan-500/5 transition-all">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/15 flex items-center justify-center">
-                            <Package className="h-5 w-5 text-amber-500" />
+                        <div className="h-10 w-10 rounded-lg bg-cyan-50 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-[#06B6D4]" />
                         </div>
-                        <MiniSparkline data={[15, 22, 18, 25, 30, 28, 32]} color="#F59E0B" />
+                        <MiniSparkline data={[15, 22, 18, 25, 30, 28, 32]} color="#06B6D4" />
                     </div>
-                    <p className="text-2xl font-bold text-gray-800 tracking-tight">{stats?.counts?.totalProducts || 0}</p>
+                    <p className="text-2xl font-bold text-slate-900 tracking-tight">{stats?.counts?.totalProducts || 0}</p>
                     <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs font-medium text-gray-400">Products Synced</p>
+                        <p className="text-xs font-medium text-slate-400">Products Synced</p>
                         <div className="flex items-center gap-0.5 text-emerald-500">
                             <ArrowUpRight className="h-3 w-3" />
                             <span className="text-[10px] font-bold">Active</span>
@@ -363,10 +365,10 @@ export default function DashboardPage() {
                 <div className="xl:col-span-8 glass-card p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-base font-bold text-gray-800">Revenue Overview</h3>
-                            <p className="text-xs text-gray-400 mt-0.5 font-medium">Last 7 days trajectory</p>
+                            <h3 className="text-base font-bold text-slate-900">Revenue Overview</h3>
+                            <p className="text-xs text-slate-400 mt-0.5 font-medium">Last 7 days trajectory</p>
                         </div>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 border border-gray-200 text-xs font-medium text-gray-600 hover:bg-violet-50 hover:border-violet-200 transition-colors">
+                        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors">
                             Weekly <ChevronDown className="h-3 w-3" />
                         </button>
                     </div>
@@ -375,18 +377,18 @@ export default function DashboardPage() {
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.15} />
-                                        <stop offset="50%" stopColor="#818CF8" stopOpacity={0.08} />
-                                        <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.01} />
+                                        <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.15} />
+                                        <stop offset="50%" stopColor="#22D3EE" stopOpacity={0.08} />
+                                        <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.01} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} dx={-10} />
+                                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} dx={-10} />
                                 <Tooltip content={<SalesTooltip />} />
-                                <Area type="monotone" dataKey="value" stroke="#7C3AED" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)"
-                                    dot={{ fill: '#7C3AED', strokeWidth: 2, stroke: '#fff', r: 4 }}
-                                    activeDot={{ fill: '#7C3AED', strokeWidth: 3, stroke: '#fff', r: 6 }} />
+                                <Area type="monotone" dataKey="value" stroke="#06B6D4" strokeWidth={2.5} fillOpacity={1} fill="url(#revGrad)"
+                                    dot={{ fill: '#06B6D4', strokeWidth: 2, stroke: '#fff', r: 4 }}
+                                    activeDot={{ fill: '#06B6D4', strokeWidth: 3, stroke: '#fff', r: 6 }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -468,23 +470,23 @@ export default function DashboardPage() {
                 <div className="xl:col-span-8 glass-card p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h3 className="text-base font-bold text-gray-800">Upsell vs Orders</h3>
-                            <p className="text-xs text-gray-400 mt-0.5 font-medium">Weekly comparison</p>
+                            <h3 className="text-base font-bold text-slate-900">Upsell vs Orders</h3>
+                            <p className="text-xs text-slate-400 mt-0.5 font-medium">Weekly comparison</p>
                         </div>
                         <div className="flex items-center gap-4 text-xs">
-                            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-violet-500" /><span className="text-gray-500 font-medium">Upsells</span></div>
-                            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-violet-300" /><span className="text-gray-500 font-medium">Orders</span></div>
+                            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-cyan-500" /><span className="text-slate-500 font-medium">Upsells</span></div>
+                            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 rounded-full bg-cyan-200" /><span className="text-slate-500 font-medium">Orders</span></div>
                         </div>
                     </div>
                     <div className="h-[220px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={analyticsBarData} barGap={3} barSize={12}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} dy={8} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }} />
-                                <Tooltip content={<BarTooltip />} />
-                                <Bar dataKey="upsells" fill="#7C3AED" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="orders" fill="#C4B5FD" radius={[4, 4, 0, 0]} />
+                                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} dy={8} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} />
+                                <Tooltip cursor={{ fill: 'rgba(6, 182, 212, 0.04)' }} content={<BarTooltip />} />
+                                <Bar dataKey="upsells" fill="#06B6D4" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="orders" fill="#A5F3FC" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -493,42 +495,42 @@ export default function DashboardPage() {
                 {/* Quick Actions + AI Activity */}
                 <div className="xl:col-span-4 glass-card p-6">
                     <div className="flex items-center gap-2 mb-4">
-                        <Activity className="h-4 w-4 text-violet-500" />
-                        <h3 className="text-sm font-bold text-gray-800">AI Activity Feed</h3>
+                        <Activity className="h-4 w-4 text-[#06B6D4]" />
+                        <h3 className="text-sm font-bold text-slate-900">AI Activity Feed</h3>
                     </div>
                     {activityFeed.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-6 text-center">
-                            <Activity className="h-5 w-5 text-gray-300 mb-2" />
-                            <p className="text-xs text-gray-400">No recent activity</p>
+                            <Activity className="h-5 w-5 text-slate-300 mb-2" />
+                            <p className="text-xs text-slate-400">No recent activity</p>
                         </div>
                     ) : (
                         <div className="space-y-2.5 max-h-[140px] overflow-y-auto custom-scrollbar pr-1">
                             {activityFeed.slice(0, 6).map((event: any, i: number) => (
                                 <div key={i} className="flex items-start gap-2.5">
-                                    <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${event.type === 'ai' ? 'bg-violet-500' : event.type === 'success' ? 'bg-emerald-500' : 'bg-gray-300'
+                                    <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${event.type === 'ai' ? 'bg-cyan-500' : event.type === 'success' ? 'bg-emerald-500' : 'bg-slate-300'
                                         }`} />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[11px] font-medium text-gray-600 leading-snug">{event.msg}</p>
-                                        <p className="text-[9px] text-gray-400">{event.time}</p>
+                                        <p className="text-[11px] font-medium text-slate-600 leading-snug">{event.msg}</p>
+                                        <p className="text-[9px] text-slate-400">{event.time}</p>
                                     </div>
-                                    {event.type === 'ai' && <Sparkles className="h-3 w-3 text-violet-400 shrink-0 mt-0.5" />}
+                                    {event.type === 'ai' && <Sparkles className="h-3 w-3 text-cyan-400 shrink-0 mt-0.5" />}
                                 </div>
                             ))}
                         </div>
                     )}
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-1.5">
-                        <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Actions</p>
-                        <button onClick={() => navigate('/dashboard/campaigns')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-violet-50/50 transition-colors text-left group">
-                            <div className="h-6 w-6 rounded-lg bg-violet-50 flex items-center justify-center"><Sparkles className="h-3 w-3 text-violet-500" /></div>
-                            <span className="text-[11px] font-semibold text-gray-600 group-hover:text-violet-600 transition-colors">View All Campaigns</span>
+                    <div className="mt-4 pt-4 border-t border-slate-100 space-y-1.5">
+                        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Quick Actions</p>
+                        <button onClick={() => navigate('/dashboard/campaigns')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-cyan-50 transition-colors text-left group">
+                            <div className="h-6 w-6 rounded-lg bg-cyan-50 flex items-center justify-center"><Sparkles className="h-3 w-3 text-[#06B6D4]" /></div>
+                            <span className="text-[11px] font-semibold text-slate-600 group-hover:text-[#06B6D4] transition-colors">View All Campaigns</span>
                         </button>
-                        <button onClick={() => navigate('/dashboard/analytics')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/50 transition-colors text-left group">
-                            <div className="h-6 w-6 rounded-lg bg-blue-50 flex items-center justify-center"><TrendingUp className="h-3 w-3 text-blue-500" /></div>
-                            <span className="text-[11px] font-semibold text-gray-600 group-hover:text-blue-600 transition-colors">Full Analytics Report</span>
+                        <button onClick={() => navigate('/dashboard/analytics')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-cyan-50 transition-colors text-left group">
+                            <div className="h-6 w-6 rounded-lg bg-cyan-50 flex items-center justify-center"><TrendingUp className="h-3 w-3 text-blue-500" /></div>
+                            <span className="text-[11px] font-semibold text-slate-600 group-hover:text-[#06B6D4] transition-colors">Full Analytics Report</span>
                         </button>
-                        <button onClick={() => navigate('/dashboard/ai-models')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-emerald-50/50 transition-colors text-left group">
-                            <div className="h-6 w-6 rounded-lg bg-emerald-50 flex items-center justify-center"><Cpu className="h-3 w-3 text-emerald-500" /></div>
-                            <span className="text-[11px] font-semibold text-gray-600 group-hover:text-emerald-600 transition-colors">AI Model Config</span>
+                        <button onClick={() => navigate('/dashboard/ai-models')} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-cyan-50 transition-colors text-left group">
+                            <div className="h-6 w-6 rounded-lg bg-cyan-50 flex items-center justify-center"><Cpu className="h-3 w-3 text-emerald-500" /></div>
+                            <span className="text-[11px] font-semibold text-slate-600 group-hover:text-[#06B6D4] transition-colors">AI Model Config</span>
                         </button>
                     </div>
                 </div>
@@ -537,32 +539,36 @@ export default function DashboardPage() {
             {/* ──── ROW 4: Recent Orders (8) + Recent Upsell Campaigns (4) ──── */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
                 {/* Recent Orders Table */}
-                <div className="xl:col-span-7 glass-card p-6">
+                <div className="xl:col-span-7 glass-card p-6 overflow-hidden">
                     <div className="flex items-center justify-between mb-5">
-                        <h3 className="text-base font-bold text-gray-800">Recent Orders</h3>
+                        <h3 className="text-base font-bold text-slate-900">Recent Orders</h3>
                         <button onClick={() => navigate('/dashboard/orders')}
-                            className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-violet-50 hover:border-violet-200 transition-colors bg-white/80">
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-cyan-50 hover:border-cyan-200 transition-colors bg-white">
                             See more
                         </button>
                     </div>
-                    <div className="grid grid-cols-12 gap-3 px-3 py-2.5 text-[10px] font-semibold text-gray-400 border-b border-gray-100 bg-gray-50/50 rounded-t-xl uppercase tracking-wider">
-                        <div className="col-span-3">Tracking ID</div>
-                        <div className="col-span-4">Product</div>
-                        <div className="col-span-2">Status</div>
-                        <div className="col-span-3">Amount</div>
-                    </div>
-                    <div className="divide-y divide-gray-50">
-                        {apiOrders.map((order: any, i: number) => (
-                            <div key={i} className="grid grid-cols-12 gap-3 px-3 py-3.5 items-center hover:bg-violet-50/30 transition-colors rounded-lg group">
-                                <div className="col-span-3 text-xs font-semibold text-gray-700">{order.id}</div>
-                                <div className="col-span-4 flex items-center gap-2">
-                                    <span className="text-sm">{order.img}</span>
-                                    <span className="text-xs font-medium text-gray-700 group-hover:text-violet-600 transition-colors truncate">{order.product}</span>
-                                </div>
-                                <div className="col-span-2"><StatusBadge status={order.status} /></div>
-                                <div className="col-span-3 text-xs font-bold text-gray-800">{order.price}</div>
+                    <div className="overflow-x-auto custom-scrollbar -mx-2 px-2">
+                        <div className="min-w-[600px]">
+                            <div className="grid grid-cols-12 gap-3 px-3 py-2.5 text-[10px] font-semibold text-slate-400 border-b border-slate-100 bg-slate-50 rounded-t-lg uppercase tracking-wider">
+                                <div className="col-span-3">Tracking ID</div>
+                                <div className="col-span-4">Product</div>
+                                <div className="col-span-2">Status</div>
+                                <div className="col-span-3 text-right">Amount</div>
                             </div>
-                        ))}
+                            <div className="divide-y divide-slate-50">
+                                {apiOrders.map((order: any, i: number) => (
+                                    <div key={i} className="grid grid-cols-12 gap-3 px-3 py-3.5 items-center hover:bg-cyan-50/50 transition-colors rounded-lg group">
+                                        <div className="col-span-3 text-xs font-semibold text-slate-700">{order.id}</div>
+                                        <div className="col-span-4 flex items-center gap-2">
+                                            <span className="text-sm">{order.img}</span>
+                                            <span className="text-xs font-medium text-slate-700 group-hover:text-[#06B6D4] transition-colors truncate">{order.product}</span>
+                                        </div>
+                                        <div className="col-span-2"><StatusBadge status={order.status} /></div>
+                                        <div className="col-span-3 text-xs font-bold text-slate-900 text-right">{order.price}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -570,42 +576,42 @@ export default function DashboardPage() {
                 <div className="xl:col-span-5 glass-card p-6">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-2.5">
-                            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+                            <div className="h-7 w-7 rounded-lg bg-[#06B6D4] flex items-center justify-center">
                                 <span className="text-xs">🤖</span>
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-gray-800">Recent Upsells</h3>
-                                <p className="text-[9px] text-gray-400 font-medium">AI recommendations</p>
+                                <h3 className="text-sm font-bold text-slate-900">Recent Upsells</h3>
+                                <p className="text-[9px] text-slate-400 font-medium">AI recommendations</p>
                             </div>
                         </div>
-                        <button onClick={() => navigate('/dashboard/campaigns')} className="text-xs font-semibold text-violet-500 hover:text-violet-700 flex items-center gap-1 transition-colors">
+                        <button onClick={() => navigate('/dashboard/campaigns')} className="text-xs font-semibold text-[#06B6D4] hover:text-[#0891B2] flex items-center gap-1 transition-colors">
                             View All <ExternalLink className="h-3 w-3" />
                         </button>
                     </div>
                     {upsells.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 text-center">
-                            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center mb-3">
+                            <div className="h-12 w-12 rounded-lg bg-cyan-50 flex items-center justify-center mb-3">
                                 <span className="text-xl">✨</span>
                             </div>
-                            <p className="text-xs font-semibold text-gray-700 mb-0.5">No upsells yet</p>
-                            <p className="text-[10px] text-gray-400 max-w-[200px]">Simulate an order to trigger AI recommendations.</p>
+                            <p className="text-xs font-semibold text-slate-700 mb-0.5">No upsells yet</p>
+                            <p className="text-[10px] text-slate-400 max-w-[200px]">Simulate an order to trigger AI recommendations.</p>
                         </div>
                     ) : (
-                        <div className="space-y-0 divide-y divide-gray-50">
+                        <div className="space-y-0 divide-y divide-slate-50">
                             {Array.isArray(upsells) && upsells.map((u: any, i: number) => (
-                                <div key={u.id || i} className="flex items-center gap-3 py-3 hover:bg-violet-50/30 px-2 -mx-2 rounded-xl transition-colors group">
-                                    <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-500/15 to-indigo-500/15 flex items-center justify-center shrink-0 border border-violet-200/30">
+                                <div key={u.id || i} className="flex items-center gap-3 py-3 hover:bg-cyan-50/50 px-2 -mx-2 rounded-lg transition-colors group">
+                                    <div className="h-9 w-9 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0 border border-cyan-100/50">
                                         <span className="text-sm">🛍️</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-semibold text-gray-700 truncate group-hover:text-violet-600 transition-colors">
+                                        <p className="text-xs font-semibold text-slate-700 truncate group-hover:text-[#06B6D4] transition-colors">
                                             {u.productName || 'AI Recommendation'}
                                         </p>
-                                        <p className="text-[10px] text-gray-400 truncate">{u.customerEmail || 'customer'}</p>
+                                        <p className="text-[10px] text-slate-400 truncate">{u.customerEmail || 'customer'}</p>
                                     </div>
                                     <div className="text-right shrink-0">
                                         <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${u.status === 'converted' ? 'bg-emerald-50 text-emerald-600' :
-                                            u.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
+                                            u.status === 'active' ? 'bg-cyan-50 text-cyan-600' : 'bg-slate-100 text-slate-500'
                                             }`}>{u.status || 'pending'}</span>
                                     </div>
                                 </div>
@@ -619,29 +625,29 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Today</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">₹{stats?.counts?.todayRevenue?.toLocaleString() || '0'}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Today</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">₹{stats?.counts?.todayRevenue?.toLocaleString() || '0'}</p>
                     </div>
                     <ArrowUpRight className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">AI CVR</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{convRates.conversionRate || '0'}%</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">AI CVR</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">{convRates.conversionRate || '0'}%</p>
                     </div>
-                    <Target className="h-4 w-4 text-violet-500" />
+                    <Target className="h-4 w-4 text-[#06B6D4]" />
                 </div>
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Recovered</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{stats?.abandonedCarts?.recovered || 0}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Recovered</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">{stats?.abandonedCarts?.recovered || 0}</p>
                     </div>
                     <Users className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="glass-card px-4 py-3.5 flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Pending</p>
-                        <p className="text-lg font-bold text-gray-800 mt-0.5">{stats?.abandonedCarts?.pending || 0}</p>
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Pending</p>
+                        <p className="text-lg font-bold text-slate-900 mt-0.5">{stats?.abandonedCarts?.pending || 0}</p>
                     </div>
                     <ArrowDownRight className="h-4 w-4 text-amber-500" />
                 </div>

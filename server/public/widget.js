@@ -21,8 +21,9 @@
             bottom: 30px;
             right: 30px;
             width: 380px;
-            z-index: 999999;
+            z-index: 2147483647;
             animation: velocity-slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
         }
 
         @keyframes velocity-slide-up {
@@ -322,6 +323,28 @@
             0%, 100% { box-shadow: 0 0 10px rgba(16,185,129,0.2); }
             50%       { box-shadow: 0 0 20px rgba(16,185,129,0.5); }
         }
+        /* ── Launcher ────────────────────────────────── */
+        .velocity-launcher {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4);
+            cursor: pointer;
+            z-index: 999998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto;
+        }
+        .velocity-launcher:hover { transform: scale(1.1) rotate(5deg); }
+        .velocity-launcher svg { width: 28px; height: 28px; }
     `;
 
     // ─── State ────────────────────────────────────────────────────────────────
@@ -346,6 +369,12 @@
         }
 
         console.log(`[Velocity AI] 🚀 Version ${VERSION} initializing... URL: ${window.location.pathname}`);
+        console.log('[Velocity AI] 🔍 Context check: ', {
+            shop: window.Shopify?.shop,
+            pathname: window.location.pathname,
+            checkout: !!window.Shopify?.checkout,
+            order: !!window.Shopify?.order
+        });
 
         const urlParams = new URLSearchParams(window.location.search);
         const shopParam = window.Shopify?.shop
@@ -601,8 +630,10 @@
                 isLoading = false;
                 if (err.message === 'EXPIRED') { console.log('[Velocity AI] ⏹️ Offer expired.'); return; }
                 if (err.message === 'UNAUTHORIZED') { console.warn('[Velocity AI] ❌ Unauthorized! Check shop param.'); return; }
-                console.log(`[Velocity AI] ⏳ ${err.message}. Retrying in 1s... (attempt ${attempt})`);
-                setTimeout(() => fetchRecommendation(url, attempt + 1), 1000);
+                if (err.message.includes('HTTP 400')) { console.warn('[Velocity AI] ⚠️ Insufficient data for recommendations.'); return; }
+                
+                console.log(`[Velocity AI] ⏳ ${err.message}. Retrying in 2s... (attempt ${attempt})`);
+                setTimeout(() => fetchRecommendation(url, attempt + 1), 2000);
             });
     }
 
@@ -665,7 +696,10 @@
         if (recs.length === 0) return;
 
         const existing = document.getElementById('velocity-upsell-root');
-        if (existing) existing.remove();
+        if (existing) {
+            existing.style.display = 'block';
+            return; // Already rendered, just show it
+        }
 
         const total = recs.length;
         const FALLBACK_IMG = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
@@ -754,7 +788,11 @@
                 </button>
 
                 <div class="velocity-footer">Powered by Velocity AI Engine</div>
-            </div>`;
+            </div>
+            <button class="velocity-launcher" id="vel-launcher" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </button>
+        `;
 
         document.body.appendChild(container);
 
@@ -789,7 +827,15 @@
         }
 
         // Event listeners
-        shadow.getElementById('vel-close').addEventListener('click', () => container.remove());
+        shadow.getElementById('vel-close').addEventListener('click', () => {
+            shadow.querySelector('.velocity-card').style.display = 'none';
+            shadow.getElementById('vel-launcher').style.display = 'flex';
+        });
+
+        shadow.getElementById('vel-launcher').addEventListener('click', () => {
+            shadow.querySelector('.velocity-card').style.display = 'block';
+            shadow.getElementById('vel-launcher').style.display = 'none';
+        });
 
         shadow.getElementById('vel-claim').addEventListener('click', () => {
             const btn = shadow.getElementById('vel-claim');
