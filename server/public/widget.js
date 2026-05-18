@@ -4,12 +4,17 @@
     //        ngrok interstitial bypass, AbortController for stale requests
     const VERSION = '2.6.0';
 
-    // Detect origin dynamically from the script tag src
-    const scriptSrc = document.currentScript
-        ? document.currentScript.src
-        : 'https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js';
+    // Detect origin dynamically — 3 sources (priority order):
+    // 1. data-api-url attribute on the script tag (explicit override)
+    // 2. Script tag src origin (auto-detect from wherever script is loaded)
+    // 3. Render production URL (final fallback)
+    const currentScript = document.currentScript;
+    const dataApiUrl = currentScript?.getAttribute('data-api-url');
+    const scriptSrc = currentScript
+        ? currentScript.src
+        : 'https://ai-upsell-engine.onrender.com/widget.js';
     const scriptOrigin = new URL(scriptSrc).origin;
-    const API_BASE = `${scriptOrigin}/api/v1`;
+    const API_BASE = dataApiUrl || `${scriptOrigin}/api/v1`;
 
     // ─── Styles ───────────────────────────────────────────────────────────────
     const styles = `
