@@ -201,7 +201,16 @@ class EmailService {
      */
     async verifyConnection(): Promise<boolean> {
         try {
-            await this.transporter.verify();
+            // Race the verify check against a 3-second timeout
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('SMTP connection timed out (port probably blocked by firewall)')), 3000)
+            );
+            
+            await Promise.race([
+                this.transporter.verify(),
+                timeoutPromise
+            ]);
+
             console.log('[Email Service] ✅ SMTP connection verified');
             return true;
         } catch (error: any) {
