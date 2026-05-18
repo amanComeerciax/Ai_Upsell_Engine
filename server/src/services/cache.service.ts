@@ -2,12 +2,16 @@ import IORedis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
+// Auto-detect TLS: Upstash uses rediss://, local uses redis://
+const isTLS = REDIS_URL.startsWith('rediss://');
+
 // Shared Redis connection for caching (separate from BullMQ connections)
 let isRedisAvailable = false;
 const redis = new IORedis(REDIS_URL, {
-    maxRetriesPerRequest: 1, // Don't spam retries if it's down
+    maxRetriesPerRequest: 1,
     keyPrefix: 'cache:',
     reconnectOnError: () => false,
+    ...(isTLS ? { tls: { rejectUnauthorized: false } } : {}),
 });
 
 redis.on('connect', () => {

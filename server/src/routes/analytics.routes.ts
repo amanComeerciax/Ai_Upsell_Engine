@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { analyticsController } from '../controllers/analytics.controller';
-import { optionalMerchant } from '../middleware/auth.middleware';
+import { identifyMerchant } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.get('/stats', optionalMerchant, analyticsController.getDashboardStats);
-router.get('/detailed', optionalMerchant, analyticsController.getDetailedAnalytics);
-router.get('/insights', optionalMerchant, analyticsController.getInsights);
-router.get('/ab-test', optionalMerchant, analyticsController.getABTestMetrics);
+router.get('/stats', identifyMerchant, analyticsController.getDashboardStats);
+router.get('/detailed', identifyMerchant, analyticsController.getDetailedAnalytics);
+router.get('/insights', identifyMerchant, analyticsController.getInsights);
+router.get('/ab-test', identifyMerchant, analyticsController.getABTestMetrics);
 
 
 export default router;

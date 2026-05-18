@@ -6,8 +6,11 @@ import { cacheService } from '../services/cache.service';
 export const upsellController = {
     async getAllUpsells(req: Request, res: Response) {
         try {
-            // Tenant isolation
-            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+            // Tenant isolation - STRICT
+            if (!req.merchant) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+            const merchantFilter = { merchant_id: req.merchant.id };
             const now = new Date();
 
             const upsells = await (prisma as any).upsell_events.findMany({

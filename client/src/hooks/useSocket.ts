@@ -8,12 +8,21 @@ export const useSocket = () => {
     const { addNotification } = useNotifications();
 
     useEffect(() => {
-        // Use the origin from the API URL or fallback to localhost
+        // In local dev, connect directly to the backend (bypass ngrok for socket)
+        // In production, use the API URL origin
         const apiUrl = import.meta.env.VITE_API_URL || 'https://ai-upsell-engine.onrender.com';
-        const socketUrl = new URL(apiUrl).origin;
+        const isDev = import.meta.env.DEV || apiUrl.includes('localhost') || apiUrl.includes('ngrok');
+        const socketUrl = isDev
+            ? (import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001')
+            : new URL(apiUrl).origin;
 
         console.log(`[Socket] 🔌 Connecting to ${socketUrl}...`);
-        socketRef.current = io(socketUrl);
+        socketRef.current = io(socketUrl, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 2000,
+        });
 
         const socket = socketRef.current;
 

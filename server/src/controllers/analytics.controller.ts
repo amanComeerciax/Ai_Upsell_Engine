@@ -10,11 +10,14 @@ const INSIGHTS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 export const analyticsController = {
     async getDashboardStats(req: Request, res: Response) {
         try {
-            // Tenant isolation
-            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+            // Tenant isolation - STRICT
+            if (!req.merchant) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+            const merchantFilter = { merchant_id: req.merchant.id };
 
             // Check Redis cache first (2 min TTL)
-            const cacheKey = cacheService.key(req.merchant?.id, 'dashboard');
+            const cacheKey = cacheService.key(req.merchant.id, 'dashboard');
             const cached = await cacheService.get(cacheKey);
             if (cached) return res.status(200).json(cached);
 
@@ -171,11 +174,14 @@ export const analyticsController = {
      */
     async getDetailedAnalytics(req: Request, res: Response) {
         try {
-            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+            if (!req.merchant) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+            const merchantFilter = { merchant_id: req.merchant.id };
             const days = parseInt(req.query.days as string) || 30;
 
             // Check Redis cache first (5 min TTL)
-            const cacheKey = cacheService.key(req.merchant?.id, `analytics:${days}`);
+            const cacheKey = cacheService.key(req.merchant.id, `analytics:${days}`);
             const cached = await cacheService.get(cacheKey);
             if (cached) return res.status(200).json(cached);
 
@@ -323,7 +329,10 @@ export const analyticsController = {
      */
     async getInsights(req: Request, res: Response) {
         try {
-            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+            if (!req.merchant) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+            const merchantFilter = { merchant_id: req.merchant.id };
             const cacheKey = `insights_${req.merchant?.id || 'global'}`;
 
             // Check 1-hour cache first
@@ -430,7 +439,10 @@ Rules:
      */
     async getABTestMetrics(req: Request, res: Response) {
         try {
-            const merchantFilter = req.merchant ? { merchant_id: req.merchant.id } : {};
+            if (!req.merchant) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+            const merchantFilter = { merchant_id: req.merchant.id };
 
             // Check Redis cache first (5 min TTL)
             const cacheKey = cacheService.key(req.merchant?.id, 'abtest');

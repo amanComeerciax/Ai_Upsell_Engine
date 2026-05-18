@@ -6,14 +6,24 @@ let io: SocketIOServer | null = null;
 export const initSocket = (server: HTTPServer) => {
     io = new SocketIOServer(server, {
         cors: {
-            origin: [
-                'http://localhost:3000',
-                'https://aiupsellengine1.vercel.app',
-                'https://aiupsellengine.mohammadaman.in',
-                /\.vercel\.app$/,
-                'https://keila-arousable-bimolecularly.ngrok-free.dev'
-            ],
-            methods: ["GET", "POST"]
+            origin: (origin, callback) => {
+                // Allow: no origin (curl/Postman), localhost, ngrok tunnels, vercel, custom domain
+                if (
+                    !origin ||
+                    origin.includes('localhost') ||
+                    origin.includes('127.0.0.1') ||
+                    origin.includes('ngrok') ||
+                    origin.includes('vercel.app') ||
+                    origin.includes('mohammadaman.in') ||
+                    origin.includes('myshopify.com')
+                ) {
+                    callback(null, true);
+                } else {
+                    callback(new Error(`Socket CORS: origin not allowed → ${origin}`));
+                }
+            },
+            methods: ["GET", "POST"],
+            credentials: true
         }
     });
 

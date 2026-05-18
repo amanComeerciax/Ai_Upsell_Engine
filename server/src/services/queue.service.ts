@@ -2,13 +2,20 @@ import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const isTLS = REDIS_URL.startsWith('rediss://');
 const connection = new IORedis(REDIS_URL, {
-    maxRetriesPerRequest: 1,
-    reconnectOnError: () => false,
+    maxRetriesPerRequest: null, // BullMQ requires null for workers
+    enableReadyCheck: false,
+    lazyConnect: false,
+    ...(isTLS ? { tls: { rejectUnauthorized: false } } : {}),
 });
 
 connection.on('error', (err) => {
-    // Only log once to avoid spamming Render logs if down
+    console.error('[Queue] ❌ Redis connection error:', err.message);
+});
+
+connection.on('connect', () => {
+    console.log('[Queue] ✅ Redis connected for BullMQ');
 });
 
 // Initialize the BullMQ queues
