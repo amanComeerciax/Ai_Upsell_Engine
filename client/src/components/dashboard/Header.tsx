@@ -207,9 +207,43 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                     <div className="p-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
                         <UserButton
                             appearance={{
+                                variables: {
+                                    colorPrimary: '#06B6D4',
+                                    colorBackground: '#0d0d1a',
+                                    colorText: 'white',
+                                    colorTextSecondary: 'rgba(255,255,255,0.5)',
+                                    colorNeutral: 'rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    fontFamily: "'Inter', system-ui, sans-serif",
+                                },
                                 elements: {
                                     userButtonAvatarBox: 'h-9 w-9 rounded-full',
                                     userButtonTrigger: 'focus:shadow-none focus:ring-0',
+                                    userButtonPopoverCard: {
+                                        background: '#0d0d1a',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+                                    },
+                                    userButtonPopoverActions: {
+                                        background: '#0d0d1a',
+                                    },
+                                    userButtonPopoverActionButton: {
+                                        color: 'white',
+                                        transition: 'background 0.2s',
+                                        '&:hover': {
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                        }
+                                    },
+                                    userButtonPopoverActionButtonText: {
+                                        color: 'white',
+                                    },
+                                    userButtonPopoverActionButtonIcon: {
+                                        color: '#06B6D4',
+                                    },
+                                    userButtonPopoverFooter: {
+                                        background: '#0d0d1a',
+                                        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                                    }
                                 }
                             }}
                         />
