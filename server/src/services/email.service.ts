@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 // ─── Email Service ─────────────────────────────────────────────────────────
 // Uses Gmail SMTP (or any SMTP). Configure via .env:
@@ -178,6 +179,34 @@ class EmailService {
 </html>
         `;
 
+        // ─── Resend API Support ──────────────────────────────────────────────
+        if (process.env.RESEND_API_KEY) {
+            try {
+                // If custom from address is defined, use it. Resend onboarding domain is onboarding@resend.dev
+                const fromAddress = process.env.EMAIL_FROM || "Velocity AI <onboarding@resend.dev>";
+                console.log(`[Email Service] 🚀 Attempting Resend API call to ${to} for event ${eventId}`);
+                
+                const response = await axios.post('https://api.resend.com/emails', {
+                    from: fromAddress,
+                    to: [to],
+                    subject: finalSubject,
+                    html: html
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log(`[Email Service] ✅ Email successfully sent via Resend API to ${to}. ID: ${response.data.id}`);
+                return true;
+            } catch (error: any) {
+                console.error(`[Email Service] ❌ Resend API sending failed to ${to}:`, error.response?.data || error.message);
+                console.log(`[Email Service] 🔄 Falling back to SMTP...`);
+            }
+        }
+
+        // ─── Nodemailer SMTP Fallback ─────────────────────────────────────────
         try {
             const fromAddress = process.env.EMAIL_FROM || `"Velocity AI" <${process.env.EMAIL_USER}>`;
 
@@ -200,6 +229,10 @@ class EmailService {
      * Quick test to verify SMTP credentials are working
      */
     async verifyConnection(): Promise<boolean> {
+        if (process.env.RESEND_API_KEY) {
+            console.log('[Email Service] ✅ Resend API Key detected (automatic HTTPS transport)');
+            return true;
+        }
         try {
             // Race the verify check against a 3-second timeout
             const timeoutPromise = new Promise<never>((_, reject) =>
