@@ -67,7 +67,19 @@ app.use('/api/v1/team', teamRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'active', system: 'Velocity AI Engine', timestamp: new Date().toISOString() });
+    res.status(200).json({
+        status: 'active',
+        system: 'Velocity AI Engine',
+        timestamp: new Date().toISOString(),
+        diagnostics: {
+            hasEmailUser: !!process.env.EMAIL_USER,
+            hasEmailPass: !!process.env.EMAIL_PASS,
+            hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+            hasGroqKey: !!process.env.GROQ_API_KEY,
+            redisUrl: process.env.REDIS_URL ? process.env.REDIS_URL.substring(0, 15) + '...' : 'not set',
+            databaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : 'not set'
+        }
+    });
 });
 
 // Basic Route for AI Operations (Placeholder)
