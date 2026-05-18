@@ -65,8 +65,20 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/team', teamRoutes);
 
+import { emailService } from './services/email.service';
+
 // Health Check
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+    let smtpStatus = 'unknown';
+    let smtpError = null;
+    try {
+        const smtpOk = await emailService.verifyConnection();
+        smtpStatus = smtpOk ? 'connected' : 'failed';
+    } catch (err: any) {
+        smtpStatus = 'error';
+        smtpError = err.message;
+    }
+
     res.status(200).json({
         status: 'active',
         system: 'Velocity AI Engine',
@@ -77,7 +89,11 @@ app.get('/health', (req, res) => {
             hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
             hasGroqKey: !!process.env.GROQ_API_KEY,
             redisUrl: process.env.REDIS_URL ? process.env.REDIS_URL.substring(0, 15) + '...' : 'not set',
-            databaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : 'not set'
+            databaseUrl: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : 'not set',
+            smtp: {
+                status: smtpStatus,
+                error: smtpError
+            }
         }
     });
 });
