@@ -86,6 +86,7 @@ app.get('/health', async (req, res) => {
         diagnostics: {
             hasEmailUser: !!process.env.EMAIL_USER,
             hasEmailPass: !!process.env.EMAIL_PASS,
+            hasResendKey: !!process.env.RESEND_API_KEY,
             hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
             hasGroqKey: !!process.env.GROQ_API_KEY,
             redisUrl: process.env.REDIS_URL ? process.env.REDIS_URL.substring(0, 15) + '...' : 'not set',
