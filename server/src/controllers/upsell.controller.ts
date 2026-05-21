@@ -115,8 +115,8 @@ export const upsellController = {
                     discount_percent: upsell.discount_percent,
                     shopify_id: upsell.products?.shopify_id?.toString(),
                     shopify_variant_id: (upsell.products as any).shopify_variant_id?.toString(),
-                    shopify_url: upsell.products?.shopify_id
-                        ? `https://${shopDomain}/products/${(upsell.products as any).handle || upsell.products.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
+                    shopify_url: (upsell.products as any).handle
+                        ? `https://${shopDomain}/products/${(upsell.products as any).handle}`
                         : null,
                     reason: (upsell as any).pitch || `Customers who bought ${upsell.products?.name} also loved this!`
                 },
@@ -174,8 +174,8 @@ export const upsellController = {
                     discount_percent: upsell.discount_percent,
                     shopify_id: upsell.products?.shopify_id?.toString(),
                     shopify_variant_id: (upsell.products as any).shopify_variant_id?.toString(),
-                    shopify_url: upsell.products?.shopify_id
-                        ? `https://${shopDomain}/products/${(upsell.products as any).handle || upsell.products.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')}`
+                    shopify_url: (upsell.products as any).handle
+                        ? `https://${shopDomain}/products/${(upsell.products as any).handle}`
                         : null,
                     reason: (upsell as any).pitch || `Recommended specifically for your order!`
                 },
@@ -275,7 +275,8 @@ export const upsellController = {
                 event_id: eventId,
                 product_name: updated.products?.name,
                 revenue_generated: revenue,
-                discount_applied: updated.discount_percent
+                discount_applied: updated.discount_percent,
+                shopify_variant_id: (updated.products as any)?.shopify_variant_id?.toString() || null,
             });
 
             // Notify via Socket

@@ -16,8 +16,9 @@ export const shopifyController = {
             const results: { name: string; category: string; price: string }[] = [];
 
             for (const sp of shopifyProducts) {
-                // Get the first variant's price
+                // Get the first variant's price and ID
                 const price = sp.variants && sp.variants.length > 0 ? sp.variants[0].price : 0;
+                const variantId = sp.variants && sp.variants.length > 0 ? sp.variants[0].id : null;
                 // Get the first image
                 const imageUrl = sp.images && sp.images.length > 0 ? sp.images[0].src : null;
                 // Smart category: use Shopify's product_type, or infer from name
@@ -28,6 +29,7 @@ export const shopifyController = {
                     update: {
                         name: sp.title,
                         handle: sp.handle,
+                        shopify_variant_id: variantId ? BigInt(variantId) : null,
                         description: sp.body_html,
                         category: category,
                         price: price,
@@ -35,6 +37,7 @@ export const shopifyController = {
                     },
                     create: {
                         shopify_id: BigInt(sp.id),
+                        shopify_variant_id: variantId ? BigInt(variantId) : null,
                         name: sp.title,
                         handle: sp.handle,
                         description: sp.body_html,

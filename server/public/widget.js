@@ -355,6 +355,7 @@
     // ─── State ────────────────────────────────────────────────────────────────
     let currentEventId = null;
     let currentProductUrl = null;
+    let currentVariantId = null;
     let isLoading = false;   // Guard: prevents double-init race condition
     let activeController = null;    // AbortController: cancels stale requests
 
@@ -828,7 +829,8 @@
             claimBtn.innerHTML = `Claim ${prod.discount_percent || 15}% Discount <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
 
             if (prod.shopify_url) currentProductUrl = prod.shopify_url;
-            else if (prod.shopify_id) currentProductUrl = `/cart/add?id=${prod.shopify_id}&quantity=1`;
+            else currentProductUrl = null;
+            currentVariantId = prod.shopify_variant_id || null;
         }
 
         // Event listeners
@@ -844,8 +846,27 @@
 
         shadow.getElementById('vel-claim').addEventListener('click', () => {
             const btn = shadow.getElementById('vel-claim');
-            if (currentEventId) trackConversion(currentEventId, btn);
-            else if (currentProductUrl) window.location.href = currentProductUrl;
+            if (currentEventId) {
+                trackConversion(currentEventId, btn);
+            } else if (currentVariantId) {
+                // No event_id (cart/product page carousel) — add to cart directly
+                btn.disabled = true;
+                btn.innerHTML = 'Adding to cart...';
+                fetch('/cart/add.js', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentVariantId, quantity: 1 })
+                })
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                .then(() => { window.location.href = '/cart'; })
+                .catch(() => {
+                    // Fallback: redirect to product page
+                    if (currentProductUrl) window.location.href = currentProductUrl;
+                    else { btn.disabled = false; btn.textContent = 'Try Again'; }
+                });
+            } else if (currentProductUrl) {
+                window.location.href = currentProductUrl;
+            }
         });
 
         if (total > 1) {

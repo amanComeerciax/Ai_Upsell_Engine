@@ -113,8 +113,6 @@ export const aiController = {
 
             const recProducts = topRecs.map(rec => {
                 const rp = allProducts.find(p => p.id === rec.recommended_product_id);
-                const slug = rp?.handle
-                    || rp?.name?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
                 return {
                     id: rec.recommended_product_id,
                     name: rec.recommended_product_name,
@@ -123,7 +121,10 @@ export const aiController = {
                     image: rp?.image_url || null,
                     reason: rec.reason,
                     shopify_id: rp?.shopify_id?.toString() || null,
-                    shopify_url: rp?.shopify_id ? `https://${shopDomain}/products/${slug}` : null,
+                    shopify_variant_id: (rp as any)?.shopify_variant_id?.toString() || null,
+                    shopify_url: rp?.handle
+                        ? `https://${shopDomain}/products/${rp.handle}`
+                        : null,
                 };
             });
 
