@@ -7,6 +7,7 @@ import { Link } from "react-router-dom"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { UpsellLogo } from "@/components/Logo"
 
 
 const navLinks = [
@@ -65,8 +66,8 @@ export function Navbar() {
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform duration-300">
-              <img src="/logo-icon.png" alt="Upsell.ai Logo" className="h-full w-full object-cover" />
+            <div className="h-8 w-8 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <UpsellLogo className="w-full h-full drop-shadow-md" />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               Upsell<span className="text-cyan-500">.ai</span>
@@ -154,8 +155,8 @@ export function Navbar() {
               >
                 <div className="flex items-center justify-between mb-12">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg overflow-hidden border border-white/10">
-                      <img src="/logo-icon.png" alt="Logo" className="h-full w-full object-cover" />
+                    <div className="h-7 w-7 flex-shrink-0">
+                      <UpsellLogo className="w-full h-full drop-shadow-md" />
                     </div>
                     <span className="text-xl font-bold dark:text-white">Upsell<span className="text-cyan-500">.ai</span></span>
                   </div>
