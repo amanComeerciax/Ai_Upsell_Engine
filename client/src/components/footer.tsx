@@ -30,11 +30,9 @@ const itemVariants: Variants = {
 
 export function Footer() {
   return (
-    <footer className="relative bg-white dark:bg-black font-['Inter',sans-serif] overflow-hidden selection:bg-blue-500/30">
+    <footer className="relative bg-[#fafafa] dark:bg-black font-['Inter',sans-serif] overflow-hidden selection:bg-blue-500/30">
       {/* Background Section Transition Glow from Pricing */}
       <div className="absolute top-0 inset-x-0 flex justify-center z-0">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
-        <div className="absolute top-0 w-1/2 max-w-2xl h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent blur-[1px]" />
         <div className="absolute top-[-200px] w-[800px] h-[400px] bg-blue-500/10 rounded-[100%] blur-[120px] pointer-events-none" />
       </div>
 

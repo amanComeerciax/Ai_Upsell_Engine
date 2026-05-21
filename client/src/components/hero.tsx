@@ -92,6 +92,10 @@ export function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Bottom gradient fade — blends hero into next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 0%, var(--hero-fade) 100%)' }} />
+      <style>{`:root { --hero-fade: #fafafa; } .dark { --hero-fade: #000000; }`}</style>
     </section>
   )
 }

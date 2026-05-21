@@ -294,6 +294,51 @@
   animation: slideUp 0.6s ease forwards;
 }
 
+/* ===== SEAMLESS SECTION BLENDING ===== */
+/* Every landing section gets a top & bottom gradient fade
+   that blends into the shared page background color. */
+
+section[id]::before,
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #fafafa, transparent);
+}
+
+section[id]::after,
+footer::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, #fafafa, transparent);
+}
+
+.dark section[id]::before,
+.dark footer::before {
+  background: linear-gradient(to bottom, #000000, transparent);
+}
+
+.dark section[id]::after,
+.dark footer::after {
+  background: linear-gradient(to top, #000000, transparent);
+}
+
+/* Hero section doesn't need a top-fade (it's the first section) */
+section:first-of-type::before {
+  display: none;
+}
+
 /* ===== DARK MODE OVERRIDES ===== */
 
 /* Text colors */

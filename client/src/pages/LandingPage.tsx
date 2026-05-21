@@ -16,7 +16,7 @@ const Ballpit = lazy(() => import("@/components/ui/Ballpit"))
 // Lightweight section skeleton — a simple pulse placeholder
 function SectionSkeleton({ height = "h-64" }: { height?: string }) {
   return (
-    <div className={`w-full ${height} flex items-center justify-center bg-white dark:bg-black`}>
+    <div className={`w-full ${height} flex items-center justify-center bg-[#fafafa] dark:bg-black`}>
       <div className="w-12 h-12 rounded-full border-4 border-cyan-500/30 border-t-cyan-500 animate-spin" />
     </div>
   )
@@ -26,7 +26,7 @@ export function LandingPage() {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-screen overflow-x-hidden bg-white dark:!bg-black">
+      <main className="relative min-h-screen overflow-x-hidden bg-[#fafafa] dark:!bg-black">
         {/* Hero loads immediately — no lazy load */}
         <Hero />
 
@@ -56,7 +56,13 @@ export function LandingPage() {
         </Suspense>
 
         {/* CTA + Ballpit — reduced ball count for perf */}
-        <div className="relative h-[500px] w-full overflow-hidden bg-gray-100 dark:bg-black">
+        <div className="relative h-[500px] w-full overflow-hidden bg-[#fafafa] dark:bg-black">
+          {/* Top fade — blends from FAQ */}
+          <div className="absolute top-0 left-0 right-0 h-40 z-20 pointer-events-none" style={{ background: 'linear-gradient(to bottom, var(--section-bg) 0%, var(--section-bg) 20%, transparent 100%)' }} />
+          {/* Bottom fade — just enough to hide the seam line */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 z-20 pointer-events-none" style={{ background: 'linear-gradient(to top, var(--section-bg) 0%, transparent 100%)' }} />
+          <style>{`:root { --section-bg: #fafafa; } .dark { --section-bg: #000000; }`}</style>
+
           <Suspense fallback={<div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 to-blue-900/20" />}>
             <Ballpit
               count={60}
