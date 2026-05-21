@@ -1,5 +1,6 @@
 import { Github, Twitter, Linkedin } from "lucide-react"
 import { motion, Variants } from "framer-motion"
+import { UpsellLogo } from "@/components/Logo"
 
 const footerLinks = {
   Infrastructure: ["Engine SDK", "Cloud Decisions", "Edge Delivery", "Security"],
@@ -48,8 +49,8 @@ export function Footer() {
           {/* Brand - Span 2 */}
           <motion.div variants={itemVariants} className="col-span-2">
             <a href="#" className="flex items-center gap-3 mb-8 group transition-transform active:scale-95">
-              <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-cyan-500/10">
-                <img src="/logo-icon.png" alt="Upsell.ai" className="h-full w-full object-cover" />
+              <div className="h-8 w-8 flex-shrink-0">
+                <UpsellLogo className="w-full h-full drop-shadow-md" />
               </div>
               <div className="flex items-center">
                 <span className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
