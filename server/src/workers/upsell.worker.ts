@@ -6,6 +6,7 @@ import { shopifyService } from '../services/shopify.service';
 import { emailService } from '../services/email.service';
 import { inferCategory } from '../lib/categorizer';
 import { emitEvent } from '../lib/socket';
+import { cacheService } from '../services/cache.service';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const isTLS = REDIS_URL.startsWith('rediss://');
@@ -43,6 +44,12 @@ export const upsellWorker = new Worker(
                     merchant_id: merchantId,
                 }
             });
+
+            // Invalidate cache immediately after order is saved to DB
+            // (webhook invalidation happens too early — before order exists in DB)
+            if (merchantId) {
+                await cacheService.invalidateMerchant(merchantId);
+            }
 
             // 3. Process Line Items
             let triggerProduct = null;
