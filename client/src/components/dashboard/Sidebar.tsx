@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { UpsellLogo } from '@/components/Logo'
 import {
     LayoutDashboard,
     Megaphone,
@@ -66,8 +67,8 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () =>
                 isCollapsed ? "justify-center" : "px-6"
             )}>
                 <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="h-10 w-10 rounded-xl overflow-hidden shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
-                        <img src="/logo-icon.png" alt="Upsell.ai Logo" className="h-full w-full object-cover" />
+                    <div className="h-7 w-7 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <UpsellLogo className="w-full h-full drop-shadow-md" />
                     </div>
                     {!isCollapsed && (
                         <div className="animate-fade-in overflow-hidden">
