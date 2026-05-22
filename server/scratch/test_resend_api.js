@@ -1,10 +1,17 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const axios = require('axios');
 
 async function main() {
-  const apiKey = 're_6C2hZbQz_4cSAMansTdLpSth3D52FQwgM';
+  const apiKey = process.env.RESEND_API_KEY;
   const toEmail = 'kingamaan14@gmail.com';
   
-  console.log('Testing Resend API Key:', apiKey);
+  if (!apiKey) {
+    console.error('❌ Error: RESEND_API_KEY is not defined in your environment or .env file!');
+    process.exit(1);
+  }
+  
+  console.log('Testing Resend API Key: (configured from environment)');
   
   try {
     const response = await axios.post('https://api.resend.com/emails', {

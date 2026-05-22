@@ -13,3 +13,5 @@ build/
 *.log
 .vercel/
 .vercel_build_output/
+scratch/
+server/scratch/

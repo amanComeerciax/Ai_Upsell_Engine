@@ -141,7 +141,8 @@ export default function SettingsPage() {
             .replace(/{recommendation}/g, 'Wireless Mouse')
     }
 
-    const scriptSnippet = `<script src="https://keila-arousable-bimolecularly.ngrok-free.dev/widget.js" async></script>`;
+    const backendOrigin = (import.meta.env.VITE_API_URL || 'https://ai-upsell-engine.onrender.com/api/v1').replace('/api/v1', '');
+    const scriptSnippet = `<script src="${backendOrigin}/widget.js" async></script>`;
 
 
     return (
