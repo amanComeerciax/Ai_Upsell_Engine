@@ -28,7 +28,7 @@ if (!PUBLISHABLE_KEY) {
 
 function App() {
     return (
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="dark">
             <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
                 <Toaster position="top-right" expand={true} richColors={true} />
                 <BrowserRouter>

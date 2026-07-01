@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
-import { Menu, X, ArrowRight } from "lucide-react"
+import { Menu, X, ArrowRight, Sun, Moon } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { Link } from "react-router-dom"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
@@ -21,8 +21,8 @@ const navLinks = [
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  // useTheme available for future theme toggle
-  useTheme()
+  // useTheme available for theme toggle
+  const { toggleTheme, isDark } = useTheme()
 
   // Effect for scroll handling
   useEffect(() => {
@@ -88,7 +88,14 @@ export function Navbar() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              onClick={toggleTheme}
+              className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors active:scale-95"
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
 
             <div className="hidden sm:flex items-center gap-3">
               <SignedOut>
